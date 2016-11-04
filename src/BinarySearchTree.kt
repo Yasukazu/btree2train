@@ -92,22 +92,32 @@ class BinarySearchTree <T: Comparable<T>> {
         return false
     }      */
 
-    fun _insert(node: Node<T>?, key: T): Pair<Node<T>?, Boolean> {
+    enum class InsertedPos {
+        LEFT, NEW, RIGHT, NONE
+    }
+    fun _insert(node: Node<T>?, key: T): Pair<Node<T>?, InsertedPos> {
         if (node == null) { // If the tree is empty, return a new node
-            return Pair(Node(key, null, null), true)
+            return Pair(Node(key, null, null), InsertedPos.NEW)
         } else { // Otherwise, recur down the tree
             if (key < node.key) {
                 val pair = _insert(node.left, key)
+                if (pair.second == InsertedPos.NONE)
+                    return Pair(node, InsertedPos.NONE)
                 node.left = pair.first
+                return Pair(node, InsertedPos.LEFT) // Return the (unchanged) node pointer
             } else if (key > node.key) {
                 val pair = _insert(node.right, key)
+                if (pair.second == InsertedPos.NONE)
+                    return Pair(node, InsertedPos.NONE)
                 node.right = pair.first
+                return Pair(node, InsertedPos.RIGHT) // Return the (unchanged) node pointer
             }
+            else
+                return Pair(node, InsertedPos.NONE) // Return the (unchanged) node pointer
         }
-        return Pair(node, false) // Return the (unchanged) node pointer
     }
 
-    fun insert(key: T): Boolean {
+    fun insert(key: T): InsertedPos {
         val pair = _insert(root, key)
         if (root == null)
             root = pair.first
@@ -186,9 +196,16 @@ fun main(args:Array<String>){
     root.insert(root, "f") */
     val btree = BinarySearchTree<String>()
     print("\n")
-    val keys = arrayOf( "B", "A", "C", "B1")
+    val keys = arrayOf( "B", "B", "A", "A", "C", "B1", "A")
     keys.forEach { x ->
-        btree.insert(x)
+        val inserted_pos = btree.insert(x)
+        val pos = when(inserted_pos) {
+            BinarySearchTree.InsertedPos.LEFT -> "Left"
+            BinarySearchTree.InsertedPos.RIGHT -> "Right"
+            BinarySearchTree.InsertedPos.NONE -> "None"
+            BinarySearchTree.InsertedPos.NEW -> "New"
+        }
+        println("$x insert result: $pos")
     }
     print("\nBTree traverse:\n")
     btree.traverse_all {x -> print("$x\n") }
