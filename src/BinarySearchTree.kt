@@ -6,96 +6,20 @@ class BinarySearchTree <T: Comparable<T>> {
     /**
      * @property key
      */
-    class Node <T: Comparable<T>>(key_: T, left_: Node<T>? = null, right_: Node<T>? = null) {
+    data class Node <T: Comparable<T>>(val key: T, var left: Node<T>? = null, var right: Node<T>? = null)
+    /*{
         val key = key_
         var left = left_
         var right = right_
+    }*/
 
-        /* override fun toString():String{
-            return key + ":L(" + (left ? left.toString() : "Null") +
-        }  */
-
-        fun add(key: T):Boolean{
-            if(key == this.key)
-                return false
-            else{
-                if(key < this.key) {
-                    if (this.left == null) {
-                        left = Node(key)
-                        return true
-                    } else
-                        return left!!.add(key)
-                }else if(key > this.key){
-                    if(this.right == null){
-                        right = Node(key)
-                        return true
-                    } else
-                        return right!!.add(key)
-                }
-            }
-            return false
-        }
-
-        /**
-         * Insert a [key]
-         * @param node:Node?
-         * @param key
-         * @return inserted place as Node object
-         */
-        fun insert(node: Node<T>?, key: T): Node<T>? {
-            if (node == null) { // If the tree is empty, return a new node
-                return Node(key, null, null)
-            } else { // Otherwise, recur down the tree
-                if (key < node.key) {
-                    node.left = insert(node.left, key)
-                } else if (key > node.key) {
-                    node.right = insert(node.right, key)
-                }
-            }
-            return node // Return the (unchanged) node pointer
-        }
-
-        fun find(node: Node<T>?, key: T):Node<T>?{
-            if(node == null){
-                return null
-            }
-            if(key < node.key){
-                return find(node.left, key)
-            }
-            else if(key > node.key){
-                return find(node.right, key)
-            }
-            return node
-        }
-    }
     var root: Node<T>? = null
-
-    fun insert0(key: T){
-        if(root is Node){
-            (root as Node).insert(root, key)
-        }
-        else {
-            root = Node(key)
-        }
-    }
-
-    /* fun add(key: T):Boolean{
-        if(root == null){
-            root = Node(key)
-            return true
-        }
-        else{
-            val new_node = _insert(root, key)
-            if (new_node != null)
-                return true
-        }
-        return false
-    }      */
 
     enum class InsertedPos {
         LEFT, NEW, RIGHT, NONE
     }
-    fun _insert(node: Node<T>?, key: T): Pair<Node<T>?, InsertedPos> {
+
+    private fun _insert(node: Node<T>?, key: T): Pair<Node<T>?, InsertedPos> {
         if (node == null) { // If the tree is empty, return a new node
             return Pair(Node(key, null, null), InsertedPos.NEW)
         } else { // Otherwise, recur down the tree
@@ -125,10 +49,40 @@ class BinarySearchTree <T: Comparable<T>> {
     }
 
     /**
+     * find minimum key
+     */
+    fun _getMin(node: Node<T>?): Node<T>? {
+        if (node == null || node.left == null)
+            return node
+        return _getMin(node.left)
+    }
+
+    /**
+     * find minimum key
+     * return : key or null
+     */
+    /*fun getMin(): T? {
+        val node = _getMin(root)
+        if (node != null) {
+            return node.key
+        }
+        return null
+    }*/
+    val min: T?
+        get() {
+            val node = _getMin(root)
+            if (node != null) {
+                return node.key
+            }
+            return null
+        }
+
+
+    /**
      * pre-find
      * return non-null if found
      */
-    fun _find(node: Node<T>?, key: T): Node<T>? {
+    private fun _find(node: Node<T>?, key: T): Node<T>? {
         if (node == null) {
             return null
         } else { // Otherwise, recur down the tree
@@ -147,11 +101,6 @@ class BinarySearchTree <T: Comparable<T>> {
         return false
     }
 
-    /* fun find(key: String):Boolean{
-        if(find(root, key) != null)
-            return true
-        return false
-    }  */
 
     fun traverse(node:Node<T>?, callback:(T)->Unit){
         if (node == null)
@@ -207,6 +156,12 @@ fun main(args:Array<String>){
         }
         println("$x insert result: $pos")
     }
+    print("Minimum key is:")
+    val key_or_null = btree.min // getMin()
+    if (key_or_null == null)
+        println("(null)")
+    else
+        println("$key_or_null")
     print("\nBTree traverse:\n")
     btree.traverse_all {x -> print("$x\n") }
     print("\nBTree display with depth:\n")
