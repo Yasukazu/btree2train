@@ -2,6 +2,8 @@
  * Created by Yasukazu on 2016/11/03.
  *  @comment_source  http://quiz.geeksforgeeks.org/binary-search-tree-set0-search-and-insertion/
  */
+//import kotlin.collection.co
+
 class BinarySearchTree <T: Comparable<T>> {
     /**
      * @property key
@@ -51,7 +53,7 @@ class BinarySearchTree <T: Comparable<T>> {
     /**
      * find minimum key
      */
-    fun _getMin(node: Node<T>?): Node<T>? {
+    private fun _getMin(node: Node<T>?): Node<T>? {
         if (node == null || node.left == null)
             return node
         return _getMin(node.left)
@@ -77,7 +79,27 @@ class BinarySearchTree <T: Comparable<T>> {
             return null
         }
 
+    /**
+     * find maximum key
+     */
+    private fun _getMax(node: Node<T>?): Node<T>? {
+        if (node == null || node.right == null)
+            return node
+        return _getMin(node.right)
+    }
 
+    /**
+     * find maximum key
+     * return : key or null
+     */
+    val max: T?
+        get() {
+            val node = _getMax(root)
+            if (node != null) {
+                return node.key
+            }
+            return null
+        }
     /**
      * pre-find
      * return non-null if found
@@ -102,7 +124,66 @@ class BinarySearchTree <T: Comparable<T>> {
     }
 
 
-    fun traverse(node:Node<T>?, callback:(T)->Unit){
+    private fun _preTraverse(node:Node<T>?, callback:(T)->Unit){
+        if (node == null)
+            return
+        else {
+            _preTraverse(node.left, callback)
+            _preTraverse(node.right, callback)
+            callback(node.key)
+        }
+    }
+
+    fun preTraverse(callback:(T)->Unit){
+        _preTraverse(root, callback)
+    }
+
+    private fun _preTraverse_depth(node:Node<T>?, callback:(T, StringBuffer)->Unit, depth: StringBuffer){
+        if (node == null)
+            return
+        else {
+            _preTraverse_depth(node.left, callback, depth.append('<'))
+            _preTraverse_depth(node.right, callback, depth.append('>'))
+            callback(node.key, depth)
+            depth.setLength(0)
+        }
+    }
+
+    fun preTraverse_depth(callback:(T, StringBuffer)->Unit){
+       _preTraverse_depth(root, callback, StringBuffer())
+    }
+
+
+    private fun _postTraverse_depth(node:Node<T>?, callback:(T, StringBuffer)->Unit, depth: StringBuffer){
+        if (node == null)
+            return
+        else {
+            callback(node.key, depth)
+            _postTraverse_depth(node.left, callback, depth.append('<'))
+            _postTraverse_depth(node.right, callback, depth.append('>'))
+            depth.setLength(0)
+        }
+    }
+
+    fun postTraverse_depth(callback:(T, StringBuffer)->Unit){
+        _postTraverse_depth(root, callback, StringBuffer())
+    }
+
+    //enum class LR {L, }
+    private fun _preTraverse_depth_LR(node:Node<T>?, callback:(T, Int, Char)->Unit, depth: Int, LR: Char){
+        if (node == null)
+            return
+        else {
+            _preTraverse_depth_LR(node.left, callback, depth + 1, '<')
+            _preTraverse_depth_LR(node.right, callback, depth + 1, '>')
+            callback(node.key, depth, LR)
+        }
+    }
+
+    fun preTraverse_depth_LR(callback:(T, Int, Char)->Unit){
+        _preTraverse_depth_LR(root, callback, 0, '_')
+    }
+    private fun traverse(node:Node<T>?, callback:(T)->Unit){
         if (node == null)
             return
         else {
@@ -116,23 +197,37 @@ class BinarySearchTree <T: Comparable<T>> {
         traverse(root, callback)
     }
 
-    fun display(node:Node<T>?, depth:Int, callback:(Int, T)->Unit){
+
+    private fun display(node:Node<T>?, callback:(T, StringBuffer)->Unit, depth:StringBuffer){
         if (node == null)
             return
         else {
-            display(node.left, depth + 1, callback)
-            callback(depth, node.key)
-            display(node.right, depth + 1, callback)
+            display(node.left, callback, depth.append('<'))
+            callback(node.key, depth)
+            display(node.right, callback, depth.append('>'))
+            depth.setLength(0)
         }
     }
 
-    fun display_all(callback:(Int, T)->Unit){
-        display(root, 0, callback)
+    fun display_all(callback:(T, StringBuffer)->Unit){
+        display(root, callback, StringBuffer())
     }
 }
 
 fun main(args:Array<String>){
-    fun print_depth(d:Int, s:String){
+    fun print_depth(s:String, d:Int){
+        var i = d
+        val b = StringBuilder()
+        while(i-- > 0){
+            b.append(".")
+        }
+        print("$b$s\n")
+    }
+
+    fun print_depth_SB(s:String, d:StringBuffer){
+        print("${d.toString()}$s\n")
+    }
+    fun print_depth_LR(s:String, d:Int, c:Char){
         var i = d
         val b = StringBuilder()
         while(i-- > 0){
@@ -156,16 +251,30 @@ fun main(args:Array<String>){
         }
         println("$x insert result: $pos")
     }
-    print("Minimum key is:")
+    println()
+    print("The smallest key is:")
     val key_or_null = btree.min // getMin()
     if (key_or_null == null)
         println("(null)")
     else
         println("$key_or_null")
+    println()
+    print("The largest key is: ${btree.max}")
+    println()
+    println("pre order traversal")
+    btree.preTraverse { x -> print("$x\n") }
+    println()
+    println("pre order traversal with depth")
+    btree.preTraverse_depth(::print_depth_SB)
+
+    println()
+    println("post order traversal with depth")
+    btree.postTraverse_depth(::print_depth_SB)
+
     print("\nBTree traverse:\n")
     btree.traverse_all {x -> print("$x\n") }
     print("\nBTree display with depth:\n")
-    btree.display_all(::print_depth) // btree.root, 0,
+    btree.display_all(::print_depth_SB) // btree.root, 0,
     print("\n")
     val find_keys = arrayOf("A", "B", "B1", "B2", "C")
     find_keys.forEach { x ->
