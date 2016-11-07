@@ -138,35 +138,33 @@ class BinarySearchTree <T: Comparable<T>> {
         _preTraverse(root, callback)
     }
 
-    private fun _preTraverse_depth(node:Node<T>?, callback:(T, StringBuffer)->Unit, depth: StringBuffer){
+    private fun _preTraverse_depth(node:Node<T>?, depth: String, callback:(T, String)->Unit){
         if (node == null)
             return
         else {
-            _preTraverse_depth(node.left, callback, depth.append('<'))
-            _preTraverse_depth(node.right, callback, depth.append('>'))
+            _preTraverse_depth(node.left, depth + "<", callback)
+            _preTraverse_depth(node.right, depth + ">", callback)
             callback(node.key, depth)
-            depth.setLength(0)
         }
     }
 
-    fun preTraverse_depth(callback:(T, StringBuffer)->Unit){
-       _preTraverse_depth(root, callback, StringBuffer())
+    fun preTraverse_depth(s: String, callback:(T, String)->Unit){
+       _preTraverse_depth(root, s, callback)
     }
 
 
-    private fun _postTraverse_depth(node:Node<T>?, callback:(T, StringBuffer)->Unit, depth: StringBuffer){
+    private fun _postTraverse_depth(node:Node<T>?, depth: String, callback:(T, String)->Unit){
         if (node == null)
             return
         else {
             callback(node.key, depth)
-            _postTraverse_depth(node.left, callback, depth.append('<'))
-            _postTraverse_depth(node.right, callback, depth.append('>'))
-            depth.setLength(0)
+            _postTraverse_depth(node.left, depth + "<", callback)
+            _postTraverse_depth(node.right, depth + ">",  callback)
         }
     }
 
-    fun postTraverse_depth(callback:(T, StringBuffer)->Unit){
-        _postTraverse_depth(root, callback, StringBuffer())
+    fun postTraverse_depth(callback:(T, String)->Unit){
+        _postTraverse_depth(root, "", callback)
     }
 
     //enum class LR {L, }
@@ -198,19 +196,18 @@ class BinarySearchTree <T: Comparable<T>> {
     }
 
 
-    private fun display(node:Node<T>?, callback:(T, StringBuffer)->Unit, depth:StringBuffer){
+    private fun _inOrderTraverse(node: Node<T>?, depth: String, callback: (T, String)->Unit){
         if (node == null)
             return
         else {
-            display(node.left, callback, depth.append('<'))
+            _inOrderTraverse(node.left, depth + "<", callback)
             callback(node.key, depth)
-            display(node.right, callback, depth.append('>'))
-            depth.setLength(0)
+            _inOrderTraverse(node.right, depth + ">", callback)
         }
     }
 
-    fun display_all(callback:(T, StringBuffer)->Unit){
-        display(root, callback, StringBuffer())
+    fun inOrderTraverse(callback: (T, String)->Unit){
+        _inOrderTraverse(root, "", callback)
     }
 }
 
@@ -224,6 +221,7 @@ fun main(args:Array<String>){
         print("$b$s\n")
     }
 
+    // fun print_depth_s(k: T, s:String){ println("$k:$s") }
     fun print_depth_SB(s:String, d:StringBuffer){
         print("${d.toString()}$s\n")
     }
@@ -261,20 +259,20 @@ fun main(args:Array<String>){
     println()
     print("The largest key is: ${btree.max}")
     println()
-    println("pre order traversal")
+    println("pre traversal")
     btree.preTraverse { x -> print("$x\n") }
     println()
-    println("pre order traversal with depth")
-    btree.preTraverse_depth(::print_depth_SB)
+    println("pre traversal with depth")
+    btree.preTraverse_depth("", {s,d->println("$s:$d")})
 
     println()
     println("post order traversal with depth")
-    btree.postTraverse_depth(::print_depth_SB)
+    btree.postTraverse_depth {s,d->println("$s:$d")}
 
-    print("\nBTree traverse:\n")
+    print("\nBTree in-order traversal:\n")
     btree.traverse_all {x -> print("$x\n") }
-    print("\nBTree display with depth:\n")
-    btree.display_all(::print_depth_SB) // btree.root, 0,
+    print("\nBTree in-order traversal with depth:\n")
+    btree.inOrderTraverse {s,d->println("$s:$d")}
     print("\n")
     val find_keys = arrayOf("A", "B", "B1", "B2", "C")
     find_keys.forEach { x ->
