@@ -1,7 +1,4 @@
-import javax.swing.JFrame
-import javax.swing.JLabel
-import javax.swing.JTree
-import javax.swing.SwingUtilities
+import javax.swing.*
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
@@ -346,11 +343,15 @@ fun main(args:Array<String>){
     val root = btree.preTraverseTreeNode() //DefaultMutableTreeNode("root")
     val model = DefaultTreeModel(root)
     val tree = JTree(model)
+    val label = JLabel("Blank leaf is left leaf.")
+    val panel = JPanel()
     SwingUtilities.invokeLater {
         val frame = JFrame("Binary Search Tree")
         //frame.contentPane = binaryTreeForm.panel1
-        frame.contentPane.add(JLabel("Blank leaf is left leaf."))
-        frame.contentPane.add(tree)
+        frame.contentPane.add(panel)
+        panel.add(label)
+        panel.add(tree)
+        frame.contentPane.add(panel)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.pack()
         frame.isVisible = true
