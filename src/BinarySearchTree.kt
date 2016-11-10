@@ -1,3 +1,11 @@
+import javax.swing.JFrame
+import javax.swing.JTree
+import javax.swing.SwingUtilities
+import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.MutableTreeNode
+import javax.swing.tree.TreeNode
+
 /**
  * Created by Yasukazu on 2016/11/03.
  *  @comment_source  http://quiz.geeksforgeeks.org/binary-search-tree-set0-search-and-insertion/
@@ -124,13 +132,30 @@ class BinarySearchTree <T: Comparable<T>> {
     }
 
 
+
+    private fun _preTraverseList(node:Node<T>?, list: MutableList<T>){
+        if (node == null)
+            return
+        else {
+            list += node.key
+            _preTraverseList(node.left, list)
+            _preTraverseList(node.right, list)
+        }
+    }
+
+    fun preTraverseList(): List<T>{
+        val list = mutableListOf<T>()
+        _preTraverseList(root, list)
+        return list
+    }
+
     private fun _preTraverse(node:Node<T>?, callback:(T)->Unit){
         if (node == null)
             return
         else {
+            callback(node.key)
             _preTraverse(node.left, callback)
             _preTraverse(node.right, callback)
-            callback(node.key)
         }
     }
 
@@ -138,13 +163,38 @@ class BinarySearchTree <T: Comparable<T>> {
         _preTraverse(root, callback)
     }
 
+    private fun _preTraverseTreeNode(node:Node<T>?, tnode: MutableTreeNode){
+        if (node == null)
+            return
+        else {
+            if (node.left !=null) {
+                val newTnode = DefaultMutableTreeNode(node.left?.key)
+                tnode.insert(newTnode, 0)
+                _preTraverseTreeNode(node.left, newTnode)
+            }
+            if (node.right !=null) {
+                val newTnode = DefaultMutableTreeNode(node.right?.key)
+                tnode.insert(newTnode, 0)
+                _preTraverseTreeNode(node.right, newTnode)
+            }
+        }
+    }
+
+    fun preTraverseTreeNode(): MutableTreeNode?{
+        if (root != null) {
+            val treeNode = DefaultMutableTreeNode(root!!.key)
+            _preTraverseTreeNode(root, treeNode)
+            return treeNode
+        }
+        return null
+    }
     private fun _preTraverse_depth(node:Node<T>?, depth: String, callback:(T, String)->Unit){
         if (node == null)
             return
         else {
+            callback(node.key, depth)
             _preTraverse_depth(node.left, depth + "<", callback)
             _preTraverse_depth(node.right, depth + ">", callback)
-            callback(node.key, depth)
         }
     }
 
@@ -157,9 +207,9 @@ class BinarySearchTree <T: Comparable<T>> {
         if (node == null)
             return
         else {
-            callback(node.key, depth)
             _postTraverse_depth(node.left, depth + "<", callback)
             _postTraverse_depth(node.right, depth + ">",  callback)
+            callback(node.key, depth)
         }
     }
 
@@ -172,27 +222,27 @@ class BinarySearchTree <T: Comparable<T>> {
         if (node == null)
             return
         else {
+            callback(node.key, depth, LR)
             _preTraverse_depth_LR(node.left, callback, depth + 1, '<')
             _preTraverse_depth_LR(node.right, callback, depth + 1, '>')
-            callback(node.key, depth, LR)
         }
     }
 
     fun preTraverse_depth_LR(callback:(T, Int, Char)->Unit){
         _preTraverse_depth_LR(root, callback, 0, '_')
     }
-    private fun traverse(node:Node<T>?, callback:(T)->Unit){
+    fun _inTraverse(node:Node<T>?, callback:(T)->Unit){
         if (node == null)
             return
         else {
-            traverse(node.left, callback)
+            _inTraverse(node.left, callback)
             callback(node.key)
-            traverse(node.right, callback)
+            _inTraverse(node.right, callback)
         }
     }
 
-    fun traverse_all(callback:(T)->Unit){
-        traverse(root, callback)
+    fun inTraverse(callback:(T)->Unit){
+        _inTraverse(root, callback)
     }
 
 
@@ -225,7 +275,7 @@ fun main(args:Array<String>){
     fun print_depth_SB(s:String, d:StringBuffer){
         print("${d.toString()}$s\n")
     }
-    fun print_depth_LR(s:String, d:Int, c:Char){
+    fun print_depth_LR(s:String, d:Int){
         var i = d
         val b = StringBuilder()
         while(i-- > 0){
@@ -238,7 +288,7 @@ fun main(args:Array<String>){
     root.insert(root, "f") */
     val btree = BinarySearchTree<String>()
     print("\n")
-    val keys = arrayOf( "B", "B", "A", "A", "C", "B1", "A")
+    val keys = args //arrayOf( "B", "B", "A", "A", "C", "B1", "A", "B2", "A2", "A1")
     keys.forEach { x ->
         val inserted_pos = btree.insert(x)
         val pos = when(inserted_pos) {
@@ -259,10 +309,17 @@ fun main(args:Array<String>){
     println()
     print("The largest key is: ${btree.max}")
     println()
-    println("pre traversal")
+    print("pre-order traversal list: ")
+    val preOrderTraversalList = btree.preTraverseList()
+    preOrderTraversalList.forEach { print("$it\t") }
+    println()
+    for(x in preOrderTraversalList)
+        print("$x\n")
+    println()
+    println("pre-order traversal")
     btree.preTraverse { x -> print("$x\n") }
     println()
-    println("pre traversal with depth")
+    println("pre-order traversal with depth")
     btree.preTraverse_depth("", {s,d->println("$s:$d")})
 
     println()
@@ -270,7 +327,7 @@ fun main(args:Array<String>){
     btree.postTraverse_depth {s,d->println("$s:$d")}
 
     print("\nBTree in-order traversal:\n")
-    btree.traverse_all {x -> print("$x\n") }
+    btree.inTraverse { x -> print("$x\n") }
     print("\nBTree in-order traversal with depth:\n")
     btree.inOrderTraverse {s,d->println("$s:$d")}
     print("\n")
@@ -280,5 +337,17 @@ fun main(args:Array<String>){
             print("$x exists\n")
         else
             print("$x does not exist\n")
+    }
+    // val binaryTreeForm = BinaryTreeForm()
+    val root = btree.preTraverseTreeNode() //DefaultMutableTreeNode("root")
+    val model = DefaultTreeModel(root)
+    val tree = JTree(model)
+    SwingUtilities.invokeLater {
+        val frame = JFrame("Binary Search Tree")
+        //frame.contentPane = binaryTreeForm.panel1
+        frame.contentPane.add(tree)
+        frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        frame.pack()
+        frame.isVisible = true
     }
 }
