@@ -1,4 +1,5 @@
 import javax.swing.JFrame
+import javax.swing.JLabel
 import javax.swing.JTree
 import javax.swing.SwingUtilities
 import javax.swing.tree.DefaultMutableTreeNode
@@ -167,13 +168,16 @@ class BinarySearchTree <T: Comparable<T>> {
         if (node == null)
             return
         else {
+            var newTnode: DefaultMutableTreeNode? = null
             if (node.left !=null) {
-                val newTnode = DefaultMutableTreeNode(node.left?.key)
+                newTnode = DefaultMutableTreeNode(node.left?.key)
                 tnode.insert(newTnode, 0)
                 _preTraverseTreeNode(node.left, newTnode)
             }
             if (node.right !=null) {
-                val newTnode = DefaultMutableTreeNode(node.right?.key)
+                if (newTnode == null)
+                    tnode.insert(DefaultMutableTreeNode(null), 0)
+                newTnode = DefaultMutableTreeNode(node.right?.key)
                 tnode.insert(newTnode, 0)
                 _preTraverseTreeNode(node.right, newTnode)
             }
@@ -345,6 +349,7 @@ fun main(args:Array<String>){
     SwingUtilities.invokeLater {
         val frame = JFrame("Binary Search Tree")
         //frame.contentPane = binaryTreeForm.panel1
+        frame.contentPane.add(JLabel("Blank leaf is left leaf."))
         frame.contentPane.add(tree)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.pack()
