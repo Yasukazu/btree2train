@@ -331,7 +331,7 @@ class BinarySearchTree <T: Comparable<T>> {
             if (parent?.left == self)
                 parent.left = null
             else if (parent?.right == self)
-                parent.left = null
+                parent.right = null
         }
         // replace self with other
         fun __replace(self: Node<T>, child: Node<T>) {
@@ -347,10 +347,15 @@ class BinarySearchTree <T: Comparable<T>> {
          * replace 2
          * 削除ノードが子を二つ持つ場合
         削除ノードの左の子から最大の値を探索する。
-        1 で探索してきたノード（以下、探索ノード）を削除対象のノードと置き換えて、削除対象のノードを削除する。このとき探索ノードの左の子を探索ノードの元位置に置き換える（二分探索木の性質上、探索ノードには右の子は無い）。
+        1 で探索してきたノード（以下、探索ノード）を削除対象のノードと置き換えて、削除対象のノードを削除する。
+        このとき探索ノードの左の子を探索ノードの元位置に置き換える（二分探索木の性質上、探索ノードには右の子は無い）。
          */
         fun __replace2(self: Node<T>){
-
+            val maxNode = _getMax(self.left)
+            if (maxNode != null) {
+                __replace(self, maxNode)
+                __delete_self_node((maxNode))
+            }
         }
         if (self == null)
             return false
@@ -474,7 +479,7 @@ fun main(args:Array<String>){
             print("$x does not exist\n")
     }
     /* delete */
-    val delete_value = 4 //"C"
+    val delete_value = 12 //"C"
     val pre_delete_list = btree.preTraverseList()
     println("Pre delete list: $pre_delete_list")
     println("Try to delete $delete_value")
