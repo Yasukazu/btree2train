@@ -27,33 +27,39 @@ class BinarySearchTree <T: Comparable<T>> {
         LEFT, NEW, RIGHT, NONE
     }
 
-    private fun _insert(node: Node<T>?, key: T, parent: Node<T>?): Pair<Node<T>?, InsertedPos> {
-        if (node == null) { // If the tree is empty, return a new node
-            return Pair(Node(key, null, null), InsertedPos.NEW)
-        } else { // Otherwise, recur down the tree
-            if (key < node.key) {
-                val pair = _insert(node.left, key, node)
-                if (pair.second == InsertedPos.NONE)
-                    return Pair(node, InsertedPos.NONE)
-                node.left = pair.first
-                return Pair(node, InsertedPos.LEFT) // Return the (unchanged) node pointer
-            } else if (key > node.key) {
-                val pair = _insert(node.right, key, node)
-                if (pair.second == InsertedPos.NONE)
-                    return Pair(node, InsertedPos.NONE)
-                node.right = pair.first
-                return Pair(node, InsertedPos.RIGHT) // Return the (unchanged) node pointer
-            }
-            else
-                return Pair(node, InsertedPos.NONE) // Return the (unchanged) node pointer
+
+    data class Node_InsertedPos <T: Comparable<T>>(val node: Node<T>, val pos: InsertedPos)
+    private fun _insert(node: Node<T>?, key: T, parent: Node<T>?): Node_InsertedPos<T> { //<Node<T>?, Node<T>?, InsertedPos> {
+        if (node == null) { // If the node is empty, return a new node
+            return Node_InsertedPos(Node(key, parent=parent), InsertedPos.NEW)
         }
+        else { // Otherwise, recur down the tree
+            if (key < node.key) {
+                val node_InsertedPos = _insert(node.left, key, node)
+                if (node_InsertedPos.pos == InsertedPos.NEW) {
+                    node.left = node_InsertedPos.node
+                    return Node_InsertedPos(node_InsertedPos.node, InsertedPos.LEFT) // Return the (unchanged) node pointer
+                }
+            } else if (key > node.key) {
+                val node_InsertedPos = _insert(node.right, key, node)
+                if (node_InsertedPos.pos == InsertedPos.NEW) {
+                    node.right = node_InsertedPos.node
+                    return Node_InsertedPos(node_InsertedPos.node, InsertedPos.RIGHT) // Return the (unchanged) node pointer
+                }
+            }
+        }
+        return Node_InsertedPos(node, InsertedPos.NONE) // Return the (unchanged) node pointer
     }
 
     fun insert(key: T): InsertedPos {
-        val pair = _insert(root, key, root)
-        if (root == null)
-            root = pair.first
-        return pair.second
+        if (root == null){
+            root = Node(key)
+            return InsertedPos.NEW
+        }
+        else {
+            val node_InsertedPos = _insert(root, key, null)
+            return node_InsertedPos.pos
+        }
     }
 
     /**
@@ -316,10 +322,9 @@ class BinarySearchTree <T: Comparable<T>> {
      */
     //data class ParentkChild<T>(val parent: Node<T>, val child: Node<T>)
     private fun _delete_node(self: Node<T>?, key: T): Boolean { //Pair<T, T>?{
-        /**
-         * Delete self node
-         */
+         // Delete self node
         fun __delete_self_node(self: Node<T>) {
+             assert(self.left == null && self.right == null)
             val parent = self.parent
             if (parent == null)
                 root = null
@@ -327,6 +332,25 @@ class BinarySearchTree <T: Comparable<T>> {
                 parent.left = null
             else if (parent?.right == self)
                 parent.left = null
+        }
+        // replace self with other
+        fun __replace(self: Node<T>, child: Node<T>) {
+            child.parent = self.parent
+            if (self.parent != null) {
+                if (self.parent?.left == self)
+                    self.parent?.left = child
+                else if (self.parent?.right == self)
+                    self.parent?.right = child
+            }
+        }
+        /**
+         * replace 2
+         * 削除ノードが子を二つ持つ場合
+        削除ノードの左の子から最大の値を探索する。
+        1 で探索してきたノード（以下、探索ノード）を削除対象のノードと置き換えて、削除対象のノードを削除する。このとき探索ノードの左の子を探索ノードの元位置に置き換える（二分探索木の性質上、探索ノードには右の子は無い）。
+         */
+        fun __replace2(self: Node<T>){
+
         }
         if (self == null)
             return false
@@ -337,9 +361,23 @@ class BinarySearchTree <T: Comparable<T>> {
             return _delete_node(self.right, key)
         }
         else { // key == self.key
-            // delete self
-            __delete_self_node(self)
-            return true
+            // 3. delete self if no children
+            if (self.left == null && self.right == null) {
+                __delete_self_node(self)
+                return true
+            }
+            else if (self.left != null && self.right == null) {
+                __replace(self, self.left!!)
+                return true
+            }
+            else if (self.right != null && self.left == null) {
+                __replace(self, self.right!!)
+                return true
+            }
+            else {
+                __replace2(self)
+                return true
+            }
         }
     }
 
@@ -437,9 +475,13 @@ fun main(args:Array<String>){
     }
     /* delete */
     val delete_value = 4 //"C"
-    /*
+    val pre_delete_list = btree.preTraverseList()
+    println("Pre delete list: $pre_delete_list")
     println("Try to delete $delete_value")
-    val delete_result = btree.delete("$delete_value")
+    val delete_result = btree.deleteKey(delete_value)
+    val post_delete_list = btree.preTraverseList()
+    println("Post delete list: $pre_delete_list")
+    /*
     if (delete_result == true)
         println("$delete_value is deleted.")
     else
