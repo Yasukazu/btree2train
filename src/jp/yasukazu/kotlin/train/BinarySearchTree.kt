@@ -1,8 +1,11 @@
+package jp.yasukazu.kotlin.train
+
 import javax.swing.*
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
-import javax.swing.tree.TreeNode
+
+//import javax.swing.tree.TreeNode
 
 /**
  * Created by Yasukazu on 2016/11/03.
@@ -131,7 +134,7 @@ class BinarySearchTree <T: Comparable<T>> {
 
 
     fun preTraverseNodeList(): List<Node<T>?>{
-        fun _preTraverseList(node:Node<T>?, list: MutableList<Node<T>?>){
+        fun _preTraverseList(node: Node<T>?, list: MutableList<Node<T>?>){
             if (node == null)
                 return
             else {
@@ -145,7 +148,7 @@ class BinarySearchTree <T: Comparable<T>> {
         return list
     }
 
-    private fun _preTraverseList(node:Node<T>?, list: MutableList<T>){
+    private fun _preTraverseList(node: Node<T>?, list: MutableList<T>){
         if (node == null)
             return
         else {
@@ -161,7 +164,7 @@ class BinarySearchTree <T: Comparable<T>> {
         return list
     }
 
-    private fun _preTraverse(node:Node<T>?, callback:(T)->Unit){
+    private fun _preTraverse(node: Node<T>?, callback:(T)->Unit){
         if (node == null)
             return
         else {
@@ -175,7 +178,7 @@ class BinarySearchTree <T: Comparable<T>> {
         _preTraverse(root, callback)
     }
 
-    private fun _preTraverseTreeNode(node:Node<T>?, tnode: MutableTreeNode){
+    private fun _preTraverseTreeNode(node: Node<T>?, tnode: MutableTreeNode){
         if (node == null)
             return
         else {
@@ -203,7 +206,7 @@ class BinarySearchTree <T: Comparable<T>> {
         }
         return null
     }
-    private fun _preTraverse_depth(node:Node<T>?, depth: String, callback:(T, String)->Unit){
+    private fun _preTraverse_depth(node: Node<T>?, depth: String, callback:(T, String)->Unit){
         if (node == null)
             return
         else {
@@ -218,7 +221,7 @@ class BinarySearchTree <T: Comparable<T>> {
     }
 
 
-    private fun _postTraverse_depth(node:Node<T>?, depth: String, callback:(T, String)->Unit){
+    private fun _postTraverse_depth(node: Node<T>?, depth: String, callback:(T, String)->Unit){
         if (node == null)
             return
         else {
@@ -233,7 +236,7 @@ class BinarySearchTree <T: Comparable<T>> {
     }
 
     //enum class LR {L, }
-    private fun _preTraverse_depth_LR(node:Node<T>?, callback:(T, Int, Char)->Unit, depth: Int, LR: Char){
+    private fun _preTraverse_depth_LR(node: Node<T>?, callback:(T, Int, Char)->Unit, depth: Int, LR: Char){
         if (node == null)
             return
         else {
@@ -246,7 +249,7 @@ class BinarySearchTree <T: Comparable<T>> {
     fun preTraverse_depth_LR(callback:(T, Int, Char)->Unit){
         _preTraverse_depth_LR(root, callback, 0, '_')
     }
-    fun _inTraverse(node:Node<T>?, callback:(T)->Unit){
+    fun _inTraverse(node: Node<T>?, callback:(T)->Unit){
         if (node == null)
             return
         else {
@@ -526,11 +529,10 @@ print("\nBTree in-order traversal:\n")
     println("Pre delete list: $pre_delete_list")
     val pre_delete_node_list = btree.preTraverseNodeList()
     for (n in pre_delete_node_list) {
-        val key = n?.key
         val left_key = n?.left?.key
         val right_key = n?.right?.key
         val parent_key = n?.parent?.key
-        println("Key: $key, Left-> $left_key, Right-> $right_key, Parent-> $parent_key")
+        println("Key: ${n?.key}, Left-> $left_key, Right-> $right_key, Parent-> $parent_key")
     }
     println()
     //println("Pre delete list of nodes: $pre_delete_node_list")
