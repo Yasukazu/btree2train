@@ -506,17 +506,13 @@ print("\nBTree in-order traversal:\n")
     val delete_value = 12 //"C"
     val pre_delete_list = btree.preTraverseList()
     println("Pre delete list: $pre_delete_list")
+    /*
     println("Try to delete $delete_value")
     val delete_result = btree.deleteKey(delete_value)
     println("Delete Key result: $delete_result")
     val post_delete_list = btree.preTraverseList()
     println("Post delete list: $post_delete_list")
-    /*
-    if (delete_result == true)
-        println("$delete_value is deleted.")
-    else
-        println("$delete_value is not deleted.")
-        */
+    */
 
     // val binaryTreeForm = BinaryTreeForm()
     var root = btree.preTraverseTreeNode() //DefaultMutableTreeNode("root")
@@ -525,14 +521,17 @@ print("\nBTree in-order traversal:\n")
     val label = JLabel("Blank leaf is left leaf.")
     panel.add(label)
     val tree = JTree(model)
+    for(i in 0 .. tree.rowCount-1)
+        tree.expandRow(i)
     panel.add(tree)
     val button = JButton("Delete item $delete_value")
     button.addActionListener {
-        btree.delete(delete_value)
+        btree.deleteKey(delete_value)
         root = btree.preTraverseTreeNode()
         model = DefaultTreeModel(root)
         tree.model = model
-        //tree.revalidate()
+        for(i in 0 .. tree.rowCount-1)
+            tree.expandRow(i)
     }
     panel.add(button)
     SwingUtilities.invokeLater {
