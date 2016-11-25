@@ -249,18 +249,19 @@ class BinarySearchTree <T: Comparable<T>> {
     fun preTraverse_depth_LR(callback:(T, Int, Char)->Unit){
         _preTraverse_depth_LR(root, callback, 0, '_')
     }
-    fun _inTraverse(node: Node<T>?, callback:(T)->Unit){
-        if (node == null)
-            return
-        else {
-            _inTraverse(node.left, callback)
-            callback(node.key)
-            _inTraverse(node.right, callback)
-        }
-    }
+
 
     fun inTraverse(callback:(T)->Unit){
-        _inTraverse(root, callback)
+        fun _inTraverse(node: Node<T>?){
+            if (node == null)
+                return
+            else {
+                _inTraverse(node.left)
+                callback(node.key)
+                _inTraverse(node.right)
+            }
+        }
+        _inTraverse(root)
     }
 
 
