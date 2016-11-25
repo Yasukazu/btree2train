@@ -130,6 +130,21 @@ class BinarySearchTree <T: Comparable<T>> {
 
 
 
+    fun preTraverseNodeList(): List<Node<T>?>{
+        fun _preTraverseList(node:Node<T>?, list: MutableList<Node<T>?>){
+            if (node == null)
+                return
+            else {
+                list += node
+                _preTraverseList(node.left, list)
+                _preTraverseList(node.right, list)
+            }
+        }
+        val list = mutableListOf<Node<T>?>()
+        _preTraverseList(root, list)
+        return list
+    }
+
     private fun _preTraverseList(node:Node<T>?, list: MutableList<T>){
         if (node == null)
             return
@@ -497,15 +512,29 @@ print("\nBTree in-order traversal:\n")
     print("\n")
     val find_keys = arrayOf(5, 4, 3)//"A", "B", "B1", "B2", "C")
     find_keys.forEach { x ->
+        println(if(btree.find(x)) "$x exists" else "$x does not exist")
+        /*
         if (btree.find(x))
             print("$x exists\n")
         else
             print("$x does not exist\n")
+            */
     }
     /* delete */
     val delete_value = 12 //"C"
     val pre_delete_list = btree.preTraverseList()
     println("Pre delete list: $pre_delete_list")
+    val pre_delete_node_list = btree.preTraverseNodeList()
+    for (n in pre_delete_node_list) {
+        val key = n?.key
+        val left_key = n?.left?.key
+        val right_key = n?.right?.key
+        val parent_key = n?.parent?.key
+        println("Key: $key, Left-> $left_key, Right-> $right_key, Parent-> $parent_key")
+    }
+    println()
+    //println("Pre delete list of nodes: $pre_delete_node_list")
+
     /*
     println("Try to delete $delete_value")
     val delete_result = btree.deleteKey(delete_value)
