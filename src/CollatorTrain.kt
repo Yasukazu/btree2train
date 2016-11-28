@@ -13,13 +13,13 @@ import java.util.*
 fun main(args: Array<String>){
     val collator = Collator.getInstance(Locale.JAPANESE)
     collator.strength = Collator.SECONDARY
-    val trans = Transliterator.getInstance("Fullwidth-Halfwidth")//-Fullwidth")
+    //val trans = Transliterator.getInstance("Fullwidth-Halfwidth")//-Fullwidth")
     val root = BinarySearchTree<CollationKey>()
     val treeMap = TreeMap<CollationKey, String>()
 
     args.forEach { a ->
         println(a)
-        val cKey = collator.getCollationKey(Normalizer.normalize(trans.transliterate(a), Normalizer.Form.NFKC))
+        val cKey = collator.getCollationKey(Normalizer.normalize((a), Normalizer.Form.NFKC)) // collator.getCollationKey(t
         root.insert(cKey)
         treeMap[cKey] = a
     }
@@ -27,6 +27,11 @@ fun main(args: Array<String>){
     root.inTraverse { k ->
         println("${k.sourceString}")
     }
+    println()
+    // Reverse: not as expected..{Kanji(not 50on jun), ANK, Hiragana}
+    root.inTraverse(reverse = true, callback = { k ->
+        println("${k.sourceString}")
+    })
     println()
     for((k, v) in treeMap.entries){
         println("${k.sourceString} : $v")
