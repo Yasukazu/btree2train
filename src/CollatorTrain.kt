@@ -7,27 +7,29 @@ import jp.yasukazu.kotlin.train.BinarySearchTree
 
 import java.text.Collator
 import java.text.CollationKey
-import java.util.Locale
 import java.text.Normalizer
+import java.util.*
 
 fun main(args: Array<String>){
     val collator = Collator.getInstance(Locale.JAPANESE)
-    collator.strength = Collator.PRIMARY
-    val colKeyList = mutableListOf<CollationKey>()
-    val trans = Transliterator.getInstance("Fullwidth-Halfwidth")
+    collator.strength = Collator.SECONDARY
+    val trans = Transliterator.getInstance("Fullwidth-Halfwidth")//-Fullwidth")
+    val root = BinarySearchTree<CollationKey>()
+    val treeMap = TreeMap<CollationKey, String>()
 
     args.forEach { a ->
         println(a)
-        val n = Normalizer.normalize(a, Normalizer.Form.NFC)
-        val t = trans.transliterate(n)
-        colKeyList.add(collator.getCollationKey(t))
+        val cKey = collator.getCollationKey(Normalizer.normalize(trans.transliterate(a), Normalizer.Form.NFKC))
+        root.insert(cKey)
+        treeMap[cKey] = a
     }
     println()
-    val root = BinarySearchTree<CollationKey>()
-    colKeyList.forEach { k ->
-        root.insert(k)
-    }
     root.inTraverse { k ->
         println("${k.sourceString}")
     }
+    println()
+    for((k, v) in treeMap.entries){
+        println("${k.sourceString} : $v")
+    }
+
 }
