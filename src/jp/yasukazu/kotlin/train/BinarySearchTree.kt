@@ -250,8 +250,11 @@ class BinarySearchTree <T: Comparable<T>> {
         _preTraverse_depth_LR(root, callback, 0, '_')
     }
 
-
-    fun inTraverse(callback:(T)->Unit){
+    /**
+     * in-order traverse from root
+     * key is fed to [callback] function
+     */
+    fun inTraverse(reverse:Boolean=false, callback:(T)->Unit){
         fun _inTraverse(node: Node<T>?){
             if (node == null)
                 return
@@ -261,7 +264,19 @@ class BinarySearchTree <T: Comparable<T>> {
                 _inTraverse(node.right)
             }
         }
-        _inTraverse(root)
+        fun _inTraverseR(node: Node<T>?){
+            if (node == null)
+                return
+            else {
+                _inTraverse(node.right)
+                callback(node.key)
+                _inTraverse(node.left)
+            }
+        }
+        if(reverse)
+            _inTraverseR(root)
+        else
+            _inTraverse(root)
     }
 
 
@@ -336,10 +351,9 @@ class BinarySearchTree <T: Comparable<T>> {
 
 
     /**
-     * Delete as Wikipedia
-     * @return: success => true
+     * Delete a node following the procedure written in Wikipedia
+     * @return success => true
      */
-
     fun deleteKey(key: T): Boolean {
         fun _delete_node(self: Node<T>?): Boolean { //Pair<T, T>?{
             // Delete self node
@@ -370,6 +384,10 @@ class BinarySearchTree <T: Comparable<T>> {
             2) * Name the node with the value to be deleted as 'N node'.  Without deleting N node, after choosing its in-order successor node (R node), copy the value of R to N.
              */
             fun __replace2(self: Node<T>){
+                /**
+                 * get maximum node
+                 * @return null if no max value
+                 */
                 fun _getMaxNode(node: Node<T>?): Node<T>? {
                     var n = node
                     while(n!= null){
