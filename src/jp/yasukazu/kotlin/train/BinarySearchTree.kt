@@ -17,7 +17,7 @@ class BinarySearchTree <T: Comparable<T>> {
     /**
      * @property key
      */
-    data class Node <T: Comparable<T>>(var key: T, var left: Node<T>? = null, var right: Node<T>? = null, var parent: Node<T>? = null)
+    data class Node <T: Comparable<T>>(var key: T, var left: Node<T>? = null, var right: Node<T>? = null)
     /*{
         val key = key_
         var left = left_
@@ -32,19 +32,19 @@ class BinarySearchTree <T: Comparable<T>> {
 
 
     data class Node_InsertedPos <T: Comparable<T>>(val node: Node<T>, val pos: InsertedPos)
-    private fun _insert(node: Node<T>?, key: T, parent: Node<T>?): Node_InsertedPos<T> { //<Node<T>?, Node<T>?, InsertedPos> {
+    private fun _insert(node: Node<T>?, key: T): Node_InsertedPos<T> { //<Node<T>?, Node<T>?, InsertedPos> {
         if (node == null) { // If the node is empty, return a new node
-            return Node_InsertedPos(Node(key, parent=parent), InsertedPos.NEW)
+            return Node_InsertedPos(Node(key), InsertedPos.NEW)
         }
         else { // Otherwise, recur down the tree
             if (key < node.key) {
-                val node_InsertedPos = _insert(node.left, key, node)
+                val node_InsertedPos = _insert(node.left, key)
                 if (node_InsertedPos.pos == InsertedPos.NEW) {
                     node.left = node_InsertedPos.node
                     return Node_InsertedPos(node_InsertedPos.node, InsertedPos.LEFT) // Return the (unchanged) node pointer
                 }
             } else if (key > node.key) {
-                val node_InsertedPos = _insert(node.right, key, node)
+                val node_InsertedPos = _insert(node.right, key)
                 if (node_InsertedPos.pos == InsertedPos.NEW) {
                     node.right = node_InsertedPos.node
                     return Node_InsertedPos(node_InsertedPos.node, InsertedPos.RIGHT) // Return the (unchanged) node pointer
@@ -60,7 +60,7 @@ class BinarySearchTree <T: Comparable<T>> {
             return InsertedPos.NEW
         }
         else {
-            val node_InsertedPos = _insert(root, key, null)
+            val node_InsertedPos = _insert(root, key)
             return node_InsertedPos.pos
         }
     }
@@ -355,11 +355,11 @@ class BinarySearchTree <T: Comparable<T>> {
      * @return success => true
      */
     fun deleteKey(key: T): Boolean {
-        fun _delete_node(self: Node<T>?): Boolean { //Pair<T, T>?{
+        fun _delete_node(self: Node<T>?, parent: Node<T>?): Boolean { //Pair<T, T>?{
             // Delete self node
-            fun __delete_self_node(self: Node<T>) {
+            fun __delete_self_node(self: Node<T>, parent: Node<T>?): Boolean {
                 assert(self.left == null && self.right == null)
-                val parent = self.parent
+                //val parent = self.parent
                 if (parent == null)
                     root = null
                 else {
@@ -368,98 +368,73 @@ class BinarySearchTree <T: Comparable<T>> {
                     else if (parent.right == self)
                         parent.right = null
                 }
+                return true
             }
-            // replace self with other
-            fun __replace(self: Node<T>, child: Node<T>) {
-                child.parent = self.parent
-                if (self.parent != null) {
-                    if (self.parent?.left == self)
-                        self.parent?.left = child
-                    else if (self.parent?.right == self)
-                        self.parent?.right = child
+            // replace self with child
+            fun __replace(self: Node<T>, child: Node<T>, parent: Node<T>?): Boolean {
+                //child.parent = parent
+                if (parent != null) {
+                    if (parent.left == self)
+                        parent.left = child
+                    else if (parent.right == self)
+                        parent.right = child
+                    return true
                 }
+                return false
             }
             /**
              * replace 2
-            2) * Name the node with the value to be deleted as 'N node'.  Without deleting N node, after choosing its in-order successor node (R node), copy the value of R to N.
+            2) * Name the node with the value to be deleted as 'N node'.  Without deleting N node, after choosing its
+            in-order successor node (R node), copy the value of R to N.
              */
-            fun __replace2(self: Node<T>){
-                /**
-                 * get maximum node
-                 * @return null if no max value
-                 */
-                fun _getMaxNode(node: Node<T>?): Node<T>? {
-                    var n = node
-                    while(n!= null){
-                        if(n.right == null)
-                            return n
-                        n = n.right
-                    }
-                    return null
-                    /* if (node == null || node.right == null) return node
-                    return _getMaxNode(node.right) */
-                }
-                assert(self.left != null)
-                if (self.left != null) {
-                    val maxNode = _getMaxNode(self.left)
-                    if (maxNode != null) {
-                        fun deleteMaxNode(){
-                            assert(maxNode.right == null)
-                            val parent = maxNode.parent
-                            if(parent != null) {
-                                if (maxNode.left == null) {
-                                    if (parent.left == maxNode)
-                                        parent.left = null
-                                } else {
-                                    maxNode!!.left!!.parent = parent
-                                    if (parent.left == maxNode)
-                                        parent.left = maxNode.left
-                                    else
-                                        parent.right = maxNode.right
-                                }
-                            }
+            class ImproperArgumentError : Error()
+            fun __replace2(self: Node<T>): Boolean{
+                if(self.left == null || self.right == null)
+                    ImproperArgumentError()
+                else {
+                    data class Node_Parent(val self: Node<T>, val parent: Node<T>)
+                    fun getMaxNode( _self: Node<T>, _parent: Node<T>) : Node_Parent {//node: Node<T>?, parent: Node<T>?
+                        var s = _self
+                        var p = _parent
+                        while (s.right != null) {
+                            p = s // Reserve the parent first
+                            s = s.right!!
                         }
-                        // Set key as max key node
-                        self.key = maxNode.key
-                        // Delete max key node
-                        deleteMaxNode()
+                        return Node_Parent(s, p)
                     }
+                    val (maxNode, maxParent) = getMaxNode(self.left!!, self)
+                    self.key = maxNode.key
+                    maxParent.right = maxNode.left // delete maximum-value node
+                    return true
                 }
+                return false
             }
             if (self == null)
                 return false
-            if (key < self.key) {
-                return _delete_node(self.left)
-            }
-            else if (key > self.key) {
-                return _delete_node(self.right)
-            }
-            else { // key == self.key
-                // 3. delete self if no children
-                if (self.left == null && self.right == null) {
-                    __delete_self_node(self)
-                    return true
-                }
-                else if (self.left != null && self.right == null) {
-                    __replace(self, self.left!!)
-                    return true
-                }
-                else if (self.right != null && self.left == null) {
-                    __replace(self, self.right!!)
-                    return true
-                }
-                else { // Node has 2 children
-                    __replace2(self)
-                    return true
+            else {
+                if (key < self.key) {
+                    return _delete_node(self.left, self)
+                } else if (key > self.key) {
+                    return _delete_node(self.right, self)
+                } else { // key == self.key
+                    // 3. delete self if no children
+                    if (self.left == null && self.right == null) {
+                        return __delete_self_node(self, parent)
+                    } else if (self.left != null && self.right == null) {
+                        return __replace(self, self.left!!, parent)
+                    } else if (self.right != null && self.left == null) {
+                        return __replace(self, self.right!!, parent)
+                    } else { // Node has 2 children
+                        return __replace2(self)
+                    }
                 }
             }
         }
         if (root != null) {
-            return _delete_node(root)
+            return _delete_node(root, null)
         }
         return false
     }
-
 }
 
 fun main(args:Array<String>){
@@ -535,12 +510,6 @@ print("\nBTree in-order traversal:\n")
     val find_keys = arrayOf(5, 4, 3)//"A", "B", "B1", "B2", "C")
     find_keys.forEach { x ->
         println(if(btree.find(x)) "$x exists" else "$x does not exist")
-        /*
-        if (btree.find(x))
-            print("$x exists\n")
-        else
-            print("$x does not exist\n")
-            */
     }
     /* delete */
     val delete_value = 12 //"C"
@@ -550,20 +519,16 @@ print("\nBTree in-order traversal:\n")
     for (n in pre_delete_node_list) {
         val left_key = n?.left?.key
         val right_key = n?.right?.key
-        val parent_key = n?.parent?.key
-        println("Key: ${n?.key}, Left-> $left_key, Right-> $right_key, Parent-> $parent_key")
+        println("Key: ${n?.key}, Left-> $left_key, Right-> $right_key")
     }
     println()
     //println("Pre delete list of nodes: $pre_delete_node_list")
-
-    /*
     println("Try to delete $delete_value")
-    val delete_result = btree.deleteKey(delete_value)
-    println("Delete Key result: $delete_result")
-    val post_delete_list = btree.preTraverseList()
-    println("Post delete list: $post_delete_list")
-    */
-
+    //val delete_result = btree.deleteKey(delete_value)
+    //println("Delete Key result: $delete_result")
+    //val post_delete_list = btree.preTraverseList()
+    //for (n in btree.preTraverseNodeList()) println("Key: ${n?.key}")
+    //println("Post delete list: $post_delete_list")
     // val binaryTreeForm = BinaryTreeForm()
     var root = btree.preTraverseTreeNode() //DefaultMutableTreeNode("root")
     var model = DefaultTreeModel(root)
