@@ -1,5 +1,6 @@
 package jp.yasukazu.kotlin.train
 
+import com.sun.org.apache.xpath.internal.operations.Bool
 import javax.swing.*
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
@@ -253,14 +254,17 @@ class BinarySearchTree <T: Comparable<T>> {
     /**
      * in-order traverse from root
      * key is fed to [callback] function
+     *
      */
-    fun inTraverse(reverse:Boolean=false, callback:(T)->Unit){
+    fun inTraverse(reverse:Boolean=false, callback:(T)->Boolean){
+        class _InterrruptException() :Exception()
         fun _inTraverse(node: Node<T>?){
             if (node == null)
                 return
             else {
                 _inTraverse(node.left)
-                callback(node.key)
+                if(!callback(node.key))
+                    throw _InterrruptException()
                 _inTraverse(node.right)
             }
         }
@@ -269,14 +273,19 @@ class BinarySearchTree <T: Comparable<T>> {
                 return
             else {
                 _inTraverse(node.right)
-                callback(node.key)
+                if(!callback(node.key))
+                    throw _InterrruptException()
                 _inTraverse(node.left)
             }
         }
-        if(reverse)
-            _inTraverseR(root)
-        else
-            _inTraverse(root)
+        try {
+            if (reverse)
+                _inTraverseR(root)
+            else
+                _inTraverse(root)
+        }
+        catch (e: _InterrruptException){
+        }
     }
 
 
@@ -387,10 +396,10 @@ class BinarySearchTree <T: Comparable<T>> {
             2) * Name the node with the value to be deleted as 'N node'.  Without deleting N node, after choosing its
             in-order successor node (R node), copy the value of R to N.
              */
-            class ImproperArgumentError : Error()
+            class ImproperArgumentException(msg:String) : Exception(msg)
             fun __replace2(self: Node<T>): Boolean{
                 if(self.left == null || self.right == null)
-                    ImproperArgumentError()
+                    throw ImproperArgumentException("Both child are not null!")
                 else {
                     data class Node_Parent(val self: Node<T>, val parent: Node<T>)
                     fun getMaxNode( _self: Node<T>, _parent: Node<T>) : Node_Parent {//node: Node<T>?, parent: Node<T>?
@@ -407,7 +416,6 @@ class BinarySearchTree <T: Comparable<T>> {
                     maxParent.right = maxNode.left // delete maximum-value node
                     return true
                 }
-                return false
             }
             if (self == null)
                 return false
@@ -502,8 +510,17 @@ fun main(args:Array<String>){
     println("post order traversal with depth")
     btree.postTraverse_depth {s,d->println("$s:$d")}
 
-print("\nBTree in-order traversal:\n")
-    btree.inTraverse { x -> print("$x\n") }
+    print("\nBTree in-order traversal:\n")
+    /*
+    fun writeInt(i: Int):Boolean {
+       println(i)
+        return true
+    }*/
+    btree.inTraverse { x ->
+       // writeInt(x)
+        println(x)
+        return@inTraverse false
+    }
     print("\nBTree in-order traversal with depth:\n")
     btree.inOrderTraverse {s,d->println("$s:$d")}
     print("\n")
@@ -525,7 +542,7 @@ print("\nBTree in-order traversal:\n")
     //println("Pre delete list of nodes: $pre_delete_node_list")
     println("Try to delete $delete_value")
     //val delete_result = btree.deleteKey(delete_value)
-    //println("Delete Key result: $delete_result")
+    //println("Deletr Key result: $delete_result")
     //val post_delete_list = btree.preTraverseList()
     //for (n in btree.preTraverseNodeList()) println("Key: ${n?.key}")
     //println("Post delete list: $post_delete_list")
