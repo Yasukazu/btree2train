@@ -256,14 +256,14 @@ class BinarySearchTree <T: Comparable<T>> {
      * key is fed to [callback] function
      *
      */
-    fun inTraverse(reverse:Boolean=false, callback:(T)->Boolean){
+    fun inTraverse(reverse:Boolean=false, callback: (T) -> Int){
         class _InterrruptException() :Exception()
         fun _inTraverse(node: Node<T>?){
             if (node == null)
                 return
             else {
                 _inTraverse(node.left)
-                if(!callback(node.key))
+                if(callback(node.key) <= 0)
                     throw _InterrruptException()
                 _inTraverse(node.right)
             }
@@ -273,7 +273,7 @@ class BinarySearchTree <T: Comparable<T>> {
                 return
             else {
                 _inTraverse(node.right)
-                if(!callback(node.key))
+                if(callback(node.key) <= 0)
                     throw _InterrruptException()
                 _inTraverse(node.left)
             }
@@ -516,10 +516,12 @@ fun main(args:Array<String>){
        println(i)
         return true
     }*/
+    var count = 2
     btree.inTraverse { x ->
        // writeInt(x)
         println(x)
-        return@inTraverse false
+        count -= 1
+        return@inTraverse count
     }
     print("\nBTree in-order traversal with depth:\n")
     btree.inOrderTraverse {s,d->println("$s:$d")}
