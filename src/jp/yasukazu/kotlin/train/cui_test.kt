@@ -83,19 +83,51 @@ fun main(args:Array<String>){
     println()
     println("post order traversal with depth")
     btree.postTraverse_depth {s,d->println("$s:$d")}
+    println()
 
-    print("\nBTree in-order traversal:\n")
-    /*
-    fun writeInt(i: Int):Boolean {
-       println(i)
-        return true
-    }*/
+    println("BTree in-order traversal:")
+    btree.inTraverse { x ->
+        println(x)
+        return@inTraverse true
+    }
+    println()
+    println("BTree reverse in-order traversal:")
+    btree.inTraverse(reverse = true, callback={ x ->
+        println(x)
+        return@inTraverse true
+    })
+    println()
+    println("BTree break in-order traversal:")
     var count = 2
     btree.inTraverse { x ->
         // writeInt(x)
         println(x)
         return@inTraverse --count > 0 //if(count <= 0) true else false
     }
+    println()
+
+    println("BTree break reverse in-order traversal:")
+    count = 2
+    btree.inTraverse(reverse = true, callback = { x ->
+        // writeInt(x)
+        println(x)
+        return@inTraverse --count > 0 //if(count <= 0) true else false
+    })
+    println()
+    println("BTree break in-order traversal(try catch version):")
+    class InterruptException: Exception()
+    count = 2
+    try {
+        btree.inTraverse { x ->
+            println(x)
+            if(--count <= 0)
+                throw InterruptException()
+            return@inTraverse true
+        }
+    }
+    catch(e: InterruptException){}
+    println()
+
     print("\nBTree in-order traversal with depth:\n")
     btree.inOrderTraverse {s,d->println("$s:$d")}
     print("\n")
