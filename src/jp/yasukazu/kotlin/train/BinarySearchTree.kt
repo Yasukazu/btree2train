@@ -419,6 +419,7 @@ class BinarySearchTree <T: Comparable<T>> {
                     return true
                 }
             }
+            // code starts here
             if (self == null)
                 return false
             else {
@@ -428,15 +429,24 @@ class BinarySearchTree <T: Comparable<T>> {
                     return _delete_node(self.right, self)
                 } else { // key == self.key
                     // 3. delete self if no children
+                    val bL = if(self.left == null) 0 else 1
+                    val bR = if(self.right == null) 0 else 2
+                    when(bL or bR){
+                        0 -> return __delete_self_node(self, parent)
+                        1 -> return __replace(self, self.left!!, parent)
+                        2 -> return __replace(self, self.right!!, parent)
+                        else -> return __replace2(self)
+                    }
+                    /*
                     if (self.left == null && self.right == null) {
                         return __delete_self_node(self, parent)
-                    } else if (self.left != null && self.right == null) {
+                    } else if (hl == 0b10){//(self.left != null && self.right == null) {
                         return __replace(self, self.left!!, parent)
                     } else if (self.right != null && self.left == null) {
                         return __replace(self, self.right!!, parent)
                     } else { // Node has 2 children
                         return __replace2(self)
-                    }
+                    } */
                 }
             }
         }
