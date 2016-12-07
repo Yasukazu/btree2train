@@ -146,39 +146,12 @@ fun main(args:Array<String>){
         println("Key: ${n?.key}, Left-> $left_key, Right-> $right_key")
     }
     println()
-    //println("Pre delete list of nodes: $pre_delete_node_list")
+    println("Pre delete list of nodes: $pre_delete_node_list")
     println("Try to delete $delete_value")
-    //val delete_result = btree.deleteKey(delete_value)
-    //println("Deletr Key result: $delete_result")
-    //val post_delete_list = btree.preTraverseList()
-    //for (n in btree.preTraverseNodeList()) println("Key: ${n?.key}")
-    //println("Post delete list: $post_delete_list")
-    // val binaryTreeForm = BinaryTreeForm()
-    var root = btree.preTraverseTreeNode() //DefaultMutableTreeNode("root")
-    var model = DefaultTreeModel(root)
-    val panel = JPanel()
-    val label = JLabel("Blank leaf is left leaf.")
-    panel.add(label)
-    val tree = JTree(model)
-    for(i in 0 .. tree.rowCount-1)
-        tree.expandRow(i)
-    panel.add(tree)
-    val button = JButton("Delete item $delete_value")
-    button.addActionListener {
-        btree.deleteKey(delete_value)
-        root = btree.preTraverseTreeNode()
-        model = DefaultTreeModel(root)
-        tree.model = model
-        for(i in 0 .. tree.rowCount-1)
-            tree.expandRow(i)
-    }
-    panel.add(button)
-    SwingUtilities.invokeLater {
-        val frame = JFrame("Binary Search Tree")
-        //frame.contentPane = binaryTreeForm.panel1
-        frame.contentPane.add(panel)
-        frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-        frame.pack()
-        frame.isVisible = true
-    }
+    val delete_result = btree.deleteKey(delete_value)
+    println("Delete Key result: $delete_result")
+    val post_delete_list = btree.preTraverseList()
+    for (n in btree.preTraverseNodeList()) println("Key: ${n?.key}")
+    println("Post delete list: $post_delete_list")
+
 }
