@@ -398,11 +398,12 @@ class BinarySearchTree <T: Comparable<T>> {
             2) * Name the node with the value to be deleted as 'N node'.  Without deleting N node, after choosing its
             in-order successor node (R node), copy the value of R to N.
              */
-            class ImproperArgumentException(msg:String) : Exception(msg)
+            //class ImproperArgumentException(msg:String) : Exception(msg)
             fun __replace2(self: Node<T>): Boolean{
-                if(self.left == null || self.right == null)
-                    throw ImproperArgumentException("Both child are not null!")
-                else {
+                assert(self.left != null && self.right != null)
+                //if(self.left == null || self.right == null)
+                //    throw ImproperArgumentException("Both child are not null!")
+                //else {
                     data class Node_Parent(val self: Node<T>, val parent: Node<T>)
                     fun getMaxNode( _self: Node<T>, _parent: Node<T>) : Node_Parent {//node: Node<T>?, parent: Node<T>?
                         var s = _self
@@ -417,7 +418,7 @@ class BinarySearchTree <T: Comparable<T>> {
                     self.key = maxNode.key
                     maxParent.right = maxNode.left // delete maximum-value node
                     return true
-                }
+                //}
             }
             // code starts here
             if (self == null)
