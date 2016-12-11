@@ -366,9 +366,10 @@ class BinarySearchTree <T: Comparable<T>> {
      * @return success => true
      */
     fun deleteKey(key: T): Boolean {
+        //class ImproperArgumentException(msg:String) : Exception(msg)
         fun _delete_node(self: Node<T>?, parent: Node<T>?): Boolean { //Pair<T, T>?{
             // Delete self node
-            fun __delete_self_node(self: Node<T>, parent: Node<T>?): Boolean {
+            fun __delete_self_node(self: Node<T>, parent: Node<T>?){
                 assert(self.left == null && self.right == null)
                 //val parent = self.parent
                 if (parent == null)
@@ -378,28 +379,28 @@ class BinarySearchTree <T: Comparable<T>> {
                         parent.left = null
                     else if (parent.right == self)
                         parent.right = null
+                    else
+                        assert(true, {"Unable to delete self: Parent has no self!"})
                 }
-                return true
             }
             // replace self with child
-            fun __replace(self: Node<T>, child: Node<T>, parent: Node<T>?): Boolean {
+            fun __replace(self: Node<T>, child: Node<T>, parent: Node<T>?){
                 //child.parent = parent
                 if (parent != null) {
                     if (parent.left == self)
                         parent.left = child
                     else if (parent.right == self)
                         parent.right = child
-                    return true
+                    else
+                        assert(true, {"Unable to replace self with a child: Parent has no self!"})
                 }
-                return false
             }
             /**
              * replace 2
             2) * Name the node with the value to be deleted as 'N node'.  Without deleting N node, after choosing its
             in-order successor node (R node), copy the value of R to N.
              */
-            //class ImproperArgumentException(msg:String) : Exception(msg)
-            fun __replace2(self: Node<T>): Boolean{
+            fun __replace2(self: Node<T>){
                 assert(self.left != null && self.right != null)
                 //if(self.left == null || self.right == null)
                 //    throw ImproperArgumentException("Both child are not null!")
@@ -414,10 +415,9 @@ class BinarySearchTree <T: Comparable<T>> {
                         }
                         return Node_Parent(s, p)
                     }
-                    val (maxNode, maxParent) = getMaxNode(self.left!!, self)
+                    val (maxNode, maxParent) = getMaxNode(self.left!!, self) // in-order predecessor
                     self.key = maxNode.key
                     maxParent.right = maxNode.left // delete maximum-value node
-                    return true
                 //}
             }
             // code starts here
@@ -433,11 +433,12 @@ class BinarySearchTree <T: Comparable<T>> {
                     val bL = if(self.left == null) 0 else 1
                     val bR = if(self.right == null) 0 else 2
                     when(bL or bR){
-                        0 -> return __delete_self_node(self, parent)
-                        1 -> return __replace(self, self.left!!, parent)
-                        2 -> return __replace(self, self.right!!, parent)
-                        else -> return __replace2(self)
+                        0 -> __delete_self_node(self, parent)
+                        1 -> __replace(self, self.left!!, parent)
+                        2 -> __replace(self, self.right!!, parent)
+                        else -> __replace2(self)
                     }
+                    return true
                     /*
                     if (self.left == null && self.right == null) {
                         return __delete_self_node(self, parent)
