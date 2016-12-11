@@ -405,19 +405,22 @@ class BinarySearchTree <T: Comparable<T>> {
                 //if(self.left == null || self.right == null)
                 //    throw ImproperArgumentException("Both child are not null!")
                 //else {
-                    data class Node_Parent(val self: Node<T>, val parent: Node<T>)
-                    fun getMaxNode( _self: Node<T>, _parent: Node<T>) : Node_Parent {//node: Node<T>?, parent: Node<T>?
+                    //data class Node_Parent(val self: Node<T>, val parent: Node<T>)
+                    fun getPredecessorNode( _self: Node<T>, _parent: Node<T>) : Pair<Node<T>,Node<T>> {//node: Node<T>?, parent: Node<T>?
                         var s = _self
                         var p = _parent
                         while (s.right != null) {
                             p = s // Reserve the parent first
                             s = s.right!!
                         }
-                        return Node_Parent(s, p)
+                        return Pair(s, p)
                     }
-                    val (maxNode, maxParent) = getMaxNode(self.left!!, self) // in-order predecessor
-                    self.key = maxNode.key
-                    maxParent.right = maxNode.left // delete maximum-value node
+                    val (predNode, predParent) = getPredecessorNode(self.left!!, self) // in-order predecessor
+                    self.key = predNode.key
+                    if(predParent.right == predNode)
+                        predParent.right = predNode.left // delete maximum-value node
+                    else if(predParent.left == predNode) // No need for this code
+                        predParent.left = predNode.left // Never reach here
                 //}
             }
             // code starts here
