@@ -103,7 +103,7 @@ fun main(args:Array<String>){
     find_keys.forEach { x ->
         println(if(btree.find(x)) "$x exists" else "$x does not exist")
     }
-    val delete_value = 12 //"C"
+    //val delete_value = 12 //"C"
 
     var root = btree.preTraverseTreeNode() //DefaultMutableTreeNode("root")
     var model = DefaultTreeModel(root)
@@ -117,29 +117,34 @@ fun main(args:Array<String>){
     }
             val borderLayout = BorderLayout()
 
-    val panel = JPanel()
-    val label = JLabel("Blank leaf is left leaf.")
-    panel.add(label)
+    //val panel = JPanel()
+    val notifyLabel = JLabel("Blank leaf is left leaf.")
+    //panel.add(notifyLabel)
     for(i in 0 .. tree.rowCount-1)
         tree.expandRow(i)
-    panel.add(tree)
-    val button = JButton("Delete item $delete_value")
+    //panel.add(tree)
+    val button = JButton("Delete item")// $delete_value")
     button.addActionListener {
-        btree.deleteKey(delete_value)
-        root = btree.preTraverseTreeNode()
-        model = DefaultTreeModel(root)
-        tree.model = model
-        for(i in 0 .. tree.rowCount-1)
-            tree.expandRow(i)
+        val delete_value: Int? = try{ msgLabel.text.toInt() } catch(e: IllegalFormatException){ null }
+        if(delete_value != null) {
+            btree.deleteKey(delete_value)
+            root = btree.preTraverseTreeNode()
+            model = DefaultTreeModel(root)
+            tree.model = model
+            for (i in 0..tree.rowCount - 1)
+                tree.expandRow(i)
+        }
     }
-    panel.add(button)
+    //panel.add(button)
 
     SwingUtilities.invokeLater {
         val frame = JFrame()//"Binary Search Tree")
         //frame.contentPane = binaryTreeForm.panel1
         frame.contentPane.layout = borderLayout
-        frame.contentPane.add(panel, BorderLayout.CENTER)
+        frame.contentPane.add(notifyLabel, BorderLayout.NORTH)
+        frame.contentPane.add(tree, BorderLayout.CENTER)
         frame.contentPane.add(msgLabel, BorderLayout.SOUTH)
+        frame.contentPane.add(button, BorderLayout.EAST)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.pack()
         frame.isVisible = true
