@@ -107,12 +107,17 @@ fun main(args:Array<String>){
 
     var root = btree.preTraverseTreeNode() //DefaultMutableTreeNode("root")
     var model = DefaultTreeModel(root)
-    val msgLabel: JLabel = JLabel()
+    val msgLabel = JLabel()
+    val msgLabel2 = JLabel()
     val tree = JTree(model)
     tree.addTreeSelectionListener { e ->
         val node = tree.lastSelectedPathComponent
         if (node != null){
             msgLabel.text = node.toString()
+            val sb = StringBuilder()
+            for (path in  e.paths)
+                sb.append("$path,")
+            msgLabel2.text = sb.toString()
         }
     }
             val borderLayout = BorderLayout()
@@ -135,6 +140,10 @@ fun main(args:Array<String>){
                 tree.expandRow(i)
         }
     }
+    val msgPanel = JPanel()
+    msgPanel.layout = BoxLayout(msgPanel, BoxLayout.PAGE_AXIS)
+    msgPanel.add(msgLabel)
+    msgPanel.add(msgLabel2)
     //panel.add(button)
 
     SwingUtilities.invokeLater {
@@ -143,7 +152,7 @@ fun main(args:Array<String>){
         frame.contentPane.layout = borderLayout
         frame.contentPane.add(notifyLabel, BorderLayout.NORTH)
         frame.contentPane.add(tree, BorderLayout.CENTER)
-        frame.contentPane.add(msgLabel, BorderLayout.SOUTH)
+        frame.contentPane.add(msgPanel, BorderLayout.SOUTH)
         frame.contentPane.add(button, BorderLayout.EAST)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.pack()
