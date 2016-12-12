@@ -135,6 +135,19 @@ fun main(args:Array<String>){
     find_keys.forEach { x ->
         println(if(btree.find(x)) "$x exists" else "$x does not exist")
     }
+    // traverse depth
+    println("Traverse Depth")
+    val depth_list = btree.traverseDepthList()
+    for((k,v) in depth_list){
+        println("$k : $v")
+    }
+    println()
+    // traverse leaves count
+    println("Traverse Leaves count")
+    for((k,v) in btree.traverseLeafCount()){
+        println("$k : $v")
+    }
+    println()
     /* delete */
     val delete_value = 12 //"C"
     val pre_delete_list = btree.preTraverseList()

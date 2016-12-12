@@ -237,18 +237,68 @@ class BinarySearchTree <T: Comparable<T>> {
     }
 
     //enum class LR {L, }
-    private fun _preTraverse_depth_LR(node: Node<T>?, callback:(T, Int, Char)->Unit, depth: Int, LR: Char){
-        if (node == null)
-            return
-        else {
-            callback(node.key, depth, LR)
-            _preTraverse_depth_LR(node.left, callback, depth + 1, '<')
-            _preTraverse_depth_LR(node.right, callback, depth + 1, '>')
+    fun preTraverse_depth_LR(callback:(T, Int, Char)->Unit){
+        fun _preTraverse_depth_LR(node: Node<T>?, callback:(T, Int, Char)->Unit, depth: Int, LR: Char){
+            if (node == null)
+                return
+            else {
+                callback(node.key, depth, LR)
+                _preTraverse_depth_LR(node.left, callback, depth + 1, '<')
+                _preTraverse_depth_LR(node.right, callback, depth + 1, '>')
+            }
         }
+        _preTraverse_depth_LR(root, callback, 0, '_')
     }
 
-    fun preTraverse_depth_LR(callback:(T, Int, Char)->Unit){
-        _preTraverse_depth_LR(root, callback, 0, '_')
+    /**
+     * Depth Map
+     */
+    fun traverseDepthList(): MutableMap<Int,Int> {
+        val depthMap: MutableMap<Int,Int> =mutableMapOf()
+        fun traverseDepth(node: Node<T>?, depth: Int){
+            if (node == null)
+                return
+            else {
+                if (depthMap.containsKey(depth)) {
+                    val d = depthMap[depth]
+                    if (d != null)
+                        depthMap[depth] = d + 1 //?.plus(1)// = depthMap[depth] + 1
+                }
+                else
+                    depthMap[depth] = 1
+                traverseDepth(node.left, depth + 1)
+                traverseDepth(node.right, depth + 1)
+            }
+        }
+        traverseDepth(root, 0)
+        return depthMap
+    }
+
+    /**
+     * Leaf count map
+     */
+    fun traverseLeafCount(): MutableMap<Int,Int> {
+        val map: MutableMap<Int,Int> =mutableMapOf()
+        fun countUp(node: Node<T>?){
+            if (node == null)
+                return
+            else {
+                var count = 0
+                count += if (node.left != null) 1 else 0
+                count += if (node.right != null) 1 else 0
+                if (map.containsKey(count)) {
+                    val d = map[count]
+                    if (d != null)
+                        map[count] = d + 1
+                }
+                else
+                    map[count] = 1
+                countUp(node.left)
+                countUp(node.right)
+            }
+        }
+        countUp(root)
+        return map
     }
 
     /**
