@@ -26,11 +26,13 @@ fun main(args: Array<String>){
     println()
     root.inTraverse { k ->
         println("${k.sourceString}")
+        return@inTraverse false
     }
     println()
     // Reverse: not as expected..{Kanji(not 50on jun), ANK, Hiragana}
     root.inTraverse(reverse = true, callback = { k ->
         println("${k.sourceString}")
+        return@inTraverse false
     })
     println()
     for((k, v) in treeMap.entries){
