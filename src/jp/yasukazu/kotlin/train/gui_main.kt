@@ -106,7 +106,7 @@ fun main(args:Array<String>){
     //val delete_value = 12 //"C"
 
     var root = btree.preTraverseTreeNode() //DefaultMutableTreeNode("root")
-    var model = DefaultTreeModel(root)
+    val model = DefaultTreeModel(root)
     val msgLabel = JLabel()
     val msgLabel2 = JLabel()
     val tree = JTree(model)
@@ -128,6 +128,7 @@ fun main(args:Array<String>){
     for(i in 0 .. tree.rowCount-1)
         tree.expandRow(i)
     //panel.add(tree)
+    /*
     val button = JButton("Delete item")// $delete_value")
     button.addActionListener {
         val delete_value: Int? = try{ msgLabel.text.toInt() } catch(e: IllegalFormatException){ null }
@@ -139,6 +140,25 @@ fun main(args:Array<String>){
             for (i in 0..tree.rowCount - 1)
                 tree.expandRow(i)
         }
+    } */
+    val delBtn = JButton("Delete item")//Keep data model delete")
+    with(delBtn){
+        addActionListener {
+            val delete_value: Int? = try{ msgLabel.text.toInt() } catch(e: IllegalFormatException){ null }
+            if(delete_value != null) {
+                btree.deleteKey(delete_value)
+                root = btree.preTraverseTreeNode()
+                model.setRoot(root)
+                for (i in 0..tree.rowCount - 1)
+                    tree.expandRow(i)
+            }
+        }
+    }
+    val btnPanel = JPanel()
+    with(btnPanel){
+        layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
+        //add(button)
+        add(delBtn)
     }
     val msgPanel = JPanel()
     msgPanel.layout = BoxLayout(msgPanel, BoxLayout.PAGE_AXIS)
@@ -153,7 +173,7 @@ fun main(args:Array<String>){
         frame.contentPane.add(notifyLabel, BorderLayout.NORTH)
         frame.contentPane.add(tree, BorderLayout.CENTER)
         frame.contentPane.add(msgPanel, BorderLayout.SOUTH)
-        frame.contentPane.add(button, BorderLayout.EAST)
+        frame.contentPane.add(btnPanel, BorderLayout.EAST)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.pack()
         frame.isVisible = true
