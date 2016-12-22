@@ -183,19 +183,40 @@ fun main(args:Array<String>){
             msgLabel2.text = sb.toString()
         }
     }
-    val treePane = JScrollPane(tree)
     val treeModel = BinarySearchTreeModel<Int>()
     btree.preTraverse { k ->
         treeModel.insert(k)
     }
     val modelTree = JTree(treeModel)
-    val modelTreePane = JScrollPane(modelTree)
 
+    class TreeControlPanel<T:Comparable<T>>(tr: JTree) : JPanel() {
+        //var node: BinarySearchTree.Node<T>? = null
+        val textField = JTextField()
+        init {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            add(JScrollPane(tr))
+            add(textField)
+            tr.addTreeSelectionListener { e ->
+                val last = tr.lastSelectedPathComponent
+                val node = last as BinarySearchTree.Node<T>?
+                textField.text = node?.key.toString()
+            }
+            val deleteButton = JButton("Delete")
+            deleteButton.addActionListener { e ->
+                val i = try { textField.text.toInt()} catch (e: IllegalFormatException) { null }
+                if (i != null){
+                    treeModel.deleteKey(i)
+                }
+            }
+            add(deleteButton)
+        }
+    }
+    val treeControlPanel = TreeControlPanel<Int>(modelTree)
     val treePanel = JPanel()
     with(treePanel){
         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
-        add(treePane)
-        add(modelTreePane)
+        add(JScrollPane(tree))
+        add(treeControlPanel)//JScrollPane(modelTree))
     }
     //val panel = JPanel()
     val notifyLabel = JLabel("Blank leaf is left leaf.")
