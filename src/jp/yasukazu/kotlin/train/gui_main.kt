@@ -26,7 +26,8 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
     }
 
     override fun removeTreeModelListener(l: TreeModelListener?) {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if(l != null)
+            treeModelListeners -= l
     }
 
     override fun valueForPathChanged(path: TreePath?, newValue: Any?) {
@@ -48,7 +49,6 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
                     return 1
             }
         }
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun getChild(parent: Any?, index: Int): Any {
@@ -62,13 +62,11 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
                 else -> p.right as Any
             }
         }
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun addTreeModelListener(l: TreeModelListener?) {
         if (l != null)
             treeModelListeners += l
-      //  TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 }
@@ -195,6 +193,7 @@ fun main(args:Array<String>){
 
     val treePanel = JPanel()
     with(treePanel){
+        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
         add(treePane)
         add(modelTreePane)
     }
