@@ -3,10 +3,75 @@ package jp.yasukazu.kotlin.train
 import java.awt.BorderLayout
 import java.util.*
 import javax.swing.*
+import javax.swing.event.TreeModelListener
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.event.TreeSelectionListener
 import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.TreeModel
+import javax.swing.tree.TreePath
 
+/**
+ * Custom JTree Model
+ */
+class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel {
+    private val treeModelListeners = mutableListOf<TreeModelListener>()
+    override fun getRoot():Node<T>? { return rootNode }
+    override fun isLeaf(_n: Any): Boolean {
+        val n: Node<T> = _n as Node<T>
+        return n.left == null && n.right == null
+    }
+    override fun getChildCount(_n: Any): Int {
+        val n: Node<T> = _n as Node<T>
+       return (if(n.left != null) 1 else 0) + (if(n.right != null) 1 else 0)
+    }
+
+    override fun removeTreeModelListener(l: TreeModelListener?) {
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun valueForPathChanged(path: TreePath?, newValue: Any?) {
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getIndexOfChild(parent: Any?, child: Any?): Int {
+        if (parent == null)
+            return -1
+        else {
+            val p = parent as Node<T>
+            if (child == null)
+                return -1
+            else {
+                val c = child as Node<T>
+                if (p.left == c)
+                    return 0
+                else
+                    return 1
+            }
+        }
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getChild(parent: Any?, index: Int): Any {
+        if (parent == null)
+            return 0 //Node<T>(null)
+        else {
+            val p = parent as Node<T>
+            return when(index){
+                0 -> p.left as Any
+                1 -> p.right as Any
+                else -> p.right as Any
+            }
+        }
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun addTreeModelListener(l: TreeModelListener?) {
+        if (l != null)
+            treeModelListeners += l
+      //  TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+}
 /**
  * GUI main test
  * Created by Yasukazu on 2016/12/06.
@@ -120,8 +185,19 @@ fun main(args:Array<String>){
             msgLabel2.text = sb.toString()
         }
     }
-            val borderLayout = BorderLayout()
+    val treePane = JScrollPane(tree)
+    val treeModel = BinarySearchTreeModel<Int>()
+    btree.preTraverse { k ->
+        treeModel.insert(k)
+    }
+    val modelTree = JTree(treeModel)
+    val modelTreePane = JScrollPane(modelTree)
 
+    val treePanel = JPanel()
+    with(treePanel){
+        add(treePane)
+        add(modelTreePane)
+    }
     //val panel = JPanel()
     val notifyLabel = JLabel("Blank leaf is left leaf.")
     //panel.add(notifyLabel)
@@ -169,9 +245,9 @@ fun main(args:Array<String>){
     SwingUtilities.invokeLater {
         val frame = JFrame()//"Binary Search Tree")
         //frame.contentPane = binaryTreeForm.panel1
-        frame.contentPane.layout = borderLayout
+        frame.contentPane.layout = BorderLayout()
         frame.contentPane.add(notifyLabel, BorderLayout.NORTH)
-        frame.contentPane.add(tree, BorderLayout.CENTER)
+        frame.contentPane.add(treePanel, BorderLayout.CENTER)
         frame.contentPane.add(msgPanel, BorderLayout.SOUTH)
         frame.contentPane.add(btnPanel, BorderLayout.EAST)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
