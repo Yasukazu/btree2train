@@ -131,9 +131,22 @@ fun main(args:Array<String>){
     print("\nBTree in-order traversal with depth:\n")
     btree.inOrderTraverse {s,d->println("$s:$d")}
     print("\n")
-    val find_keys = arrayOf(5, 4, 3)//"A", "B", "B1", "B2", "C")
+    val find_keys = arrayOf(5, 4, 3, 9)//"A", "B", "B1", "B2", "C")
     find_keys.forEach { x ->
         println(if(btree.find(x)) "$x exists" else "$x does not exist")
+    }
+    // find with path
+    println("Find key with Path")
+    find_keys.forEach { x ->
+        val path = btree.findPath(x)
+            if(path != null) {
+                print("Path for $x: ")
+                path.forEach { n  ->
+                    print("[${n.key}]")
+                }
+                println()
+            }
+        else println("No path for $x")
     }
     // traverse depth
     println("Traverse Depth")
