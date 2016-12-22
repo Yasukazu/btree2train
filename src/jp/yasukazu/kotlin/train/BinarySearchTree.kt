@@ -109,30 +109,66 @@ class BinarySearchTree <T: Comparable<T>> {
             }
             return null
         }
+
     /**
-     * pre-find
-     * return non-null if found
+     * find key
      */
-    private fun _find(node: Node<T>?, key: T): Node<T>? {
-        if (node == null) {
-            return null
-        } else { // Otherwise, recur down the tree
-            if (key < node.key) {
-                return _find(node.left, key)
-            } else if (key > node.key) {
-                return _find(node.right, key)
+    fun find(key: T):Boolean{
+        /**
+         * pre-find
+         * return non-null if found
+         */
+        tailrec fun _find(node: Node<T>?): Node<T>? {
+            if (node == null) {
+                return null
+            } else { // Otherwise, recur down the tree
+                if (key < node.key) {
+                    return _find(node.left)
+                } else if (key > node.key) {
+                    return _find(node.right)
+                }
+            }
+            return node
+        }
+        return if(_find(root) != null)
+            true
+        else false
+    }
+
+    /**
+     * find key with path
+     */
+
+    fun findPath(key: T): List<Node<T>>?{
+        class NoMatchException : Exception()
+        val path = mutableListOf<Node<T>>()//List<T>
+        /**
+         * pre-find
+         * return non-null if found
+         */
+        tailrec fun _find(node: Node<T>?): Node<T>? {
+            if (node == null) {
+                throw NoMatchException()
+                //return null
+            } else { // Otherwise, recur down the tree
+                path.add(path.size, node)
+                if (key < node.key) {
+                    return _find(node.left)
+                } else if (key > node.key) {
+                    return _find(node.right)
+                }else {
+                    return node
+                }
             }
         }
-        return node
+        try {
+            val lastNode = _find(root)
+            assert(lastNode == path[path.size - 1])
+            return path
+        } catch (e: NoMatchException){
+            return null
+        }
     }
-
-    fun find(key: T):Boolean{
-        if(_find(root, key) != null)
-            return true
-        return false
-    }
-
-
 
     fun preTraverseNodeList(): List<Node<T>?>{
         fun _preTraverseList(node: Node<T>?, list: MutableList<Node<T>?>){
@@ -388,9 +424,9 @@ class BinarySearchTree <T: Comparable<T>> {
 
     fun delete(key: T, writer: (String)->Unit=::println): Boolean {
        val node = delete_node(root, key, writer)
-       if (node == null)
-           return false
-       return true
+       return if (node == null)
+           false
+       else true
     }
 
     /**
