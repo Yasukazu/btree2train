@@ -72,7 +72,7 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
 class TreeFrame(model: TreeModel) : JFrame() {
     val tree = JTree(model)
     init {
-        add(tree)
+        add(JScrollPane(tree))
     }
 }
 class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame() {
@@ -80,10 +80,12 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
     val showTreeButton = JButton("Show Tree")
     val inputField = JTextField()
     val deleteButton = JButton("Delete")
+    var treePane = JScrollPane()//? = null //(h: JTree? = null
     val panel = JPanel()
     init {
         showTreeButton.addActionListener {
             SwingUtilities.invokeLater {
+                treePane = JScrollPane(JTree(model))
                 if (frame != null)
                     frame?.isVisible = false
                 frame = TreeFrame(model)
@@ -99,6 +101,7 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
                         frame?.isVisible = false
                     if (i != null)
                         model.deleteKey(i)
+                    treePane = JScrollPane(JTree(model))
                     frame = TreeFrame(model)
                     frame?.pack()
                     frame?.isVisible = true
@@ -106,12 +109,14 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
             }
         }
         with(panel) {
-            layout = BoxLayout(this, BoxLayout.Y_AXIS)
-            add(showTreeButton)
-            add(inputField)
-            add(deleteButton)
+            layout = BorderLayout()//this, BoxLayout.Y_AXIS)
+            add(showTreeButton, BorderLayout.NORTH)
+            add(inputField, BorderLayout.WEST)
+            add(deleteButton, BorderLayout.EAST)
+            add(treePane, BorderLayout.CENTER)
         }
         add(panel)
+        title = "Integer Binary Search Tree"
     }
 }
 
