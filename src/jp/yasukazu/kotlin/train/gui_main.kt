@@ -75,12 +75,14 @@ class TreeFrame(model: TreeModel) : JFrame() {
         add(tree)
     }
 }
-class BinarySearchTreeFrame<T:Comparable<T>>(val model: BinarySearchTreeModel<T>) : JFrame() {
+class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame() {
     var frame: TreeFrame? = null
-    val button = JButton("Show Tree")
+    val showTreeButton = JButton("Show Tree")
+    val inputField = JTextField()
+    val deleteButton = JButton("Delete")
     val panel = JPanel()
     init {
-        button.addActionListener {
+        showTreeButton.addActionListener {
             SwingUtilities.invokeLater {
                 if (frame != null)
                     frame?.isVisible = false
@@ -89,9 +91,25 @@ class BinarySearchTreeFrame<T:Comparable<T>>(val model: BinarySearchTreeModel<T>
                 frame?.isVisible = true
             }
         }
+        deleteButton.addActionListener {
+            val i:Int? = try {inputField.text.toInt() } catch (e: IllegalFormatException) { null}
+            if (i != null) {
+                SwingUtilities.invokeLater {
+                    if (frame != null)
+                        frame?.isVisible = false
+                    if (i != null)
+                    model.deleteKey(i)
+                    frame = TreeFrame(model)
+                    frame?.pack()
+                    frame?.isVisible = true
+                }
+            }
+        }
         with(panel) {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
-            add(button)
+            add(showTreeButton)
+            add(inputField)
+            add(deleteButton)
         }
         add(panel)
     }
@@ -252,8 +270,8 @@ fun main(args:Array<String>){
         tree.expandRow(i)
     //panel.add(tree)
     /*
-    val button = JButton("Delete item")// $delete_value")
-    button.addActionListener {
+    val showTreeButton = JButton("Delete item")// $delete_value")
+    showTreeButton.addActionListener {
         val delete_value: Int? = try{ msgLabel.text.toInt() } catch(e: IllegalFormatException){ null }
         if(delete_value != null) {
             btree.deleteKey(delete_value)
@@ -280,7 +298,7 @@ fun main(args:Array<String>){
     val btnPanel = JPanel()
     with(btnPanel){
         layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
-        //add(button)
+        //add(showTreeButton)
         add(delBtn)
     }
     val msgPanel = JPanel()
@@ -310,7 +328,7 @@ fun main(args:Array<String>){
 
 
     SwingUtilities.invokeLater {
-        val treeFrame = BinarySearchTreeFrame(treeModel)
+        val treeFrame = IntBinarySearchTreeFrame(treeModel)
         with(treeFrame){
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             pack()
