@@ -98,7 +98,7 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
                     if (frame != null)
                         frame?.isVisible = false
                     if (i != null)
-                    model.deleteKey(i)
+                        model.deleteKey(i)
                     frame = TreeFrame(model)
                     frame?.pack()
                     frame?.isVisible = true
