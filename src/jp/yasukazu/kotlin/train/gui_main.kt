@@ -49,15 +49,15 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
         }
     }
 
-    override fun getChild(parent: Any?, index: Int): Any {
+    override fun getChild(parent: Any?, index: Int): Any? {
         if (parent == null)
             return 0 //Node<T>(null)
         else {
             val p = parent as Node<T>
             return when(index){
-                0 -> p.left as Any
-                1 -> p.right as Any
-                else -> p.right as Any
+                0 -> if(p.left == null) null else p.left as Any
+                else -> if(p.right == null) null else p.right as Any
+                // Null child is not allowed!
             }
         }
     }
@@ -80,10 +80,13 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
     val showTreeButton = JButton("Show Tree")
     val inputField = JTextField()
     val deleteButton = JButton("Delete")
-    var treePane = JScrollPane()//? = null //(h: JTree? = null
+    //var treePane = JScrollPane()//? = null //(h: JTree? = null
     val panel = JPanel()
     val subPanel = JPanel()
     init {
+        with(subPanel){
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        }
         showTreeButton.addActionListener {
             subPanel.removeAll()
             subPanel.add(JScrollPane(JTree(model)))
@@ -105,7 +108,6 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
             val i:Int? = try {inputField.text.toInt() } catch (e: IllegalFormatException) { null}
             if (i != null) {
                 model.deleteKey(i)
-                SwingUtilities.invokeLater {
                     subPanel.removeAll()
                     subPanel.add(JScrollPane(JTree(model)))
                     subPanel.revalidate()
@@ -118,7 +120,6 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
                         frame?.pack()
                         frame?.isVisible = true
                         */
-                }
             }
         }
         with(panel) {
