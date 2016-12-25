@@ -4,8 +4,6 @@ import java.awt.BorderLayout
 import java.util.*
 import javax.swing.*
 import javax.swing.event.TreeModelListener
-import javax.swing.event.TreeSelectionEvent
-import javax.swing.event.TreeSelectionListener
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeModel
 import javax.swing.tree.TreePath
@@ -14,7 +12,7 @@ import javax.swing.tree.TreePath
  * Custom JTree Model
  */
 class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel {
-    private val treeModelListeners = mutableListOf<TreeModelListener>()
+    val listenerList = mutableListOf<TreeModelListener>()
     override fun getRoot():Node<T>? { return rootNode }
     override fun isLeaf(_n: Any): Boolean {
         val n: Node<T> = _n as Node<T>
@@ -27,7 +25,7 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
 
     override fun removeTreeModelListener(l: TreeModelListener?) {
         if(l != null)
-            treeModelListeners -= l
+            listenerList.remove(l)//TreeModelListener::class.java, l)
     }
 
     override fun valueForPathChanged(path: TreePath?, newValue: Any?) {
@@ -66,10 +64,39 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
 
     override fun addTreeModelListener(l: TreeModelListener?) {
         if (l != null)
-            treeModelListeners += l
+            listenerList.add(l)//TreeModelListener::class.java, l)
     }
 
 }
+
+class TreeFrame(model: TreeModel) : JFrame() {
+    val tree = JTree(model)
+    init {
+        add(tree)
+    }
+}
+class BinarySearchTreeFrame<T:Comparable<T>>(val model: BinarySearchTreeModel<T>) : JFrame() {
+    var frame: TreeFrame? = null
+    val button = JButton("Show Tree")
+    val panel = JPanel()
+    init {
+        button.addActionListener {
+            SwingUtilities.invokeLater {
+                if (frame != null)
+                    frame?.isVisible = false
+                frame = TreeFrame(model)
+                frame?.pack()
+                frame?.isVisible = true
+            }
+        }
+        with(panel) {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            add(button)
+        }
+        add(panel)
+    }
+}
+
 /**
  * GUI main test
  * Created by Yasukazu on 2016/12/06.
@@ -260,13 +287,39 @@ fun main(args:Array<String>){
     msgPanel.layout = BoxLayout(msgPanel, BoxLayout.PAGE_AXIS)
     msgPanel.add(msgLabel)
     msgPanel.add(msgLabel2)
-    //panel.add(button)
+    val initialPanel = JPanel()
+    var newFrame: JFrame? = null
+    with(initialPanel){
+        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        add(notifyLabel)
+        val newFrameButton = JButton("Click to create a new frame")
+        with(newFrameButton){
+            addActionListener {
+                SwingUtilities.invokeLater {
+                    if (newFrame != null)
+                        newFrame?.isVisible = false
+                    newFrame = JFrame("New Frame")
+                    newFrame?.add(JScrollPane(modelTree))
+                    newFrame?.pack()
+                    newFrame?.isVisible = true
+                }
+            }
+        }
+        add(newFrameButton)
+    }
+
 
     SwingUtilities.invokeLater {
+        val treeFrame = BinarySearchTreeFrame(treeModel)
+        with(treeFrame){
+            defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+            pack()
+            isVisible = true
+        }
         val frame = JFrame()//"Binary Search Tree")
         //frame.contentPane = binaryTreeForm.panel1
         frame.contentPane.layout = BorderLayout()
-        frame.contentPane.add(notifyLabel, BorderLayout.NORTH)
+        frame.contentPane.add(initialPanel, BorderLayout.NORTH)
         frame.contentPane.add(treePanel, BorderLayout.CENTER)
         frame.contentPane.add(msgPanel, BorderLayout.SOUTH)
         frame.contentPane.add(btnPanel, BorderLayout.EAST)
