@@ -82,38 +82,51 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
     val deleteButton = JButton("Delete")
     var treePane = JScrollPane()//? = null //(h: JTree? = null
     val panel = JPanel()
+    val subPanel = JPanel()
     init {
         showTreeButton.addActionListener {
-            SwingUtilities.invokeLater {
-                treePane = JScrollPane(JTree(model))
-                if (frame != null)
-                    frame?.isVisible = false
-                frame = TreeFrame(model)
-                frame?.pack()
-                frame?.isVisible = true
-            }
+            subPanel.removeAll()
+            subPanel.add(JScrollPane(JTree(model)))
+            subPanel.revalidate()
+            //SwingUtilities.invokeLater {
+                //treePane.revalidate()
+                //panel.validate()
+                /*
+                subPanel = JPanel()
+                with(subPanel) {
+                    layout = BoxLayout(this, BoxLayout.Y_AXIS)
+                }
+                //panel.add(subPanel, BorderLayout.CENTER)
+                panel.validate()
+                */
+            //}
         }
         deleteButton.addActionListener {
             val i:Int? = try {inputField.text.toInt() } catch (e: IllegalFormatException) { null}
             if (i != null) {
+                model.deleteKey(i)
                 SwingUtilities.invokeLater {
-                    if (frame != null)
-                        frame?.isVisible = false
-                    if (i != null)
-                        model.deleteKey(i)
-                    treePane = JScrollPane(JTree(model))
-                    frame = TreeFrame(model)
-                    frame?.pack()
-                    frame?.isVisible = true
+                    subPanel.removeAll()
+                    subPanel.add(JScrollPane(JTree(model)))
+                    subPanel.revalidate()
+                    //if (frame != null) frame?.isVisible = false
+                        // treePane = JScrollPane(JTree(model))
+                        //panel.add(JScrollPane(JTree(model)), BorderLayout.CENTER)
+                        //panel.validate()
+                        /*
+                        frame = TreeFrame(model)
+                        frame?.pack()
+                        frame?.isVisible = true
+                        */
                 }
             }
         }
         with(panel) {
             layout = BorderLayout()//this, BoxLayout.Y_AXIS)
             add(showTreeButton, BorderLayout.NORTH)
-            add(inputField, BorderLayout.WEST)
+            add(inputField, BorderLayout.SOUTH)
             add(deleteButton, BorderLayout.EAST)
-            add(treePane, BorderLayout.CENTER)
+            add(subPanel, BorderLayout.CENTER)
         }
         add(panel)
         title = "Integer Binary Search Tree"
@@ -128,7 +141,7 @@ fun main(args:Array<String>){
     val btree = BinarySearchTree<Int>()
     print("\n")
     val argString = "5,2,12,8, 10,9, 7,21,19,25"
-    val keys = argString.split(",") //replace("""[ \s]""", "").) //arrayOf( "B", "B", "A", "A", "C", "B1", "A", "B2", "A2", "A1")
+    val keys = argString.split(",") //replace("""[ \subPanel]""", "").) //arrayOf( "B", "B", "A", "A", "C", "B1", "A", "B2", "A2", "A1")
     keys.forEach { s ->
         val x = s.trim()
         val i : Int? =
