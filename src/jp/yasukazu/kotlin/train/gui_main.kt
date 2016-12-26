@@ -4,6 +4,8 @@ import java.awt.BorderLayout
 import java.util.*
 import javax.swing.*
 import javax.swing.event.TreeModelListener
+import javax.swing.event.TreeSelectionEvent
+import javax.swing.event.TreeSelectionListener
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeModel
 import javax.swing.tree.TreePath
@@ -69,65 +71,67 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
 
 }
 
+/*
 class TreeFrame(model: TreeModel) : JFrame() {
     val tree = JTree(model)
     init {
         add(JScrollPane(tree))
     }
-}
+} */
+
 class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame() {
-    var frame: TreeFrame? = null
+    //var frame: TreeFrame? = null
     val showTreeButton = JButton("Show Tree")
     val inputField = JTextField()
     val deleteButton = JButton("Delete")
+    val statusLabels = arrayOf(JTextField(), JTextField(), JTextField())
     //var treePane = JScrollPane()//? = null //(h: JTree? = null
     val panel = JPanel()
     val subPanel = JPanel()
+    val statusPanel = JPanel()
+    var tree: JTree? = null
+    inner class OriginalTreeSelectionListener : TreeSelectionListener{
+        override fun valueChanged(e: TreeSelectionEvent?) {
+            val last = tree?.lastSelectedPathComponent
+            val node = last as BinarySearchTree.Node<Int>?
+            statusLabels[0].text = node?.key.toString() ?: ""
+            statusLabels[1].text = node?.left?.key.toString() ?: ""
+            statusLabels[2].text = node?.right?.key.toString() ?: ""
+        }
+    }
     init {
         with(subPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
         }
+        with(statusPanel) {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            statusLabels.forEach { add(it) }
+        }
+        tree = JTree(model)
+        tree?.addTreeSelectionListener(OriginalTreeSelectionListener())
         showTreeButton.addActionListener {
             subPanel.removeAll()
-            subPanel.add(JScrollPane(JTree(model)))
+            subPanel.add(JScrollPane(tree))
             subPanel.revalidate()
-            //SwingUtilities.invokeLater {
-                //treePane.revalidate()
-                //panel.validate()
-                /*
-                subPanel = JPanel()
-                with(subPanel) {
-                    layout = BoxLayout(this, BoxLayout.Y_AXIS)
-                }
-                //panel.add(subPanel, BorderLayout.CENTER)
-                panel.validate()
-                */
-            //}
         }
         deleteButton.addActionListener {
             val i:Int? = try {inputField.text.toInt() } catch (e: IllegalFormatException) { null}
             if (i != null) {
                 model.deleteKey(i)
-                    subPanel.removeAll()
-                    subPanel.add(JScrollPane(JTree(model)))
-                    subPanel.revalidate()
-                    //if (frame != null) frame?.isVisible = false
-                        // treePane = JScrollPane(JTree(model))
-                        //panel.add(JScrollPane(JTree(model)), BorderLayout.CENTER)
-                        //panel.validate()
-                        /*
-                        frame = TreeFrame(model)
-                        frame?.pack()
-                        frame?.isVisible = true
-                        */
+                subPanel.removeAll()
+                tree = JTree(model)
+                tree?.addTreeSelectionListener(OriginalTreeSelectionListener())
+                subPanel.add(JScrollPane(tree))
+                subPanel.revalidate()
             }
         }
         with(panel) {
             layout = BorderLayout()//this, BoxLayout.Y_AXIS)
-            add(showTreeButton, BorderLayout.NORTH)
-            add(inputField, BorderLayout.SOUTH)
+            add(showTreeButton, BorderLayout.WEST)
+            add(inputField, BorderLayout.NORTH)
             add(deleteButton, BorderLayout.EAST)
             add(subPanel, BorderLayout.CENTER)
+            add(statusPanel, BorderLayout.SOUTH)
         }
         add(panel)
         title = "Integer Binary Search Tree"
@@ -282,25 +286,9 @@ fun main(args:Array<String>){
         add(JScrollPane(tree))
         add(treeControlPanel)//JScrollPane(modelTree))
     }
-    //val panel = JPanel()
     val notifyLabel = JLabel("Blank leaf is left leaf.")
-    //panel.add(notifyLabel)
     for(i in 0 .. tree.rowCount-1)
         tree.expandRow(i)
-    //panel.add(tree)
-    /*
-    val showTreeButton = JButton("Delete item")// $delete_value")
-    showTreeButton.addActionListener {
-        val delete_value: Int? = try{ msgLabel.text.toInt() } catch(e: IllegalFormatException){ null }
-        if(delete_value != null) {
-            btree.deleteKey(delete_value)
-            root = btree.preTraverseTreeNode()
-            model = DefaultTreeModel(root)
-            tree.model = model
-            for (i in 0..tree.rowCount - 1)
-                tree.expandRow(i)
-        }
-    } */
     val delBtn = JButton("Delete item")//Keep data model delete")
     with(delBtn){
         addActionListener {
