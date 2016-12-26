@@ -14,23 +14,32 @@ import javax.swing.tree.MutableTreeNode
  */
 //import kotlin.collection.co
 
-class BinarySearchTree <T: Comparable<T>> {
+open class BinarySearchTree <T: Comparable<T>> {
     /**
      * @property key
      */
-    data class Node <T: Comparable<T>>(var key: T, var left: Node<T>? = null, var right: Node<T>? = null)
-    /*{
-        val key = key_
-        var left = left_
-        var right = right_
-    }*/
+    class Node <T: Comparable<T>>(var key: T, var left: Node<T>? = null, var right: Node<T>? = null){
+        override fun toString():String{
+            return "$key:(${left?.key}, ${right?.key})"
+        }
 
-    var root: Node<T>? = null
+        operator fun get(i: Int): Node<T>? {
+            return when(i){
+                0 -> left
+                else -> right
+            }
+        }
+
+        val size: Int get(){
+            return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 1 else 0)
+        }
+    }
+
+    var rootNode: Node<T>? = null
 
     enum class InsertedPos {
         LEFT, NEW, RIGHT, NONE
     }
-
 
     data class Node_InsertedPos <T: Comparable<T>>(val node: Node<T>, val pos: InsertedPos)
     private fun _insert(node: Node<T>?, key: T): Node_InsertedPos<T> { //<Node<T>?, Node<T>?, InsertedPos> {
@@ -56,12 +65,12 @@ class BinarySearchTree <T: Comparable<T>> {
     }
 
     fun insert(key: T): InsertedPos {
-        if (root == null){
-            root = Node(key)
+        if (rootNode == null){
+            rootNode = Node(key)
             return InsertedPos.NEW
         }
         else {
-            val node_InsertedPos = _insert(root, key)
+            val node_InsertedPos = _insert(rootNode, key)
             return node_InsertedPos.pos
         }
     }
@@ -81,7 +90,7 @@ class BinarySearchTree <T: Comparable<T>> {
      */
     val min: T?
         get() {
-            val node = _getMinNode(root)
+            val node = _getMinNode(rootNode)
             if (node != null) {
                 return node.key
             }
@@ -103,7 +112,7 @@ class BinarySearchTree <T: Comparable<T>> {
      */
     val max: T?
         get() {
-            val node = _getMaxNode(root)
+            val node = _getMaxNode(rootNode)
             if (node != null) {
                 return node.key
             }
@@ -130,7 +139,7 @@ class BinarySearchTree <T: Comparable<T>> {
             }
             return node
         }
-        return if(_find(root) != null)
+        return if(_find(rootNode) != null)
             true
         else false
     }
@@ -162,7 +171,7 @@ class BinarySearchTree <T: Comparable<T>> {
             }
         }
         try {
-            val lastNode = _find(root)
+            val lastNode = _find(rootNode)
             assert(lastNode == path[path.size - 1])
             return path
         } catch (e: NoMatchException){
@@ -181,7 +190,7 @@ class BinarySearchTree <T: Comparable<T>> {
             }
         }
         val list = mutableListOf<Node<T>?>()
-        _preTraverseList(root, list)
+        _preTraverseList(rootNode, list)
         return list
     }
 
@@ -197,7 +206,7 @@ class BinarySearchTree <T: Comparable<T>> {
 
     fun preTraverseList(): List<T>{
         val list = mutableListOf<T>()
-        _preTraverseList(root, list)
+        _preTraverseList(rootNode, list)
         return list
     }
 
@@ -212,7 +221,7 @@ class BinarySearchTree <T: Comparable<T>> {
     }
 
     fun preTraverse(callback:(T)->Unit){
-        _preTraverse(root, callback)
+        _preTraverse(rootNode, callback)
     }
 
     private fun _preTraverseTreeNode(node: Node<T>?, tnode: MutableTreeNode){
@@ -236,9 +245,9 @@ class BinarySearchTree <T: Comparable<T>> {
     }
 
     fun preTraverseTreeNode(): MutableTreeNode?{
-        if (root != null) {
-            val treeNode = DefaultMutableTreeNode(root!!.key)
-            _preTraverseTreeNode(root, treeNode)
+        if (rootNode != null) {
+            val treeNode = DefaultMutableTreeNode(rootNode!!.key)
+            _preTraverseTreeNode(rootNode, treeNode)
             return treeNode
         }
         return null
@@ -254,7 +263,7 @@ class BinarySearchTree <T: Comparable<T>> {
     }
 
     fun preTraverse_depth(s: String, callback:(T, String)->Unit){
-       _preTraverse_depth(root, s, callback)
+       _preTraverse_depth(rootNode, s, callback)
     }
 
 
@@ -269,7 +278,7 @@ class BinarySearchTree <T: Comparable<T>> {
     }
 
     fun postTraverse_depth(callback:(T, String)->Unit){
-        _postTraverse_depth(root, "", callback)
+        _postTraverse_depth(rootNode, "", callback)
     }
 
     //enum class LR {L, }
@@ -283,7 +292,7 @@ class BinarySearchTree <T: Comparable<T>> {
                 _preTraverse_depth_LR(node.right, callback, depth + 1, '>')
             }
         }
-        _preTraverse_depth_LR(root, callback, 0, '_')
+        _preTraverse_depth_LR(rootNode, callback, 0, '_')
     }
 
     /**
@@ -306,7 +315,7 @@ class BinarySearchTree <T: Comparable<T>> {
                 traverseDepth(node.right, depth + 1)
             }
         }
-        traverseDepth(root, 0)
+        traverseDepth(rootNode, 0)
         return depthMap
     }
 
@@ -333,12 +342,12 @@ class BinarySearchTree <T: Comparable<T>> {
                 countUp(node.right)
             }
         }
-        countUp(root)
+        countUp(rootNode)
         return map
     }
 
     /**
-     * in-order traverse from root
+     * in-order traverse from rootNode
      * key is fed to [callback] function
      * interrupt break if callback returns false
      *
@@ -368,9 +377,9 @@ class BinarySearchTree <T: Comparable<T>> {
         }
         try {
             if (reverse)
-                _reverseInTraverse(root)
+                _reverseInTraverse(rootNode)
             else
-                _inTraverse(root)
+                _inTraverse(rootNode)
         }
         catch (e: _InterrruptException){
         }
@@ -388,7 +397,7 @@ class BinarySearchTree <T: Comparable<T>> {
     }
 
     fun inOrderTraverse(callback: (T, String)->Unit){
-        _inOrderTraverse(root, "", callback)
+        _inOrderTraverse(rootNode, "", callback)
     }
 
     /**
@@ -423,20 +432,20 @@ class BinarySearchTree <T: Comparable<T>> {
     }
 
     fun delete(key: T, writer: (String)->Unit=::println): Boolean {
-       val node = delete_node(root, key, writer)
+       val node = delete_node(rootNode, key, writer)
        return if (node == null)
            false
        else true
     }
 
     /**
-     * Replace Node n with Node m while n's one child is null and other one is m
+     * Replace Node n with Node m while n'subPanel one child is null and other one is m
     private fun Replace(n: Node<T>, m: Node<T>){
         val p = n.parent
         if (m != null)
             m.parent = p
-        if (n == this.root)
-            this.root = m
+        if (n == this.rootNode)
+            this.rootNode = m
         else if (p != null) {
             if (p.left == n)
                 p.left = m
@@ -459,7 +468,7 @@ class BinarySearchTree <T: Comparable<T>> {
                 assert(self.left == null && self.right == null)
                 //val parent = self.parent
                 if (parent == null)
-                    root = null
+                    rootNode = null
                 else {
                     if (parent.left == self)
                         parent.left = null
@@ -541,8 +550,8 @@ class BinarySearchTree <T: Comparable<T>> {
                 }
             }
         }
-        if (root != null) {
-            return _delete_node(root, null)
+        if (rootNode != null) {
+            return _delete_node(rootNode, null)
         }
         return false
     }
