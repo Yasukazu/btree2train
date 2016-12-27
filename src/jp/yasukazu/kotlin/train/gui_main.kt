@@ -116,15 +116,16 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
     val originalTreeSelectionListener = OriginalTreeSelectionListener()
 
     init {
+        tree = JTree(model)
+        tree?.addTreeSelectionListener(originalTreeSelectionListener)
         with(subPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            add(JScrollPane(tree))
         }
         with(statusPanel) {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             statusLabels.forEach { add(it) }
         }
-        tree = JTree(model)
-        tree?.addTreeSelectionListener(originalTreeSelectionListener)
         showTreeButton.addActionListener {
             subPanel.removeAll()
             subPanel.add(JScrollPane(tree))
