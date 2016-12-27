@@ -22,7 +22,7 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
     }
     override fun getChildCount(_n: Any): Int {
         val n: Node<T> = _n as Node<T>
-       return (if(n.left != null) 1 else 0) + (if(n.right != null) 1 else 0)
+       return n.size //j(if(n.left != null) 1 else 0) + (if(n.right != null) 1 else 0)
     }
 
     override fun removeTreeModelListener(l: TreeModelListener?) {
@@ -61,13 +61,20 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
 
     override fun getChild(parent: Any?, index: Int): Any? {
         if (parent == null)
-            return 0 //Node<T>(null)
+            return null//Node<T>(null)
         else {
             val p = parent as Node<T>
-            return when(index){
-                0 -> if(p.left == null) null else p.left as Any
-                else -> if(p.right == null) null else p.right as Any
-                // Null child is not allowed!
+            return when(p.childrenStatus){
+                0 -> null
+                1 -> p[0]
+                2 -> p[1]
+                else -> p[index]
+               /*
+                when(index){
+                    0 -> if(p.left == null) null else p.left as Any
+                    else -> if(p.right == null) null else p.right as Any
+                    // Null child is not allowed!
+                }*/
             }
         }
     }
