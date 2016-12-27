@@ -43,10 +43,18 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
                 return -1
             else {
                 val c = child as Node<T>
+                when(p.childrenStatus){
+                    0 -> return -1
+                    1 -> return 0
+                    2 -> return 1
+                    else -> return if (c == p.left) 0 else 1
+                }
+                /*
                 if (p.left == c)
                     return 0
                 else
                     return 1
+                    */
             }
         }
     }
@@ -84,21 +92,29 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
     val showTreeButton = JButton("Show Tree")
     val inputField = JTextField()
     val deleteButton = JButton("Delete")
-    val statusLabels = arrayOf(JTextField(), JTextField(), JTextField())
+    val statusLabels = arrayOf(JTextField(), JTextField(), JTextField(), JTextField(), JTextField())
+    enum class StatusLabelEnum(val value: Int) {
+        KEY(0), LEFT(1), RIGHT(2), SIZE(3), STATUS(4)
+    }
     //var treePane = JScrollPane()//? = null //(h: JTree? = null
     val panel = JPanel()
     val subPanel = JPanel()
     val statusPanel = JPanel()
     var tree: JTree? = null
+
     inner class OriginalTreeSelectionListener : TreeSelectionListener{
         override fun valueChanged(e: TreeSelectionEvent?) {
             val last = tree?.lastSelectedPathComponent
             val node = last as BinarySearchTree.Node<Int>?
-            statusLabels[0].text = node?.key.toString() ?: ""
-            statusLabels[1].text = node?.left?.key.toString() ?: ""
-            statusLabels[2].text = node?.right?.key.toString() ?: ""
+            statusLabels[0].text = "key: ${node?.key}"
+            statusLabels[1].text = "left: ${node?.left?.key}"
+            statusLabels[2].text = "right: ${node?.right?.key}"
+            statusLabels[3].text = "size: ${node?.size}"
+            statusLabels[4].text = "childrenStatus: ${node?.childrenStatus}"
         }
     }
+    val originalTreeSelectionListener = OriginalTreeSelectionListener()
+
     init {
         with(subPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -108,19 +124,19 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
             statusLabels.forEach { add(it) }
         }
         tree = JTree(model)
-        tree?.addTreeSelectionListener(OriginalTreeSelectionListener())
+        tree?.addTreeSelectionListener(originalTreeSelectionListener)
         showTreeButton.addActionListener {
             subPanel.removeAll()
             subPanel.add(JScrollPane(tree))
             subPanel.revalidate()
         }
         deleteButton.addActionListener {
-            val i:Int? = try {inputField.text.toInt() } catch (e: IllegalFormatException) { null}
+            val i:Int? = try {inputField.text.toInt() } catch (e: NumberFormatException) { null}
             if (i != null) {
                 model.deleteKey(i)
                 subPanel.removeAll()
                 tree = JTree(model)
-                tree?.addTreeSelectionListener(OriginalTreeSelectionListener())
+                tree?.addTreeSelectionListener(originalTreeSelectionListener)
                 subPanel.add(JScrollPane(tree))
                 subPanel.revalidate()
             }
@@ -341,6 +357,7 @@ fun main(args:Array<String>){
             pack()
             isVisible = true
         }
+        /*
         val frame = JFrame()//"Binary Search Tree")
         //frame.contentPane = binaryTreeForm.panel1
         frame.contentPane.layout = BorderLayout()
@@ -351,5 +368,6 @@ fun main(args:Array<String>){
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.pack()
         frame.isVisible = true
+        */
     }
 }
