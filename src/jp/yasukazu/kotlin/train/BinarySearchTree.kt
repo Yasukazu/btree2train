@@ -227,7 +227,7 @@ open class BinarySearchTree <T: Comparable<T>> {
         _preTraverse(rootNode, callback)
     }
 
-    private fun _preTraverseTreeNode(node: Node<T>?, tnode: MutableTreeNode){
+    tailrec fun _preTraverseTreeNode(node: Node<T>?, tnode: MutableTreeNode){
         if (node == null)
             return
         else {
@@ -236,8 +236,7 @@ open class BinarySearchTree <T: Comparable<T>> {
                 newTnode = DefaultMutableTreeNode(node.left?.key)
                 tnode.insert(newTnode, 0)
                 _preTraverseTreeNode(node.left, newTnode)
-            }
-            if (node.right !=null) {
+            } else if (node.right !=null) {
                 if (newTnode == null)
                     tnode.insert(DefaultMutableTreeNode(null), 0)
                 newTnode = DefaultMutableTreeNode(node.right?.key)
@@ -255,6 +254,7 @@ open class BinarySearchTree <T: Comparable<T>> {
         }
         return null
     }
+
     private fun _preTraverse_depth(node: Node<T>?, depth: String, callback:(T, String)->Unit){
         if (node == null)
             return
@@ -406,11 +406,10 @@ open class BinarySearchTree <T: Comparable<T>> {
     /**
      * Exception class
      */
-    class NoNodeException(msg: String): Exception(msg)
+    //class NoNodeException(msg: String): Exception(msg)
 
     /**
      * delete node
-     */
     fun delete_node(node: Node<T>?, key: T, writer: (String)->Unit): Node<T>?{
         if (node == null)
             writer("No '$key'.") // throw NoNodeException("delete: node == null")
@@ -441,21 +440,6 @@ open class BinarySearchTree <T: Comparable<T>> {
        else true
     }
 
-    /**
-     * Replace Node n with Node m while n'subPanel one child is null and other one is m
-    private fun Replace(n: Node<T>, m: Node<T>){
-        val p = n.parent
-        if (m != null)
-            m.parent = p
-        if (n == this.rootNode)
-            this.rootNode = m
-        else if (p != null) {
-            if (p.left == n)
-                p.left = m
-            else
-                p.right = m
-        }
-    }
      */
 
 
