@@ -1,9 +1,6 @@
 package jp.yasukazu.kotlin.train
 
-import com.sun.org.apache.xpath.internal.operations.Bool
-import javax.swing.*
 import javax.swing.tree.DefaultMutableTreeNode
-import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
 
 //import javax.swing.tree.TreeNode
@@ -79,10 +76,11 @@ open class BinarySearchTree <T: Comparable<T>> {
         }
     }
 
+
     /**
      * find minimum key node
      */
-    private fun _getMinNode(node: Node<T>?): Node<T>? {
+    tailrec fun _getMinNode(node: Node<T>?): Node<T>? {
         if (node == null || node.left == null)
             return node
         return _getMinNode(node.left)
@@ -102,9 +100,9 @@ open class BinarySearchTree <T: Comparable<T>> {
         }
 
     /**
-     * find maximum key
+     * find maximum key node
      */
-    private fun _getMaxNode(node: Node<T>?): Node<T>? {
+    tailrec fun _getMaxNode(node: Node<T>?): Node<T>? {
         if (node == null || node.right == null)
             return node
         return _getMaxNode(node.right)
@@ -122,6 +120,9 @@ open class BinarySearchTree <T: Comparable<T>> {
             }
             return null
         }
+
+
+    class NoMatchException : Exception()
 
     /**
      * find key
@@ -150,10 +151,9 @@ open class BinarySearchTree <T: Comparable<T>> {
 
     /**
      * find key with path
+     * @return : null if no match
      */
-
     fun findPath(key: T): List<Node<T>>?{
-        class NoMatchException : Exception()
         val path = mutableListOf<Node<T>>()//List<T>
         /**
          * pre-find
@@ -161,10 +161,11 @@ open class BinarySearchTree <T: Comparable<T>> {
          */
         tailrec fun _find(node: Node<T>?): Node<T>? {
             if (node == null) {
-                throw NoMatchException()
-                //return null
+                //throw NoMatchException()
+                path.clear()
+                return null
             } else { // Otherwise, recur down the tree
-                path.add(path.size, node)
+                path.add(node)//path.size, node)
                 if (key < node.key) {
                     return _find(node.left)
                 } else if (key > node.key) {
@@ -174,13 +175,11 @@ open class BinarySearchTree <T: Comparable<T>> {
                 }
             }
         }
-        try {
+        //try {
             val lastNode = _find(rootNode)
             assert(lastNode == path[path.size - 1])
-            return path
-        } catch (e: NoMatchException){
-            return null
-        }
+            return if(path.size > 0) path else null
+        //} catch (e: NoMatchException) return null
     }
 
     fun preTraverseNodeList(): List<Node<T>?>{
