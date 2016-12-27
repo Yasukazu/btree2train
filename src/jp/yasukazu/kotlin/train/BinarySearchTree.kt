@@ -33,6 +33,10 @@ open class BinarySearchTree <T: Comparable<T>> {
         val size: Int get(){
             return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 1 else 0)
         }
+
+        val childrenStatus: Int get(){
+            return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 2 else 0)
+        }
     }
 
     var rootNode: Node<T>? = null
