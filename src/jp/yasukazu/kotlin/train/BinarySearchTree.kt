@@ -55,10 +55,10 @@ open class BinarySearchTree <T: Comparable<T>> {
                     return Node_InsertedPos(node_InsertedPos.node, InsertedPos.LEFT) // Return the (unchanged) node pointer
                 }
             } else if (key > node.key) {
-                val node_InsertedPos = _insert(node.right, key)
-                if (node_InsertedPos.pos == InsertedPos.NEW) {
-                    node.right = node_InsertedPos.node
-                    return Node_InsertedPos(node_InsertedPos.node, InsertedPos.RIGHT) // Return the (unchanged) node pointer
+                val (n, pos) = _insert(node.right, key)
+                if (pos == InsertedPos.NEW) {
+                    node.right = n
+                    return Node_InsertedPos(n, InsertedPos.RIGHT) // Return the (unchanged) node pointer
                 }
             }
         }
@@ -75,6 +75,8 @@ open class BinarySearchTree <T: Comparable<T>> {
             return node_InsertedPos.pos
         }
     }
+
+    operator fun plusAssign(key: T) { insert(key) }
 
 
     /**
