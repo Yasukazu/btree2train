@@ -96,8 +96,9 @@ class TreeFrame(model: TreeModel) : JFrame() {
 
 class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame() {
     //var frame: TreeFrame? = null
-    val showTreeButton = JButton("Show Tree")
+    //val showTreeButton = JButton("Show Tree")
     val inputField = JTextField()
+    val insertButton = JButton("Insert")
     val deleteButton = JButton("Delete")
     val statusLabels = arrayOf(JTextField(), JTextField(), JTextField(), JTextField(), JTextField())
     enum class StatusLabelEnum(val value: Int) {
@@ -133,10 +134,22 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             statusLabels.forEach { add(it) }
         }
+        /*
         showTreeButton.addActionListener {
             subPanel.removeAll()
             subPanel.add(JScrollPane(tree))
             subPanel.revalidate()
+        }*/
+        insertButton.addActionListener {
+            val i:Int? = try {inputField.text.toInt() } catch (e: NumberFormatException) { null}
+            if (i != null){
+                model.insert(i)
+                subPanel.removeAll()
+                tree = JTree(model)
+                tree?.addTreeSelectionListener(originalTreeSelectionListener)
+                subPanel.add(JScrollPane(tree))
+                subPanel.revalidate()
+            }
         }
         deleteButton.addActionListener {
             val i:Int? = try {inputField.text.toInt() } catch (e: NumberFormatException) { null}
@@ -150,8 +163,11 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
             }
         }
         with(panel) {
-            layout = BorderLayout()//this, BoxLayout.Y_AXIS)
-            add(showTreeButton, BorderLayout.WEST)
+            val _layout = BorderLayout()//this, BoxLayout.Y_AXIS)
+            _layout.hgap = 20
+            _layout.vgap = 20
+            layout = _layout
+            add(insertButton, BorderLayout.WEST)
             add(inputField, BorderLayout.NORTH)
             add(deleteButton, BorderLayout.EAST)
             add(subPanel, BorderLayout.CENTER)
@@ -212,7 +228,7 @@ fun main(args:Array<String>){
     btree.preTraverse { x -> print("$x\n") }
     println()
     println("pre-order traversal with depth")
-    btree.preTraverse_depth("", {s,d->println("$s:$d")})
+    btree.preTraverse_depth("") {s,d->println("$s:$d")}
 
     println()
     println("post order traversal with depth")
@@ -232,11 +248,11 @@ fun main(args:Array<String>){
     println()
     println("\nBTree interrupt in-order traversal:")
     var count = 2
-    btree.inTraverse(reverse = true, callback={ x ->
+    btree.inTraverse(reverse = true) { x ->
         // writeInt(x)
         println(x)
         return@inTraverse --count > 0 //if(count <= 0) true else false
-    })
+    }
     println()
     // try catch version
     class InterruptException: Exception()
