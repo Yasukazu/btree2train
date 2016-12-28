@@ -124,6 +124,9 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
     val originalTreeSelectionListener = OriginalTreeSelectionListener()
 
     init {
+        statusLabels.forEach { label ->
+
+        }
         tree = JTree(model)
         tree?.addTreeSelectionListener(originalTreeSelectionListener)
         with(subPanel){
@@ -132,6 +135,9 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
         }
         with(statusPanel) {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            val leftColumn = JPanel()
+            leftColumn.layout = BoxLayout(leftColumn, BoxLayout.Y_AXIS)
+            val statusTitles = arrayOf("key", "left", "right", "size", "childrenStatus")
             statusLabels.forEach { add(it) }
         }
         /*
