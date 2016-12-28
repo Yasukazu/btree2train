@@ -1,6 +1,7 @@
 package jp.yasukazu.kotlin.train
 
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.util.*
 import javax.swing.*
 import javax.swing.event.TreeModelListener
@@ -100,7 +101,7 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
     val inputField = JTextField()
     val insertButton = JButton("Insert")
     val deleteButton = JButton("Delete")
-    val statusLabels = arrayOf(JTextField(), JTextField(), JTextField(), JTextField(), JTextField())
+    val statusLabels = arrayOf(JLabel(), JLabel(), JLabel(), JLabel(), JLabel())
     enum class StatusLabelEnum(val value: Int) {
         KEY(0), LEFT(1), RIGHT(2), SIZE(3), STATUS(4)
     }
@@ -114,11 +115,11 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
         override fun valueChanged(e: TreeSelectionEvent?) {
             val last = tree?.lastSelectedPathComponent
             val node = last as BinarySearchTree.Node<Int>?
-            statusLabels[0].text = "key: ${node?.key}"
-            statusLabels[1].text = "left: ${node?.left?.key}"
-            statusLabels[2].text = "right: ${node?.right?.key}"
-            statusLabels[3].text = "size: ${node?.size}"
-            statusLabels[4].text = "childrenStatus: ${node?.childrenStatus}"
+            statusLabels[0].text = "${node?.key}"
+            statusLabels[1].text = "${node?.left?.key}"
+            statusLabels[2].text = "${node?.right?.key}"
+            statusLabels[3].text = "${node?.size}"
+            statusLabels[4].text = "${node?.childrenStatus}"
         }
     }
     val originalTreeSelectionListener = OriginalTreeSelectionListener()
@@ -134,11 +135,22 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
             add(JScrollPane(tree))
         }
         with(statusPanel) {
-            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            layout = BoxLayout(this, BoxLayout.X_AXIS)
             val leftColumn = JPanel()
             leftColumn.layout = BoxLayout(leftColumn, BoxLayout.Y_AXIS)
             val statusTitles = arrayOf("key", "left", "right", "size", "childrenStatus")
-            statusLabels.forEach { add(it) }
+            statusTitles.forEach { title ->
+                val label = JLabel("$title:")
+                label.alignmentX = 1.0f
+                leftColumn.add(label)
+            }
+            val rightColumn = JPanel()
+            rightColumn.layout = BoxLayout(rightColumn, BoxLayout.Y_AXIS)
+            statusLabels.forEach {it ->
+                rightColumn.add(it)
+            }
+            add(leftColumn)
+            add(rightColumn)
         }
         /*
         showTreeButton.addActionListener {
