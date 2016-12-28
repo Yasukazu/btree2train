@@ -1,7 +1,6 @@
 package jp.yasukazu.kotlin.train
 
 import java.awt.BorderLayout
-import java.awt.Dimension
 import java.util.*
 import javax.swing.*
 import javax.swing.event.TreeModelListener
@@ -50,12 +49,6 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
                     2 -> return 1
                     else -> return if (c == p.left) 0 else 1
                 }
-                /*
-                if (p.left == c)
-                    return 0
-                else
-                    return 1
-                    */
             }
         }
     }
@@ -70,12 +63,6 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
                 1 -> p[0]
                 2 -> p[1]
                 else -> p[index]
-               /*
-                when(index){
-                    0 -> if(p.left == null) null else p.left as Any
-                    else -> if(p.right == null) null else p.right as Any
-                    // Null child is not allowed!
-                }*/
             }
         }
     }
@@ -87,17 +74,8 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
 
 }
 
-/*
-class TreeFrame(model: TreeModel) : JFrame() {
-    val tree = JTree(model)
-    init {
-        add(JScrollPane(tree))
-    }
-} */
 
 class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame() {
-    //var frame: TreeFrame? = null
-    //val showTreeButton = JButton("Show Tree")
     val inputField = JTextField()
     val insertButton = JButton("Insert")
     val deleteButton = JButton("Delete")
@@ -105,7 +83,6 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
     enum class StatusLabelEnum(val value: Int) {
         KEY(0), LEFT(1), RIGHT(2), SIZE(3), STATUS(4)
     }
-    //var treePane = JScrollPane()//? = null //(h: JTree? = null
     val panel = JPanel()
     val subPanel = JPanel()
     val statusPanel = JPanel()
@@ -124,6 +101,17 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
         }
     }
     val originalTreeSelectionListener = OriginalTreeSelectionListener()
+    val entryLabels = arrayOf(JLabel(), JLabel())
+
+    fun getTopN(i:Int): MutableList<String> {
+        var n = i
+        val keyList = mutableListOf<String>()
+        val top3 = model.inTraverse(reverse=false){ k ->
+            keyList.add("$k")
+            return@inTraverse --n > 0
+        }
+        return keyList
+    }
 
     init {
         tree = JTree(model)
@@ -150,12 +138,6 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
             add(leftColumn)
             add(rightColumn)
         }
-        /*
-        showTreeButton.addActionListener {
-            subPanel.removeAll()
-            subPanel.add(JScrollPane(tree))
-            subPanel.revalidate()
-        }*/
         insertButton.addActionListener {
             val i:Int? = try {inputField.text.toInt() } catch (e: NumberFormatException) { null}
             if (i != null){
@@ -178,15 +160,21 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
                 subPanel.revalidate()
             }
         }
+        val entryPanel = JPanel()
+        with(entryPanel){
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            add(JLabel("Input below:"))
+            add(inputField)
+        }
         with(panel) {
             val _layout = BorderLayout()//this, BoxLayout.Y_AXIS)
             _layout.hgap = 20
             _layout.vgap = 20
             layout = _layout
+            add(entryPanel, BorderLayout.NORTH)
             add(insertButton, BorderLayout.WEST)
-            add(inputField, BorderLayout.NORTH)
-            add(deleteButton, BorderLayout.EAST)
             add(subPanel, BorderLayout.CENTER)
+            add(deleteButton, BorderLayout.EAST)
             add(statusPanel, BorderLayout.SOUTH)
         }
         add(panel)
