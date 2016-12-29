@@ -14,7 +14,7 @@ import javax.swing.tree.MutableTreeNode
  * class for Tree BinaryNode
  * @property key
  */
-open class BinaryNode<T: Comparable<T>>(var key: T, var left: BinaryNode<T>? = null, var right: BinaryNode<T>? = null){
+open class BinaryNode<T: Comparable<T>> (var key: T, var left: BinaryNode<T>? = null, var right: BinaryNode<T>? = null){
     override fun toString():String{
         return "$key:(${left?.key}, ${right?.key})"
     }
@@ -35,7 +35,7 @@ open class BinaryNode<T: Comparable<T>>(var key: T, var left: BinaryNode<T>? = n
     }
 }
 
-open class BinarySearchTree <T: Comparable<T>> {
+open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
 
     var rootBinaryNode: BinaryNode<T>? = null
     private var _size: Int = 0
@@ -562,5 +562,37 @@ open class BinarySearchTree <T: Comparable<T>> {
      * -= operator
      */
     operator fun minusAssign(k: T){ deleteKey(k)}
+
+    /**
+     * Iterable
+     */
+    override operator fun iterator(): Iterator<T>{
+        return NodeIterator()
+    }
+
+    /**
+     * NodeIterator
+     */
+    inner class NodeIterator: Iterator<T> {
+        val list = mutableListOf<T>()
+        var n = 0
+
+        init {
+            inTraverse { k ->
+                list.add(k)
+                return@inTraverse true
+            }
+        }
+
+        override fun hasNext(): Boolean {
+            return list.size > n
+        }
+
+        override fun next(): T {
+            if(n >= list.size)
+                throw NoSuchElementException()
+            return list[n++]
+        }
+    }
 }
 
