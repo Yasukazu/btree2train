@@ -91,13 +91,22 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
     inner class OriginalTreeSelectionListener : TreeSelectionListener{
         override fun valueChanged(e: TreeSelectionEvent?) {
             val last = tree?.lastSelectedPathComponent
-            val node = last as Node<Int>?
-            statusLabels[0].text = "${node?.key}"
-            statusLabels[1].text = "${node?.left?.key}"
-            statusLabels[2].text = "${node?.right?.key}"
-            statusLabels[3].text = "${node?.size}"
-            statusLabels[4].text = "${node?.childrenStatus}"
-            statusLabels[5].text = "${e?.path}"
+            if (last != null) {
+                val node = last as Node<Int>
+                statusLabels[0].text = "${node.key}"
+                statusLabels[1].text = "${node.left?.key}"
+                statusLabels[2].text = "${node.right?.key}"
+                statusLabels[3].text = "${node.size}"
+                statusLabels[4].text = "${node.childrenStatus}"
+                val path = model.findPath(node.key)
+                if (path != null) {
+                    val sb = StringBuilder()
+                    path.forEach { it ->
+                        sb.append("${it.key}, ")
+                    }
+                    statusLabels[5].text = "$sb"
+                }
+            }
         }
     }
     val originalTreeSelectionListener = OriginalTreeSelectionListener()
