@@ -6,35 +6,36 @@ import javax.swing.tree.MutableTreeNode
 //import javax.swing.tree.TreeNode
 
 /**
- * Created by Yasukazu on 2016/11/03.
+ * Created by Yasukazu@GitHub on 2016/11/03.
  *  @comment_source  http://quiz.geeksforgeeks.org/binary-search-tree-set0-search-and-insertion/
  */
-//import kotlin.collection.co
 
-open class BinarySearchTree <T: Comparable<T>> {
-    /**
-     * @property key
-     */
-    class Node <T: Comparable<T>>(var key: T, var left: Node<T>? = null, var right: Node<T>? = null){
-        override fun toString():String{
-            return "$key:(${left?.key}, ${right?.key})"
-        }
+/**
+ * class for Tree Node
+ * @property key
+ */
+open class Node <T: Comparable<T>>(var key: T, var left: Node<T>? = null, var right: Node<T>? = null){
+    override fun toString():String{
+        return "$key:(${left?.key}, ${right?.key})"
+    }
 
-        operator fun get(i: Int): Node<T>? {
-            return when(i){
-                0 -> left
-                else -> right
-            }
-        }
-
-        val size: Int get(){
-            return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 1 else 0)
-        }
-
-        val childrenStatus: Int get(){
-            return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 2 else 0)
+    operator fun get(i: Int): Node<T>? {
+        return when(i){
+            0 -> left
+            else -> right
         }
     }
+
+    val size: Int get(){
+        return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 1 else 0)
+    }
+
+    val childrenStatus: Int get(){
+        return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 2 else 0)
+    }
+}
+
+open class BinarySearchTree <T: Comparable<T>> {
 
     var rootNode: Node<T>? = null
 
@@ -146,10 +147,13 @@ open class BinarySearchTree <T: Comparable<T>> {
             }
             return node
         }
-        return if(_find(rootNode) != null)
-            true
-        else false
+        return _find(rootNode) != null
     }
+
+    /**
+     * in operator
+     */
+    operator fun contains(key: T) = find(key)
 
     /**
      * find key with path
@@ -544,5 +548,10 @@ open class BinarySearchTree <T: Comparable<T>> {
         }
         return false
     }
+
+    /**
+     * -= operator
+     */
+    operator fun minusAssign(k: T){ deleteKey(k)}
 }
 
