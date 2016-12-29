@@ -87,6 +87,7 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
     val subPanel = JPanel()
     val statusPanel = JPanel()
     var tree: JTree? = null
+    val treeSizeLabel = JLabel()
 
     inner class OriginalTreeSelectionListener : TreeSelectionListener{
         override fun valueChanged(e: TreeSelectionEvent?) {
@@ -156,6 +157,7 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
                 tree?.addTreeSelectionListener(originalTreeSelectionListener)
                 subPanel.add(JScrollPane(tree))
                 subPanel.revalidate()
+                treeSizeLabel.text = "Tree Size: ${model.size}"
             }
         }
         deleteButton.addActionListener {
@@ -167,6 +169,7 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
                 tree?.addTreeSelectionListener(originalTreeSelectionListener)
                 subPanel.add(JScrollPane(tree))
                 subPanel.revalidate()
+                treeSizeLabel.text = "Tree Size: ${model.size}"
             }
         }
         val existsLabel = JLabel()
@@ -198,11 +201,14 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
             add(insertButton)
             add(existsPanel)
         }
+        treeSizeLabel.text = "Tree Size: ${model.size}"
         val entryPanel = JPanel()
         with(entryPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             add(JLabel("Input below:"))
             add(inputField)
+            add(JLabel("Tree status:"))
+            add(treeSizeLabel)
         }
         with(panel) {
             val _layout = BorderLayout()//this, BoxLayout.Y_AXIS)
