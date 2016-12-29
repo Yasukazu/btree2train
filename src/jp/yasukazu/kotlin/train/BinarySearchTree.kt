@@ -11,15 +11,15 @@ import javax.swing.tree.MutableTreeNode
  */
 
 /**
- * class for Tree Node
+ * class for Tree BinaryNode
  * @property key
  */
-open class Node <T: Comparable<T>>(var key: T, var left: Node<T>? = null, var right: Node<T>? = null){
+open class BinaryNode<T: Comparable<T>>(var key: T, var left: BinaryNode<T>? = null, var right: BinaryNode<T>? = null){
     override fun toString():String{
         return "$key:(${left?.key}, ${right?.key})"
     }
 
-    operator fun get(i: Int): Node<T>? {
+    operator fun get(i: Int): BinaryNode<T>? {
         return when(i){
             0 -> left
             else -> right
@@ -37,7 +37,7 @@ open class Node <T: Comparable<T>>(var key: T, var left: Node<T>? = null, var ri
 
 open class BinarySearchTree <T: Comparable<T>> {
 
-    var rootNode: Node<T>? = null
+    var rootBinaryNode: BinaryNode<T>? = null
     private var _size: Int = 0
     val size: Int get() = _size
 
@@ -45,39 +45,39 @@ open class BinarySearchTree <T: Comparable<T>> {
         LEFT, NEW, RIGHT, NONE
     }
 
-    data class Node_InsertedPos <T: Comparable<T>>(val node: Node<T>, val pos: InsertedPos)
-    private fun _insert(node: Node<T>?, key: T): Node_InsertedPos<T> { //<Node<T>?, Node<T>?, InsertedPos> {
-        if (node == null) { // If the node is empty, return a new node
-            return Node_InsertedPos(Node(key), InsertedPos.NEW)
+    data class Node_InsertedPos <T: Comparable<T>>(val binaryNode: BinaryNode<T>, val pos: InsertedPos)
+    private fun _insert(binaryNode: BinaryNode<T>?, key: T): Node_InsertedPos<T> { //<BinaryNode<T>?, BinaryNode<T>?, InsertedPos> {
+        if (binaryNode == null) { // If the binaryNode is empty, return a new binaryNode
+            return Node_InsertedPos(BinaryNode(key), InsertedPos.NEW)
         }
         else { // Otherwise, recur down the tree
-            if (key < node.key) {
-                val node_InsertedPos = _insert(node.left, key)
+            if (key < binaryNode.key) {
+                val node_InsertedPos = _insert(binaryNode.left, key)
                 if (node_InsertedPos.pos == InsertedPos.NEW) {
                     ++_size
-                    node.left = node_InsertedPos.node
-                    return Node_InsertedPos(node_InsertedPos.node, InsertedPos.LEFT) // Return the (unchanged) node pointer
+                    binaryNode.left = node_InsertedPos.binaryNode
+                    return Node_InsertedPos(node_InsertedPos.binaryNode, InsertedPos.LEFT) // Return the (unchanged) binaryNode pointer
                 }
-            } else if (key > node.key) {
-                val (newNode, pos) = _insert(node.right, key)
+            } else if (key > binaryNode.key) {
+                val (newNode, pos) = _insert(binaryNode.right, key)
                 if (pos == InsertedPos.NEW) {
                     ++_size
-                    node.right = newNode
-                    return Node_InsertedPos(newNode, InsertedPos.RIGHT) // Return the (unchanged) node pointer
+                    binaryNode.right = newNode
+                    return Node_InsertedPos(newNode, InsertedPos.RIGHT) // Return the (unchanged) binaryNode pointer
                 }
             }
         }
-        return Node_InsertedPos(node, InsertedPos.NONE) // Return the (unchanged) node pointer
+        return Node_InsertedPos(binaryNode, InsertedPos.NONE) // Return the (unchanged) binaryNode pointer
     }
 
     fun insert(key: T): InsertedPos {
-        if (rootNode == null){
-            rootNode = Node(key)
+        if (rootBinaryNode == null){
+            rootBinaryNode = BinaryNode(key)
             ++_size
             return InsertedPos.NEW
         }
         else {
-            val node_InsertedPos = _insert(rootNode, key)
+            val node_InsertedPos = _insert(rootBinaryNode, key)
             return node_InsertedPos.pos
         }
     }
@@ -86,12 +86,12 @@ open class BinarySearchTree <T: Comparable<T>> {
 
 
     /**
-     * find minimum key node
+     * find minimum key binaryNode
      */
-    tailrec fun _getMinNode(node: Node<T>?): Node<T>? {
-        if (node == null || node.left == null)
-            return node
-        return _getMinNode(node.left)
+    tailrec fun _getMinNode(binaryNode: BinaryNode<T>?): BinaryNode<T>? {
+        if (binaryNode == null || binaryNode.left == null)
+            return binaryNode
+        return _getMinNode(binaryNode.left)
     }
 
     /**
@@ -100,7 +100,7 @@ open class BinarySearchTree <T: Comparable<T>> {
      */
     val min: T?
         get() {
-            val node = _getMinNode(rootNode)
+            val node = _getMinNode(rootBinaryNode)
             if (node != null) {
                 return node.key
             }
@@ -108,12 +108,12 @@ open class BinarySearchTree <T: Comparable<T>> {
         }
 
     /**
-     * find maximum key node
+     * find maximum key binaryNode
      */
-    tailrec fun _getMaxNode(node: Node<T>?): Node<T>? {
-        if (node == null || node.right == null)
-            return node
-        return _getMaxNode(node.right)
+    tailrec fun _getMaxNode(binaryNode: BinaryNode<T>?): BinaryNode<T>? {
+        if (binaryNode == null || binaryNode.right == null)
+            return binaryNode
+        return _getMaxNode(binaryNode.right)
     }
 
     /**
@@ -122,7 +122,7 @@ open class BinarySearchTree <T: Comparable<T>> {
      */
     val max: T?
         get() {
-            val node = _getMaxNode(rootNode)
+            val node = _getMaxNode(rootBinaryNode)
             if (node != null) {
                 return node.key
             }
@@ -140,19 +140,19 @@ open class BinarySearchTree <T: Comparable<T>> {
          * pre-find
          * return non-null if found
          */
-        tailrec fun _find(node: Node<T>?): Node<T>? {
-            if (node == null) {
+        tailrec fun _find(binaryNode: BinaryNode<T>?): BinaryNode<T>? {
+            if (binaryNode == null) {
                 return null
             } else { // Otherwise, recur down the tree
-                if (key < node.key) {
-                    return _find(node.left)
-                } else if (key > node.key) {
-                    return _find(node.right)
+                if (key < binaryNode.key) {
+                    return _find(binaryNode.left)
+                } else if (key > binaryNode.key) {
+                    return _find(binaryNode.right)
                 }
             }
-            return node
+            return binaryNode
         }
-        return _find(rootNode) != null
+        return _find(rootBinaryNode) != null
     }
 
     /**
@@ -164,149 +164,149 @@ open class BinarySearchTree <T: Comparable<T>> {
      * find key with path
      * @return : null if no match
      */
-    fun findPath(key: T): List<Node<T>>?{
-        val path = mutableListOf<Node<T>>()//List<T>
+    fun findPath(key: T): List<BinaryNode<T>>?{
+        val path = mutableListOf<BinaryNode<T>>()//List<T>
         /**
          * pre-find
          * return non-null if found
          */
-        tailrec fun _find(node: Node<T>?): Node<T>? {
-            if (node == null) {
+        tailrec fun _find(binaryNode: BinaryNode<T>?): BinaryNode<T>? {
+            if (binaryNode == null) {
                 //throw NoMatchException()
                 path.clear()
                 return null
             } else { // Otherwise, recur down the tree
-                path.add(node)//path.size, node)
-                if (key < node.key) {
-                    return _find(node.left)
-                } else if (key > node.key) {
-                    return _find(node.right)
+                path.add(binaryNode)//path.size, binaryNode)
+                if (key < binaryNode.key) {
+                    return _find(binaryNode.left)
+                } else if (key > binaryNode.key) {
+                    return _find(binaryNode.right)
                 }else {
-                    return node
+                    return binaryNode
                 }
             }
         }
-        //try {
-            val lastNode = _find(rootNode)
+        //try { val lastNode =
+                    _find(rootBinaryNode)
             //assert(if(path.size > 0)lastNode == path[path.size - 1] else true)
             return if(path.size > 0) path else null
         //} catch (e: NoMatchException) return null
     }
 
-    fun preTraverseNodeList(): List<Node<T>?>{
-        fun _preTraverseList(node: Node<T>?, list: MutableList<Node<T>?>){
-            if (node == null)
+    fun preTraverseNodeList(): List<BinaryNode<T>?>{
+        fun _preTraverseList(binaryNode: BinaryNode<T>?, list: MutableList<BinaryNode<T>?>){
+            if (binaryNode == null)
                 return
             else {
-                list += node
-                _preTraverseList(node.left, list)
-                _preTraverseList(node.right, list)
+                list += binaryNode
+                _preTraverseList(binaryNode.left, list)
+                _preTraverseList(binaryNode.right, list)
             }
         }
-        val list = mutableListOf<Node<T>?>()
-        _preTraverseList(rootNode, list)
+        val list = mutableListOf<BinaryNode<T>?>()
+        _preTraverseList(rootBinaryNode, list)
         return list
     }
 
-    private fun _preTraverseList(node: Node<T>?, list: MutableList<T>){
-        if (node == null)
+    private fun _preTraverseList(binaryNode: BinaryNode<T>?, list: MutableList<T>){
+        if (binaryNode == null)
             return
         else {
-            list += node.key
-            _preTraverseList(node.left, list)
-            _preTraverseList(node.right, list)
+            list += binaryNode.key
+            _preTraverseList(binaryNode.left, list)
+            _preTraverseList(binaryNode.right, list)
         }
     }
 
     fun preTraverseList(): List<T>{
         val list = mutableListOf<T>()
-        _preTraverseList(rootNode, list)
+        _preTraverseList(rootBinaryNode, list)
         return list
     }
 
-    private fun _preTraverse(node: Node<T>?, callback:(T)->Unit){
-        if (node == null)
+    private fun _preTraverse(binaryNode: BinaryNode<T>?, callback:(T)->Unit){
+        if (binaryNode == null)
             return
         else {
-            callback(node.key)
-            _preTraverse(node.left, callback)
-            _preTraverse(node.right, callback)
+            callback(binaryNode.key)
+            _preTraverse(binaryNode.left, callback)
+            _preTraverse(binaryNode.right, callback)
         }
     }
 
     fun preTraverse(callback:(T)->Unit){
-        _preTraverse(rootNode, callback)
+        _preTraverse(rootBinaryNode, callback)
     }
 
-    tailrec fun _preTraverseTreeNode(node: Node<T>?, tnode: MutableTreeNode){
-        if (node == null)
+    tailrec fun _preTraverseTreeNode(binaryNode: BinaryNode<T>?, tnode: MutableTreeNode){
+        if (binaryNode == null)
             return
         else {
             var newTnode: DefaultMutableTreeNode? = null
-            if (node.left !=null) {
-                newTnode = DefaultMutableTreeNode(node.left?.key)
+            if (binaryNode.left !=null) {
+                newTnode = DefaultMutableTreeNode(binaryNode.left?.key)
                 tnode.insert(newTnode, 0)
-                _preTraverseTreeNode(node.left, newTnode)
-            } else if (node.right !=null) {
+                _preTraverseTreeNode(binaryNode.left, newTnode)
+            } else if (binaryNode.right !=null) {
                 if (newTnode == null)
                     tnode.insert(DefaultMutableTreeNode(null), 0)
-                newTnode = DefaultMutableTreeNode(node.right?.key)
+                newTnode = DefaultMutableTreeNode(binaryNode.right?.key)
                 tnode.insert(newTnode, 1)
-                _preTraverseTreeNode(node.right, newTnode)
+                _preTraverseTreeNode(binaryNode.right, newTnode)
             }
         }
     }
 
     fun preTraverseTreeNode(): MutableTreeNode?{
-        if (rootNode != null) {
-            val treeNode = DefaultMutableTreeNode(rootNode!!.key)
-            _preTraverseTreeNode(rootNode, treeNode)
+        if (rootBinaryNode != null) {
+            val treeNode = DefaultMutableTreeNode(rootBinaryNode!!.key)
+            _preTraverseTreeNode(rootBinaryNode, treeNode)
             return treeNode
         }
         return null
     }
 
-    private fun _preTraverse_depth(node: Node<T>?, depth: String, callback:(T, String)->Unit){
-        if (node == null)
+    private fun _preTraverse_depth(binaryNode: BinaryNode<T>?, depth: String, callback:(T, String)->Unit){
+        if (binaryNode == null)
             return
         else {
-            callback(node.key, depth)
-            _preTraverse_depth(node.left, depth + "<", callback)
-            _preTraverse_depth(node.right, depth + ">", callback)
+            callback(binaryNode.key, depth)
+            _preTraverse_depth(binaryNode.left, depth + "<", callback)
+            _preTraverse_depth(binaryNode.right, depth + ">", callback)
         }
     }
 
     fun preTraverse_depth(s: String, callback:(T, String)->Unit){
-       _preTraverse_depth(rootNode, s, callback)
+       _preTraverse_depth(rootBinaryNode, s, callback)
     }
 
 
-    private fun _postTraverse_depth(node: Node<T>?, depth: String, callback:(T, String)->Unit){
-        if (node == null)
+    private fun _postTraverse_depth(binaryNode: BinaryNode<T>?, depth: String, callback:(T, String)->Unit){
+        if (binaryNode == null)
             return
         else {
-            _postTraverse_depth(node.left, depth + "<", callback)
-            _postTraverse_depth(node.right, depth + ">",  callback)
-            callback(node.key, depth)
+            _postTraverse_depth(binaryNode.left, depth + "<", callback)
+            _postTraverse_depth(binaryNode.right, depth + ">",  callback)
+            callback(binaryNode.key, depth)
         }
     }
 
     fun postTraverse_depth(callback:(T, String)->Unit){
-        _postTraverse_depth(rootNode, "", callback)
+        _postTraverse_depth(rootBinaryNode, "", callback)
     }
 
     //enum class LR {L, }
     fun preTraverse_depth_LR(callback:(T, Int, Char)->Unit){
-        fun _preTraverse_depth_LR(node: Node<T>?, callback:(T, Int, Char)->Unit, depth: Int, LR: Char){
-            if (node == null)
+        fun _preTraverse_depth_LR(binaryNode: BinaryNode<T>?, callback:(T, Int, Char)->Unit, depth: Int, LR: Char){
+            if (binaryNode == null)
                 return
             else {
-                callback(node.key, depth, LR)
-                _preTraverse_depth_LR(node.left, callback, depth + 1, '<')
-                _preTraverse_depth_LR(node.right, callback, depth + 1, '>')
+                callback(binaryNode.key, depth, LR)
+                _preTraverse_depth_LR(binaryNode.left, callback, depth + 1, '<')
+                _preTraverse_depth_LR(binaryNode.right, callback, depth + 1, '>')
             }
         }
-        _preTraverse_depth_LR(rootNode, callback, 0, '_')
+        _preTraverse_depth_LR(rootBinaryNode, callback, 0, '_')
     }
 
     /**
@@ -314,8 +314,8 @@ open class BinarySearchTree <T: Comparable<T>> {
      */
     fun traverseDepthList(): MutableMap<Int,Int> {
         val depthMap: MutableMap<Int,Int> =mutableMapOf()
-        fun traverseDepth(node: Node<T>?, depth: Int){
-            if (node == null)
+        fun traverseDepth(binaryNode: BinaryNode<T>?, depth: Int){
+            if (binaryNode == null)
                 return
             else {
                 if (depthMap.containsKey(depth)) {
@@ -325,11 +325,11 @@ open class BinarySearchTree <T: Comparable<T>> {
                 }
                 else
                     depthMap[depth] = 1
-                traverseDepth(node.left, depth + 1)
-                traverseDepth(node.right, depth + 1)
+                traverseDepth(binaryNode.left, depth + 1)
+                traverseDepth(binaryNode.right, depth + 1)
             }
         }
-        traverseDepth(rootNode, 0)
+        traverseDepth(rootBinaryNode, 0)
         return depthMap
     }
 
@@ -338,13 +338,13 @@ open class BinarySearchTree <T: Comparable<T>> {
      */
     fun traverseLeafCount(): MutableMap<Int,Int> {
         val map: MutableMap<Int,Int> =mutableMapOf()
-        fun countUp(node: Node<T>?){
-            if (node == null)
+        fun countUp(binaryNode: BinaryNode<T>?){
+            if (binaryNode == null)
                 return
             else {
                 var count = 0
-                count += if (node.left != null) 1 else 0
-                count += if (node.right != null) 1 else 0
+                count += if (binaryNode.left != null) 1 else 0
+                count += if (binaryNode.right != null) 1 else 0
                 if (map.containsKey(count)) {
                     val d = map[count]
                     if (d != null)
@@ -352,16 +352,16 @@ open class BinarySearchTree <T: Comparable<T>> {
                 }
                 else
                     map[count] = 1
-                countUp(node.left)
-                countUp(node.right)
+                countUp(binaryNode.left)
+                countUp(binaryNode.right)
             }
         }
-        countUp(rootNode)
+        countUp(rootBinaryNode)
         return map
     }
 
     /**
-     * in-order traverse from rootNode
+     * in-order traverse from rootBinaryNode
      * key is fed to [callback] function
      * interrupt break if callback returns false
      *
@@ -369,49 +369,49 @@ open class BinarySearchTree <T: Comparable<T>> {
     fun inTraverse(reverse:Boolean=false, callback: (T) -> Boolean){
         //val list = MutableList<T>()
         class _InterrruptException() :Exception()
-        fun _inTraverse(node: Node<T>?){
-            if (node == null)
+        fun _inTraverse(binaryNode: BinaryNode<T>?){
+            if (binaryNode == null)
                 return
             else {
-                _inTraverse(node.left)
-                if(!callback(node.key))// <= 0)
+                _inTraverse(binaryNode.left)
+                if(!callback(binaryNode.key))// <= 0)
                     throw _InterrruptException()
-                _inTraverse(node.right)
+                _inTraverse(binaryNode.right)
             }
         }
-        fun _reverseInTraverse(node: Node<T>?){
-            if (node == null)
+        fun _reverseInTraverse(binaryNode: BinaryNode<T>?){
+            if (binaryNode == null)
                 return
             else {
-                _reverseInTraverse(node.right)
-                if(!callback(node.key)) // <= 0)
+                _reverseInTraverse(binaryNode.right)
+                if(!callback(binaryNode.key)) // <= 0)
                     throw _InterrruptException()
-                _reverseInTraverse(node.left)
+                _reverseInTraverse(binaryNode.left)
             }
         }
         try {
             if (reverse)
-                _reverseInTraverse(rootNode)
+                _reverseInTraverse(rootBinaryNode)
             else
-                _inTraverse(rootNode)
+                _inTraverse(rootBinaryNode)
         }
         catch (e: _InterrruptException){
         }
     }
 
 
-    private fun _inOrderTraverse(node: Node<T>?, depth: String, callback: (T, String)->Unit){
-        if (node == null)
+    private fun _inOrderTraverse(binaryNode: BinaryNode<T>?, depth: String, callback: (T, String)->Unit){
+        if (binaryNode == null)
             return
         else {
-            _inOrderTraverse(node.left, depth + "<", callback)
-            callback(node.key, depth)
-            _inOrderTraverse(node.right, depth + ">", callback)
+            _inOrderTraverse(binaryNode.left, depth + "<", callback)
+            callback(binaryNode.key, depth)
+            _inOrderTraverse(binaryNode.right, depth + ">", callback)
         }
     }
 
     fun inOrderTraverse(callback: (T, String)->Unit){
-        _inOrderTraverse(rootNode, "", callback)
+        _inOrderTraverse(rootBinaryNode, "", callback)
     }
 
     /**
@@ -420,33 +420,33 @@ open class BinarySearchTree <T: Comparable<T>> {
     //class NoNodeException(msg: String): Exception(msg)
 
     /**
-     * delete node
-    fun delete_node(node: Node<T>?, key: T, writer: (String)->Unit): Node<T>?{
-        if (node == null)
-            writer("No '$key'.") // throw NoNodeException("delete: node == null")
-        else if (key < node.key)
-            node.left = delete_node(node.left, key, writer)
-        else if (key > node.key)
-            node.right = delete_node(node.right, key, writer)
+     * delete binaryNode
+    fun delete_node(binaryNode: BinaryNode<T>?, key: T, writer: (String)->Unit): BinaryNode<T>?{
+        if (binaryNode == null)
+            writer("No '$key'.") // throw NoNodeException("delete: binaryNode == null")
+        else if (key < binaryNode.key)
+            binaryNode.left = delete_node(binaryNode.left, key, writer)
+        else if (key > binaryNode.key)
+            binaryNode.right = delete_node(binaryNode.right, key, writer)
         else {
-            if (node.left == null)
-                return node.right
-            else if (node.right == null)
-                return node.left
-           val rightMinNode = _getMinNode(node.right)
+            if (binaryNode.left == null)
+                return binaryNode.right
+            else if (binaryNode.right == null)
+                return binaryNode.left
+           val rightMinNode = _getMinNode(binaryNode.right)
            if (rightMinNode != null) {
-               node.key = rightMinNode.key
-               node.right = delete_node(node.right, node.key, writer)
+               binaryNode.key = rightMinNode.key
+               binaryNode.right = delete_node(binaryNode.right, binaryNode.key, writer)
            }
            else
                writer("_getMinNode returned null value.")
        }
-        return node
+        return binaryNode
     }
 
     fun delete(key: T, writer: (String)->Unit=::println): Boolean {
-       val node = delete_node(rootNode, key, writer)
-       return if (node == null)
+       val binaryNode = delete_node(rootBinaryNode, key, writer)
+       return if (binaryNode == null)
            false
        else true
     }
@@ -455,18 +455,18 @@ open class BinarySearchTree <T: Comparable<T>> {
 
 
     /**
-     * Delete a node following the procedure written in Wikipedia
+     * Delete a binaryNode following the procedure written in Wikipedia
      * @return success => true
      */
     fun deleteKey(key: T): Boolean {
         //class ImproperArgumentException(msg:String) : Exception(msg)
-        fun _delete_node(self: Node<T>?, parent: Node<T>?): Boolean { //Pair<T, T>?{
-            // Delete self node
-            fun __delete_self_node(self: Node<T>, parent: Node<T>?){
+        fun _delete_node(self: BinaryNode<T>?, parent: BinaryNode<T>?): Boolean { //Pair<T, T>?{
+            // Delete self binaryNode
+            fun __delete_self_node(self: BinaryNode<T>, parent: BinaryNode<T>?){
                 assert(self.left == null && self.right == null)
                 //val parent = self.parent
                 if (parent == null)
-                    rootNode = null
+                    rootBinaryNode = null
                 else {
                     if (parent.left == self)
                         parent.left = null
@@ -477,7 +477,7 @@ open class BinarySearchTree <T: Comparable<T>> {
                 }
             }
             // replace self with child
-            fun __replace(self: Node<T>, child: Node<T>, parent: Node<T>?){
+            fun __replace(self: BinaryNode<T>, child: BinaryNode<T>, parent: BinaryNode<T>?){
                 //child.parent = parent
                 if (parent != null) {
                     if (parent.left == self)
@@ -490,16 +490,16 @@ open class BinarySearchTree <T: Comparable<T>> {
             }
             /**
              * replace 2
-            2) * Name the node with the value to be deleted as 'N node'.  Without deleting N node, after choosing its
-            in-order successor node (R node), copy the value of R to N.
+            2) * Name the binaryNode with the value to be deleted as 'N binaryNode'.  Without deleting N binaryNode, after choosing its
+            in-order successor binaryNode (R binaryNode), copy the value of R to N.
              */
-            fun __replace2(self: Node<T>){
+            fun __replace2(self: BinaryNode<T>){
                 assert(self.left != null && self.right != null)
                 //if(self.left == null || self.right == null)
                 //    throw ImproperArgumentException("Both child are not null!")
                 //else {
-                    //data class Node_Parent(val self: Node<T>, val parent: Node<T>)
-                    fun getPredecessorNode( _self: Node<T>, _parent: Node<T>) : Pair<Node<T>,Node<T>> {//node: Node<T>?, parent: Node<T>?
+                    //data class Node_Parent(val self: BinaryNode<T>, val parent: BinaryNode<T>)
+                    fun getPredecessorNode(_self: BinaryNode<T>, _parent: BinaryNode<T>) : Pair<BinaryNode<T>, BinaryNode<T>> {//binaryNode: BinaryNode<T>?, parent: BinaryNode<T>?
                         var s = _self
                         var p = _parent
                         while (s.right != null) {
@@ -511,7 +511,7 @@ open class BinarySearchTree <T: Comparable<T>> {
                     val (predNode, predParent) = getPredecessorNode(self.left!!, self) // in-order predecessor
                     self.key = predNode.key
                     if(predParent.right == predNode)
-                        predParent.right = predNode.left // delete maximum-value node
+                        predParent.right = predNode.left // delete maximum-value binaryNode
                     else if(predParent.left == predNode) // No need for this code
                         predParent.left = predNode.left // Never reach here
                 //}
@@ -542,14 +542,14 @@ open class BinarySearchTree <T: Comparable<T>> {
                         return __replace(self, self.left!!, parent)
                     } else if (self.right != null && self.left == null) {
                         return __replace(self, self.right!!, parent)
-                    } else { // Node has 2 children
+                    } else { // BinaryNode has 2 children
                         return __replace2(self)
                     } */
                 }
             }
         }
-        if (rootNode != null) {
-            val deleted = _delete_node(rootNode, null)
+        if (rootBinaryNode != null) {
+            val deleted = _delete_node(rootBinaryNode, null)
             if (deleted){
                 --_size
             }
