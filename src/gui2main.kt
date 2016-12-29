@@ -1,9 +1,10 @@
 /**
  * Created by Yasukazu on 2016/12/29.
  * GUI main outside from the package
+ * 2016-12-29 BinarySearchTreeFrame (accepts General type)
  */
 import jp.yasukazu.kotlin.train.BinarySearchTreeModel
-import jp.yasukazu.kotlin.train.IntBinarySearchTreeFrame
+import jp.yasukazu.kotlin.train.BinarySearchTreeFrame
 import javax.swing.JFrame
 import javax.swing.SwingUtilities
 
@@ -18,7 +19,7 @@ fun main(args:Array<String>){
         }
     }
     SwingUtilities.invokeLater {
-        val intTreeFrame = IntBinarySearchTreeFrame(treeModel)
+        val intTreeFrame = BinarySearchTreeFrame(treeModel){try{it.toInt()}catch (e:NumberFormatException){null}}
         with(intTreeFrame){
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             pack()
