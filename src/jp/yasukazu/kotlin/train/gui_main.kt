@@ -91,7 +91,7 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
     inner class OriginalTreeSelectionListener : TreeSelectionListener{
         override fun valueChanged(e: TreeSelectionEvent?) {
             val last = tree?.lastSelectedPathComponent
-            val node = last as BinarySearchTree.Node<Int>?
+            val node = last as Node<Int>?
             statusLabels[0].text = "${node?.key}"
             statusLabels[1].text = "${node?.left?.key}"
             statusLabels[2].text = "${node?.right?.key}"
@@ -152,13 +152,42 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
         deleteButton.addActionListener {
             val i:Int? = try {inputField.text.toInt() } catch (e: NumberFormatException) { null}
             if (i != null) {
-                model.deleteKey(i)
+                model -= i // deleteKey
                 subPanel.removeAll()
                 tree = JTree(model)
                 tree?.addTreeSelectionListener(originalTreeSelectionListener)
                 subPanel.add(JScrollPane(tree))
                 subPanel.revalidate()
             }
+        }
+        val existsLabel = JLabel()
+        val existsButton = JButton("Check existence")
+        existsButton.addActionListener { e ->
+                val i = try { inputField.text.toInt() } catch (e: NumberFormatException){null}
+                if (i != null && model != null){
+                    val path = model.findPath(i)
+                   if (path != null) {//i in model)
+                       val sb = StringBuilder()
+                       path.forEach { it ->
+                           sb.append("${it.key}, ")
+                       }
+                       existsLabel.text = "Exists. Path: $sb"
+                   }
+                    else
+                       existsLabel.text = "Not exists"
+                }
+            }
+        val existsPanel = JPanel()
+        with(existsPanel){
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            add(existsButton)
+            add(existsLabel)
+        }
+        val westPanel = JPanel()
+        with(westPanel){
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            add(insertButton)
+            add(existsPanel)
         }
         val entryPanel = JPanel()
         with(entryPanel){
@@ -172,7 +201,7 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
             _layout.vgap = 20
             layout = _layout
             add(entryPanel, BorderLayout.NORTH)
-            add(insertButton, BorderLayout.WEST)
+            add(westPanel, BorderLayout.WEST)
             add(subPanel, BorderLayout.CENTER)
             add(deleteButton, BorderLayout.EAST)
             add(statusPanel, BorderLayout.SOUTH)
@@ -276,7 +305,8 @@ fun main(args:Array<String>){
     print("\n")
     val find_keys = arrayOf(5, 4, 3)//"A", "B", "B1", "B2", "C")
     find_keys.forEach { x ->
-        println(if(btree.find(x)) "$x exists" else "$x does not exist")
+        //println(if(btree.find(x)) "$x exists" else "$x does not exist")
+        println(if(x in btree) "$x exists." else "$x does not exist.")
     }
     //val delete_value = 12 //"C"
 
@@ -310,14 +340,14 @@ fun main(args:Array<String>){
             add(textField)
             tr.addTreeSelectionListener { e ->
                 val last = tr.lastSelectedPathComponent
-                val node = last as BinarySearchTree.Node<T>?
+                val node = last as Node<T>?
                 textField.text = node?.key.toString()
             }
             val deleteButton = JButton("Delete")
             deleteButton.addActionListener { e ->
                 val i = try { textField.text.toInt()} catch (e: IllegalFormatException) { null }
                 if (i != null){
-                    treeModel.deleteKey(i)
+                    treeModel -= i //.deleteKey(i)
                 }
             }
             add(deleteButton)
