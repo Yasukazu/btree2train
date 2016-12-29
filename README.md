@@ -4,7 +4,7 @@
 /**
  * Created by Yasukazu on 2016/12/29.
  * GUI main outside from the package
- * 2016-12-29 BinarySearchTreeFrame (accepts General type)
+ * 2016-12-29 BinarySearchTreeFrame (accepts any Comparable type)
  */
 import jp.yasukazu.kotlin.train.BinarySearchTreeModel
 import jp.yasukazu.kotlin.train.BinarySearchTreeFrame
