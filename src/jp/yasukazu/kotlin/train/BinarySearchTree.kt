@@ -38,6 +38,8 @@ open class Node <T: Comparable<T>>(var key: T, var left: Node<T>? = null, var ri
 open class BinarySearchTree <T: Comparable<T>> {
 
     var rootNode: Node<T>? = null
+    private var _size: Int = 0
+    val size: Int get() = _size
 
     enum class InsertedPos {
         LEFT, NEW, RIGHT, NONE
@@ -52,14 +54,16 @@ open class BinarySearchTree <T: Comparable<T>> {
             if (key < node.key) {
                 val node_InsertedPos = _insert(node.left, key)
                 if (node_InsertedPos.pos == InsertedPos.NEW) {
+                    ++_size
                     node.left = node_InsertedPos.node
                     return Node_InsertedPos(node_InsertedPos.node, InsertedPos.LEFT) // Return the (unchanged) node pointer
                 }
             } else if (key > node.key) {
-                val (n, pos) = _insert(node.right, key)
+                val (newNode, pos) = _insert(node.right, key)
                 if (pos == InsertedPos.NEW) {
-                    node.right = n
-                    return Node_InsertedPos(n, InsertedPos.RIGHT) // Return the (unchanged) node pointer
+                    ++_size
+                    node.right = newNode
+                    return Node_InsertedPos(newNode, InsertedPos.RIGHT) // Return the (unchanged) node pointer
                 }
             }
         }
@@ -69,6 +73,7 @@ open class BinarySearchTree <T: Comparable<T>> {
     fun insert(key: T): InsertedPos {
         if (rootNode == null){
             rootNode = Node(key)
+            ++_size
             return InsertedPos.NEW
         }
         else {
@@ -183,7 +188,7 @@ open class BinarySearchTree <T: Comparable<T>> {
         }
         //try {
             val lastNode = _find(rootNode)
-            assert(lastNode == path[path.size - 1])
+            //assert(if(path.size > 0)lastNode == path[path.size - 1] else true)
             return if(path.size > 0) path else null
         //} catch (e: NoMatchException) return null
     }
@@ -544,7 +549,11 @@ open class BinarySearchTree <T: Comparable<T>> {
             }
         }
         if (rootNode != null) {
-            return _delete_node(rootNode, null)
+            val deleted = _delete_node(rootNode, null)
+            if (deleted){
+                --_size
+            }
+            return deleted
         }
         return false
     }
