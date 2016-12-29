@@ -10,6 +10,13 @@ import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeModel
 import javax.swing.tree.TreePath
 
+fun List<String>.join(d:String):String{
+    val sb = StringBuilder()
+    this.forEach { s ->
+        sb.append("$s$d")
+    }
+    return sb.toString()
+}
 /**
  * Custom JTree Model
  */
@@ -112,15 +119,17 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
     }
     val originalTreeSelectionListener = OriginalTreeSelectionListener()
     val entryLabels = arrayOf(JLabel(), JLabel())
+    val treeTopLabel = JLabel()
+    val treeLastLabel = JLabel()
 
-    fun getTopN(i:Int): MutableList<String> {
+    fun getTopN(i:Int, reverse:Boolean=false):String {
         var n = i
         val keyList = mutableListOf<String>()
-        val top3 = model.inTraverse(reverse=false){ k ->
+        model.inTraverse(reverse=reverse){ k ->
             keyList.add("$k")
             return@inTraverse --n > 0
         }
-        return keyList
+        return keyList.join(" ")
     }
 
     init {
@@ -158,6 +167,8 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
                 subPanel.add(JScrollPane(tree))
                 subPanel.revalidate()
                 treeSizeLabel.text = "Tree Size: ${model.size}"
+                treeTopLabel.text = "Sorted 3 Tops: ${getTopN(3)}"
+                treeLastLabel.text = "Sorted 3 Lasts: ${getTopN(3, reverse = true)}"
             }
         }
         deleteButton.addActionListener {
@@ -170,6 +181,8 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
                 subPanel.add(JScrollPane(tree))
                 subPanel.revalidate()
                 treeSizeLabel.text = "Tree Size: ${model.size}"
+                treeTopLabel.text = "Sorted 3 Tops: ${getTopN(3)}"
+                treeLastLabel.text = "Sorted 3 Lasts: ${getTopN(3, reverse = true)}"
             }
         }
         val existsLabel = JLabel()
@@ -202,6 +215,8 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
             add(existsPanel)
         }
         treeSizeLabel.text = "Tree Size: ${model.size}"
+        treeTopLabel.text = "Sorted 3 Tops: ${getTopN(3)}"
+        treeLastLabel.text = "Sorted 3 Lasts: ${getTopN(3, reverse = true)}"
         val entryPanel = JPanel()
         with(entryPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -209,6 +224,8 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
             add(inputField)
             add(JLabel("Tree status:"))
             add(treeSizeLabel)
+            add(treeTopLabel)
+            add(treeLastLabel)
         }
         with(panel) {
             val _layout = BorderLayout()//this, BoxLayout.Y_AXIS)
