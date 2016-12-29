@@ -42,19 +42,17 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
     }
 
     override fun getIndexOfChild(parent: Any?, child: Any?): Int {
-        if (parent == null)
+        if (parent == null && child == null)
             return -1
         else {
             val p = parent as Node<T>
-            if (child == null)
-                return -1
-            else {
-                val c = child as Node<T>
-                when(p.childrenStatus){
-                    0 -> return -1
-                    1 -> return 0
-                    2 -> return 1
-                    else -> return if (c == p.left) 0 else 1
+            when(p.childrenStatus){
+                0 -> return -1
+                1 -> return 0
+                2 -> return 1
+                else -> {
+                    val c = child as Node<T>
+                    return if (c == p.left) 0 else 1
                 }
             }
         }
@@ -82,7 +80,7 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
 }
 
 
-class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame() {
+class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<T>, fromString:(String)->T?) : JFrame() {
     val inputField = JTextField()
     val insertButton = JButton("Insert")
     val deleteButton = JButton("Delete")
@@ -100,7 +98,7 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
         override fun valueChanged(e: TreeSelectionEvent?) {
             val last = tree?.lastSelectedPathComponent
             if (last != null) {
-                val node = last as Node<Int>
+                val node = last as Node<T>
                 statusLabels[0].text = "${node.key}"
                 statusLabels[1].text = "${node.left?.key}"
                 statusLabels[2].text = "${node.right?.key}"
@@ -158,7 +156,8 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
             add(rightColumn)
         }
         insertButton.addActionListener {
-            val i:Int? = try {inputField.text.toInt() } catch (e: NumberFormatException) { null}
+            val i:T? = fromString(inputField.text)
+            //val i:Int? = try {inputField.text.toInt() } catch (e: NumberFormatException) { null}
             if (i != null){
                 model.insert(i)
                 subPanel.removeAll()
@@ -172,7 +171,8 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
             }
         }
         deleteButton.addActionListener {
-            val i:Int? = try {inputField.text.toInt() } catch (e: NumberFormatException) { null}
+            val i:T? = fromString(inputField.text)
+            //val i:Int? = try {inputField.text.toInt() } catch (e: NumberFormatException) { null}
             if (i != null) {
                 model -= i // deleteKey
                 subPanel.removeAll()
@@ -188,20 +188,21 @@ class IntBinarySearchTreeFrame(val model: BinarySearchTreeModel<Int>) : JFrame()
         val existsLabel = JLabel()
         val existsButton = JButton("Check existence")
         existsButton.addActionListener { e ->
-                val i = try { inputField.text.toInt() } catch (e: NumberFormatException){null}
-                if (i != null && model != null){
-                    val path = model.findPath(i)
-                   if (path != null) {//i in model)
-                       val sb = StringBuilder()
-                       path.forEach { it ->
-                           sb.append("${it.key}, ")
-                       }
-                       existsLabel.text = "Exists. Path: $sb"
+            val i:T? = fromString(inputField.text)
+            //    val i = try { inputField.text.toInt() } catch (e: NumberFormatException){null}
+            if (i != null && model != null){
+                val path = model.findPath(i)
+               if (path != null) {//i in model)
+                   val sb = StringBuilder()
+                   path.forEach { it ->
+                       sb.append("${it.key}, ")
                    }
-                    else
-                       existsLabel.text = "Not exists"
-                }
+                   existsLabel.text = "Exists. Path: $sb"
+               }
+                else
+                   existsLabel.text = "Not exists"
             }
+        }
         val existsPanel = JPanel()
         with(existsPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -439,9 +440,12 @@ fun main(args:Array<String>){
         add(newFrameButton)
     }
 
+    fun stringToInt(a:String):Int?{
+         return try { a.toInt() } catch (e: NumberFormatException){null}
+    }
 
     SwingUtilities.invokeLater {
-        val treeFrame = IntBinarySearchTreeFrame(treeModel)
+        val treeFrame = BinarySearchTreeFrame(treeModel, ::stringToInt)
         with(treeFrame){
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             pack()
