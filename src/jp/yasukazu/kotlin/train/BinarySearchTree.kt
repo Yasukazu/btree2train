@@ -460,7 +460,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
      */
     fun delete(key: T): Boolean {
         //class ImproperArgumentException(msg:String) : Exception(msg)
-        fun _delete_node(self: BinaryNode<T>?, parent: BinaryNode<T>?): Boolean { //Pair<T, T>?{
+        fun _delete_node(self: BinaryNode<T>?, parent: BinaryNode<T>?): Int { //Pair<T, T>?{
             // Delete self binaryNode
             fun __delete_self_node(self: BinaryNode<T>, parent: BinaryNode<T>?){
                 assert(self.left == null && self.right == null)
@@ -478,8 +478,9 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
             }
             // replace self with child
             fun __replace(self: BinaryNode<T>, child: BinaryNode<T>, parent: BinaryNode<T>?){
-                //child.parent = parent
-                if (parent != null) {
+                if (parent == null) {
+                    rootBinaryNode = child
+                } else {
                     if (parent.left == self)
                         parent.left = child
                     else if (parent.right == self)
@@ -518,7 +519,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
             }
             // code starts here
             if (self == null)
-                return false
+                return -1
             else {
                 if (key < self.key) {
                     return _delete_node(self.left, self)
@@ -529,31 +530,32 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                     val bL = if(self.left == null) 0 else 1
                     val bR = if(self.right == null) 0 else 2
                     when(bL or bR){
-                        0 -> __delete_self_node(self, parent)
-                        1 -> __replace(self, self.left!!, parent)
-                        2 -> __replace(self, self.right!!, parent)
-                        else -> __replace2(self)
+                        0 -> {
+                            __delete_self_node(self, parent)
+                            return 0
+                        }
+                        1 -> {
+                            __replace(self, self.left!!, parent)
+                            return 1
+                        }
+                        2 -> {
+                            __replace(self, self.right!!, parent)
+                            return 2
+                        }
+                        else -> {
+                            __replace2(self)
+                            return 3
+                        }
                     }
-                    return true
-                    /*
-                    if (self.left == null && self.right == null) {
-                        return __delete_self_node(self, parent)
-                    } else if (hl == 0b10){//(self.left != null && self.right == null) {
-                        return __replace(self, self.left!!, parent)
-                    } else if (self.right != null && self.left == null) {
-                        return __replace(self, self.right!!, parent)
-                    } else { // BinaryNode has 2 children
-                        return __replace2(self)
-                    } */
                 }
             }
         }
         if (rootBinaryNode != null) {
             val deleted = _delete_node(rootBinaryNode, null)
-            if (deleted){
+            if (deleted > 0){
                 --_size
             }
-            return deleted
+            return true
         }
         return false
     }
