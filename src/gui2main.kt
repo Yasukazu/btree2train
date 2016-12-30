@@ -5,8 +5,13 @@
  */
 import jp.yasukazu.kotlin.train.BinarySearchTreeModel
 import jp.yasukazu.kotlin.train.BinarySearchTreeFrame
+import java.text.CollationKey
+import java.text.Collator
+import java.text.Normalizer
+import java.util.*
 import javax.swing.JFrame
 import javax.swing.SwingUtilities
+
 
 fun main(args:Array<String>){
     val treeModel = BinarySearchTreeModel<Float>()
@@ -22,6 +27,17 @@ fun main(args:Array<String>){
     args.forEach { i ->
             stringTreeModel += i
     }
+
+    val kollatorTreeModel = BinarySearchTreeModel<KollationKey>()
+    fun fromStringToKollationKey(it: String): KollationKey {
+        val collator = Collator.getInstance(Locale.JAPANESE)
+        collator.strength = Collator.SECONDARY
+        return KollationKey(collator.getCollationKey(Normalizer.normalize((it), Normalizer.Form.NFKC)))
+    }
+    args.forEach {it ->
+        kollatorTreeModel += fromStringToKollationKey(it)
+    }
+
     SwingUtilities.invokeLater {
         val intTreeFrame = BinarySearchTreeFrame(treeModel){try{it.toFloat()}catch (e:NumberFormatException){null}}
         with(intTreeFrame){
@@ -33,6 +49,13 @@ fun main(args:Array<String>){
         val stringTreeFrame = BinarySearchTreeFrame(stringTreeModel){it}
         with(stringTreeFrame){
             title = "String Tree"
+            defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+            pack()
+            isVisible = true
+        }
+        val kollationKeyFrame = BinarySearchTreeFrame(kollatorTreeModel, ::fromStringToKollationKey)
+        with(stringTreeFrame){
+            title = "Collation String Tree"
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             pack()
             isVisible = true
