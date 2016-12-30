@@ -1,4 +1,37 @@
 # Binary Search Tree structure and algorithm as Computer Science
+ 
+Usage
+-----
+### Quick Trial ###
+
+ + by Jython
+
+   1. inside jython, Use downloaded "btree2train.jar"
+   ```python
+   import sys
+   sys.path.append('Downloads/btree2train.jar')
+   # new object
+   bst = BinarySearchTree()
+   # know properties/methods
+   dir(bst)
+   # get size
+   bst.size
+   # insert keys
+   bst.insert('b')
+   bst.insert('c')
+   bst.insert('a')
+   bst.size
+   # iterate
+   for n in bst:
+     print 
+   # check existence
+   'b' in 3
+   # delete key
+   bst.delete(3)
+   # get node list
+   nodeList = bst.preTraverseNodeList()
+   ``` 
+     
  - GUI Usage:
 ```kotlin
 /**
@@ -22,7 +55,7 @@ fun main(args:Array<String>){
         }
     }
     SwingUtilities.invokeLater {
-        val intTreeFrame = BinarySearchTreeFrame(treeModel){try{it.toInt()}catch (e:NumberFormatException){null}}
+        val intTreeFrame = BinarySearchTreeFrame(treeModel){ try {it.toInt()} catch (e: NumberFormatException){ null }}
         with(intTreeFrame){
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             pack()
