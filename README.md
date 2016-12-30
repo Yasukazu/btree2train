@@ -6,7 +6,7 @@ Usage
 
  + by Jython
 
-   1. inside jython, Use downloaded "btree2train.jar"
+   1. inside jython, Use downloaded "btree2train.jar" : lines start with # are comments
    ```python
    import sys
    sys.path.append('Downloads/btree2train.jar')
@@ -30,12 +30,12 @@ Usage
    bst.delete(3)
    # get node list
    nodeList = bst.preTraverseNodeList()
-   # use BigInteger instead of Integer 'cause most of Number classes in Java do not implement Comparable interface.. 
-   from java.math import BigInteger
+   # use BigDecimal instead of Integer 'cause most of Number classes in Java do not implement Comparable interface.. 
+   from java.math import BigDecimal
    # create a new binary search tree
    bst2 = BinarySearchTree()
-   # insert big integer
-   bst2.insert(BigInteger('5'))
+   # insert number into bst2
+   bst2.insert(BigDecimal(0.5))
    ``` 
      
  - GUI Usage:
