@@ -1,5 +1,6 @@
 package jp.yasukazu.kotlin.train
 
+import java.util.NoSuchElementException
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.MutableTreeNode
 
@@ -70,7 +71,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
         return Node_InsertedPos(binaryNode, InsertedPos.NONE) // Return the (unchanged) binaryNode pointer
     }
 
-    fun insert(key: T): InsertedPos {
+    fun insert_(key: T): InsertedPos {
         if (rootBinaryNode == null){
             rootBinaryNode = BinaryNode(key)
             ++_size
@@ -79,6 +80,67 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
         else {
             val node_InsertedPos = _insert(rootBinaryNode, key)
             return node_InsertedPos.pos
+        }
+    }
+
+
+    fun insert(key: T): InsertedPos {
+        class _BreakException(val e: InsertedPos): Exception()
+        var insertedPos = InsertedPos.NONE
+        tailrec fun _insert(node: BinaryNode<T>) {//: BinaryNode<T>, node: BinaryNode<T>?, pos: InsertedPos){
+            if (node.key == key)
+                throw _BreakException(InsertedPos.NONE)
+            when (node.childrenStatus) {
+                0 -> {
+                    if (key < node.key) {
+                        node.left = BinaryNode(key)
+                        //insertedPos = InsertedPos.LEFT
+                        throw _BreakException(InsertedPos.LEFT)
+                    } else {//if (key > node.key) {
+                        node.right = BinaryNode(key)
+                        //insertedPos = InsertedPos.RIGHT
+                        throw _BreakException(InsertedPos.RIGHT)
+                    }
+                }
+                1 -> {
+                    if (key > node.key){
+                        node.right = BinaryNode(key)
+                        //insertedPos = InsertedPos.RIGHT
+                        throw _BreakException(InsertedPos.RIGHT)
+                    } else
+                        _insert(node.left!!)
+                }
+                2 -> {
+                    if (key < node.key){
+                        node.left = BinaryNode(key)
+                        //insertedPos = InsertedPos.LEFT
+                        throw  _BreakException(InsertedPos.LEFT)
+                    } else
+                        _insert(node.right!!)
+                }
+                3 -> {
+                    if (key < node.key)
+                        _insert(node.left!!)
+                    else
+                        _insert(node.right!!)
+                }
+            }
+        }
+
+        if (rootBinaryNode == null){
+            rootBinaryNode = BinaryNode(key)
+            ++_size
+            return InsertedPos.NEW
+        }
+        else {
+            try {
+                _insert(rootBinaryNode!!)
+            } catch (e: _BreakException) {
+                insertedPos = e.e
+            }
+            if (insertedPos != InsertedPos.NONE)
+                ++_size
+            return insertedPos
         }
     }
 
