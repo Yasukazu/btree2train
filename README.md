@@ -25,7 +25,7 @@ Usage
    for n in bst:
      print 
    # check existence
-   'b' in 3
+   'b' in bst
    # delete key
    bst.delete(3)
    # get node list
