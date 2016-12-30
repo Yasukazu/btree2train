@@ -30,6 +30,12 @@ Usage
    bst.delete(3)
    # get node list
    nodeList = bst.preTraverseNodeList()
+   # use BigInteger instead of Integer 'cause most of Number classes in Java do not implement Comparable interface.. 
+   from java.math import BigInteger
+   # create a new binary search tree
+   bst2 = BinarySearchTree()
+   # insert big integer
+   bst2.insert(BigInteger('5'))
    ``` 
      
  - GUI Usage:
