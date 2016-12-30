@@ -458,7 +458,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
      * Delete a binaryNode following the procedure written in Wikipedia
      * @return success => true
      */
-    fun deleteKey(key: T): Boolean {
+    fun delete(key: T): Boolean {
         //class ImproperArgumentException(msg:String) : Exception(msg)
         fun _delete_node(self: BinaryNode<T>?, parent: BinaryNode<T>?): Boolean { //Pair<T, T>?{
             // Delete self binaryNode
@@ -561,7 +561,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
     /**
      * -= operator
      */
-    operator fun minusAssign(k: T){ deleteKey(k)}
+    operator fun minusAssign(k: T){ delete(k)}
 
     /**
      * Iterable
