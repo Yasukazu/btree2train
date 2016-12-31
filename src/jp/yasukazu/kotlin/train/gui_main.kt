@@ -6,7 +6,7 @@ import javax.swing.*
 import javax.swing.event.TreeModelListener
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.event.TreeSelectionListener
-import javax.swing.tree.DefaultTreeModel
+//import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeModel
 import javax.swing.tree.TreePath
 
@@ -22,13 +22,14 @@ fun List<String>.join(d:String):String{
  */
 class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel {
     val listenerList = mutableListOf<TreeModelListener>()
-    override fun getRoot():Node<T>? { return rootNode }
+    override fun getRoot(): BinaryNode<T>? { return rootBinaryNode
+    }
     override fun isLeaf(_n: Any): Boolean {
-        val n: Node<T> = _n as Node<T>
+        val n = _n as BinaryNode<T>
         return n.left == null && n.right == null
     }
     override fun getChildCount(_n: Any): Int {
-        val n: Node<T> = _n as Node<T>
+        val n = _n as BinaryNode<T>
        return n.size //j(if(n.left != null) 1 else 0) + (if(n.right != null) 1 else 0)
     }
 
@@ -45,13 +46,13 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
         if (parent == null && child == null)
             return -1
         else {
-            val p = parent as Node<T>
+            val p = parent as BinaryNode<T>
             when(p.childrenStatus){
                 0 -> return -1
                 1 -> return 0
                 2 -> return 1
                 else -> {
-                    val c = child as Node<T>
+                    val c = child as BinaryNode<T>
                     return if (c == p.left) 0 else 1
                 }
             }
@@ -60,9 +61,9 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
 
     override fun getChild(parent: Any?, index: Int): Any? {
         if (parent == null)
-            return null//Node<T>(null)
+            return null//BinaryNode<T>(null)
         else {
-            val p = parent as Node<T>
+            val p = parent as BinaryNode<T>
             return when(p.childrenStatus){
                 0 -> null
                 1 -> p[0]
@@ -98,7 +99,7 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
         override fun valueChanged(e: TreeSelectionEvent?) {
             val last = tree?.lastSelectedPathComponent
             if (last != null) {
-                val node = last as Node<T>
+                val node = last as BinaryNode<T>
                 statusLabels[0].text = "${node.key}"
                 statusLabels[1].text = "${node.left?.key}"
                 statusLabels[2].text = "${node.right?.key}"
@@ -119,6 +120,7 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
     val entryLabels = arrayOf(JLabel(), JLabel())
     val treeTopLabel = JLabel()
     val treeLastLabel = JLabel()
+    val existsLabel = JLabel()
 
     fun getTopN(i:Int, reverse:Boolean=false):String {
         var n = i
@@ -155,42 +157,44 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
             add(leftColumn)
             add(rightColumn)
         }
+        fun setTreeStatus(n: Int = 10){
+            treeSizeLabel.text = "Tree Size: ${model.size}"
+            treeTopLabel.text = "Sorted $n Tops: ${getTopN(n)}"
+            treeLastLabel.text = "Sorted $n Lasts: ${getTopN(n, reverse = true)}"
+        }
         insertButton.addActionListener {
             val i:T? = fromString(inputField.text)
             //val i:Int? = try {inputField.text.toInt() } catch (e: NumberFormatException) { null}
             if (i != null){
-                model.insert(i)
+                val result = model.insert(i)
                 subPanel.removeAll()
                 tree = JTree(model)
                 tree?.addTreeSelectionListener(originalTreeSelectionListener)
                 subPanel.add(JScrollPane(tree))
                 subPanel.revalidate()
-                treeSizeLabel.text = "Tree Size: ${model.size}"
-                treeTopLabel.text = "Sorted 3 Tops: ${getTopN(3)}"
-                treeLastLabel.text = "Sorted 3 Lasts: ${getTopN(3, reverse = true)}"
+                setTreeStatus()
+                existsLabel.text = "Insert result: $result"
             }
         }
         deleteButton.addActionListener {
             val i:T? = fromString(inputField.text)
             //val i:Int? = try {inputField.text.toInt() } catch (e: NumberFormatException) { null}
             if (i != null) {
-                model -= i // deleteKey
+                val result = model.delete(i)
                 subPanel.removeAll()
                 tree = JTree(model)
                 tree?.addTreeSelectionListener(originalTreeSelectionListener)
                 subPanel.add(JScrollPane(tree))
                 subPanel.revalidate()
-                treeSizeLabel.text = "Tree Size: ${model.size}"
-                treeTopLabel.text = "Sorted 3 Tops: ${getTopN(3)}"
-                treeLastLabel.text = "Sorted 3 Lasts: ${getTopN(3, reverse = true)}"
+                setTreeStatus()
+                existsLabel.text = "Delete result: $result"
             }
         }
-        val existsLabel = JLabel()
         val existsButton = JButton("Check existence")
         existsButton.addActionListener { e ->
             val i:T? = fromString(inputField.text)
             //    val i = try { inputField.text.toInt() } catch (e: NumberFormatException){null}
-            if (i != null && model != null){
+            if (i != null){// && model != null){
                 val path = model.findPath(i)
                if (path != null) {//i in model)
                    val sb = StringBuilder()
@@ -239,6 +243,7 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
             add(deleteButton, BorderLayout.EAST)
             add(statusPanel, BorderLayout.SOUTH)
         }
+        setTreeStatus()
         add(panel)
         title = "Integer Binary Search Tree"
     }
@@ -341,8 +346,14 @@ fun main(args:Array<String>){
         //println(if(btree.find(x)) "$x exists" else "$x does not exist")
         println(if(x in btree) "$x exists." else "$x does not exist.")
     }
+    /* Iterate */
+    println("Iteration of Tree:")
+    btree.forEach { it ->
+        print("$it, ")
+    }
+    println()
     //val delete_value = 12 //"C"
-
+    /*
     var root = btree.preTraverseTreeNode() //DefaultMutableTreeNode("root")
     val model = DefaultTreeModel(root)
     val msgLabel = JLabel()
@@ -357,15 +368,16 @@ fun main(args:Array<String>){
                 sb.append("$path,")
             msgLabel2.text = sb.toString()
         }
-    }
+    } */
     val treeModel = BinarySearchTreeModel<Int>()
     btree.preTraverse { k ->
         treeModel.insert(k)
     }
+    /*
     val modelTree = JTree(treeModel)
 
     class TreeControlPanel<T:Comparable<T>>(tr: JTree) : JPanel() {
-        //var node: BinarySearchTree.Node<T>? = null
+        //var binaryNode: BinarySearchTree.BinaryNode<T>? = null
         val textField = JTextField()
         init {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -373,14 +385,14 @@ fun main(args:Array<String>){
             add(textField)
             tr.addTreeSelectionListener { e ->
                 val last = tr.lastSelectedPathComponent
-                val node = last as Node<T>?
+                val node = last as BinaryNode<T>?
                 textField.text = node?.key.toString()
             }
             val deleteButton = JButton("Delete")
             deleteButton.addActionListener { e ->
                 val i = try { textField.text.toInt()} catch (e: IllegalFormatException) { null }
                 if (i != null){
-                    treeModel -= i //.deleteKey(i)
+                    treeModel -= i //.delete(i)
                 }
             }
             add(deleteButton)
@@ -401,7 +413,7 @@ fun main(args:Array<String>){
         addActionListener {
             val delete_value: Int? = try{ msgLabel.text.toInt() } catch(e: IllegalFormatException){ null }
             if(delete_value != null) {
-                btree.deleteKey(delete_value)
+                btree.delete(delete_value)
                 root = btree.preTraverseTreeNode()
                 model.setRoot(root)
                 for (i in 0..tree.rowCount - 1)
@@ -438,7 +450,7 @@ fun main(args:Array<String>){
             }
         }
         add(newFrameButton)
-    }
+    }*/
 
     fun stringToInt(a:String):Int?{
          return try { a.toInt() } catch (e: NumberFormatException){null}
