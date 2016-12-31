@@ -476,53 +476,17 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
         _inOrderTraverse(rootBinaryNode, "", callback)
     }
 
-    /**
-     * Exception class
-     */
-    //class NoNodeException(msg: String): Exception(msg)
 
-    /**
-     * delete binaryNode
-    fun delete_node(binaryNode: BinaryNode<T>?, key: T, writer: (String)->Unit): BinaryNode<T>?{
-        if (binaryNode == null)
-            writer("No '$key'.") // throw NoNodeException("delete: binaryNode == null")
-        else if (key < binaryNode.key)
-            binaryNode.left = delete_node(binaryNode.left, key, writer)
-        else if (key > binaryNode.key)
-            binaryNode.right = delete_node(binaryNode.right, key, writer)
-        else {
-            if (binaryNode.left == null)
-                return binaryNode.right
-            else if (binaryNode.right == null)
-                return binaryNode.left
-           val rightMinNode = _getMinNode(binaryNode.right)
-           if (rightMinNode != null) {
-               binaryNode.key = rightMinNode.key
-               binaryNode.right = delete_node(binaryNode.right, binaryNode.key, writer)
-           }
-           else
-               writer("_getMinNode returned null value.")
-       }
-        return binaryNode
-    }
-
-    fun delete(key: T, writer: (String)->Unit=::println): Boolean {
-       val binaryNode = delete_node(rootBinaryNode, key, writer)
-       return if (binaryNode == null)
-           false
-       else true
-    }
-
-     */
 
 
     /**
      * Delete a binaryNode following the procedure written in Wikipedia
      * @return success => true
      */
-    fun delete(key: T): Boolean {
+    enum class DeleteResult {SELF_DELETE, L_REPLACE, R_REPLACE, SUCC_REPLACE, NO_MATCH, EMPTY}
+    fun delete(key: T): DeleteResult {
         //class ImproperArgumentException(msg:String) : Exception(msg)
-        fun _delete_node(self: BinaryNode<T>?, parent: BinaryNode<T>?): Int { //Pair<T, T>?{
+        fun _delete_node(self: BinaryNode<T>?, parent: BinaryNode<T>?): DeleteResult { //Pair<T, T>?{
             // Delete self binaryNode
             fun __delete_self_node(self: BinaryNode<T>, parent: BinaryNode<T>?){
                 assert(self.left == null && self.right == null)
@@ -581,7 +545,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
             }
             // code starts here
             if (self == null)
-                return -1
+                return DeleteResult.NO_MATCH
             else {
                 if (key < self.key) {
                     return _delete_node(self.left, self)
@@ -594,19 +558,19 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                     when(bL or bR){
                         0 -> {
                             __delete_self_node(self, parent)
-                            return 0
+                            return DeleteResult.SELF_DELETE
                         }
                         1 -> {
                             __replace(self, self.left!!, parent)
-                            return 1
+                            return DeleteResult.L_REPLACE
                         }
                         2 -> {
                             __replace(self, self.right!!, parent)
-                            return 2
+                            return DeleteResult.R_REPLACE
                         }
                         else -> {
                             __replace2(self)
-                            return 3
+                            return DeleteResult.SUCC_REPLACE
                         }
                     }
                 }
@@ -614,12 +578,12 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
         }
         if (rootBinaryNode != null) {
             val deleted = _delete_node(rootBinaryNode, null)
-            if (deleted > 0){
+            if (deleted != DeleteResult.NO_MATCH){
                 --_size
             }
-            return true
+            return deleted
         }
-        return false
+        return DeleteResult.EMPTY
     }
 
     /**
