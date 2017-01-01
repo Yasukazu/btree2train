@@ -27,13 +27,36 @@ open class BinaryNode<T: Comparable<T>> (var key: T, var left: BinaryNode<T>? = 
         }
     }
 
-    val size: Int get(){
+    /**
+     * children count
+     */
+    val size: Int
+        get(){
         return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 1 else 0)
     }
 
     val childrenStatus: Int get(){
         return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 2 else 0)
     }
+
+    /**
+     * recursive count self and children
+     */
+    val count: Int
+        get(){
+            var n = 0
+            fun _count(node: BinaryNode<T>?){
+                if (node == null)
+                    return
+                ++n
+                if (node.left != null)
+                    _count(node.left)
+                if (node.right != null)
+                    _count(node.right)
+            }
+            _count(this)
+            return n
+        }
 
     fun copy(): BinaryNode<T>?{
         fun _copy(node: BinaryNode<T>?): BinaryNode<T>?{
@@ -54,38 +77,45 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
 
     var rootBinaryNode: BinaryNode<T>? = null
     private var _size: Int = 0
-    val size: Int get() = _size
+    val size: Int get() = count()//_size
+      //  set(i){_size = i}
+
 
     enum class InsertedPos {
         LEFT, NEW, RIGHT, NONE
     }
 
-    data class Node_InsertedPos <T: Comparable<T>>(val binaryNode: BinaryNode<T>, val pos: InsertedPos)
-    private fun _insert(binaryNode: BinaryNode<T>?, key: T): Node_InsertedPos<T> { //<BinaryNode<T>?, BinaryNode<T>?, InsertedPos> {
-        if (binaryNode == null) { // If the binaryNode is empty, return a new binaryNode
-            return Node_InsertedPos(BinaryNode(key), InsertedPos.NEW)
-        }
-        else { // Otherwise, recur down the tree
-            if (key < binaryNode.key) {
-                val node_InsertedPos = _insert(binaryNode.left, key)
-                if (node_InsertedPos.pos == InsertedPos.NEW) {
-                    ++_size
-                    binaryNode.left = node_InsertedPos.binaryNode
-                    return Node_InsertedPos(node_InsertedPos.binaryNode, InsertedPos.LEFT) // Return the (unchanged) binaryNode pointer
-                }
-            } else if (key > binaryNode.key) {
-                val (newNode, pos) = _insert(binaryNode.right, key)
-                if (pos == InsertedPos.NEW) {
-                    ++_size
-                    binaryNode.right = newNode
-                    return Node_InsertedPos(newNode, InsertedPos.RIGHT) // Return the (unchanged) binaryNode pointer
-                }
-            }
-        }
-        return Node_InsertedPos(binaryNode, InsertedPos.NONE) // Return the (unchanged) binaryNode pointer
+    fun forceSetSize(i: Int?){
+        if(i != null)
+            _size = i
     }
 
+    data class Node_InsertedPos <T: Comparable<T>>(val binaryNode: BinaryNode<T>, val pos: InsertedPos)
     fun insert_(key: T): InsertedPos {
+        fun _insert(binaryNode: BinaryNode<T>?, key: T): Node_InsertedPos<T> { //<BinaryNode<T>?, BinaryNode<T>?, InsertedPos> {
+            if (binaryNode == null) { // If the binaryNode is empty, return a new binaryNode
+                return Node_InsertedPos(BinaryNode(key), InsertedPos.NEW)
+            }
+            else { // Otherwise, recur down the tree
+                if (key < binaryNode.key) {
+                    val node_InsertedPos = _insert(binaryNode.left, key)
+                    if (node_InsertedPos.pos == InsertedPos.NEW) {
+                        ++_size
+                        binaryNode.left = node_InsertedPos.binaryNode
+                        return Node_InsertedPos(node_InsertedPos.binaryNode, InsertedPos.LEFT) // Return the (unchanged) binaryNode pointer
+                    }
+                } else if (key > binaryNode.key) {
+                    val (newNode, pos) = _insert(binaryNode.right, key)
+                    if (pos == InsertedPos.NEW) {
+                        ++_size
+                        binaryNode.right = newNode
+                        return Node_InsertedPos(newNode, InsertedPos.RIGHT) // Return the (unchanged) binaryNode pointer
+                    }
+                }
+            }
+            return Node_InsertedPos(binaryNode, InsertedPos.NONE) // Return the (unchanged) binaryNode pointer
+        }
+
         if (rootBinaryNode == null){
             rootBinaryNode = BinaryNode(key)
             ++_size
@@ -311,6 +341,25 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
         return list
     }
 
+    /**
+     * count up keys
+     */
+    fun count(): Int{
+        return rootBinaryNode?.count ?: 0
+    }
+
+    /**
+     * copy/clone self
+     */
+    open fun copy(): BinarySearchTree<T>?{
+       if (rootBinaryNode == null)
+           return null
+        val newRoot = rootBinaryNode?.copy()
+        val newTree = BinarySearchTree<T>()
+        newTree.rootBinaryNode = newRoot
+        newTree._size = this.count()
+        return newTree
+    }
     /*
     enum class ChildPos {NONE, L, R}
     fun clone(): BinaryNode<T>?{
