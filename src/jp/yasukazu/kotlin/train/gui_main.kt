@@ -20,8 +20,15 @@ fun List<String>.join(d:String):String{
 /**
  * Custom JTree Model
  */
-class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel {
+class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) : BinarySearchTree<T>(), TreeModel {
     val listenerList = mutableListOf<TreeModelListener>()
+    init {
+        if (_root != null) {
+            rootBinaryNode = _root
+            //forceSetSize(_root.count)
+        }
+
+    }
     override fun getRoot(): BinaryNode<T>? { return rootBinaryNode
     }
     override fun isLeaf(_n: Any): Boolean {
@@ -78,10 +85,16 @@ class BinarySearchTreeModel<T:Comparable<T>> : BinarySearchTree<T>(), TreeModel 
             listenerList.add(l)//TreeModelListener::class.java, l)
     }
 
+    fun clone(): BinarySearchTreeModel<T>{
+        val tree = copy()
+        val newModel = BinarySearchTreeModel(tree?.rootBinaryNode)
+        return newModel
+    }
+
 }
 
 
-class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<T>, fromString:(String)->T?) : JFrame() {
+class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<T>, val fromString:(String)->T?) : JFrame() {
     val inputField = JTextField()
     val insertButton = JButton("Insert")
     val deleteButton = JButton("Delete")
@@ -94,6 +107,7 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
     val statusPanel = JPanel()
     var tree: JTree? = null
     val treeSizeLabel = JLabel()
+    val cloneButton = JButton("Clone self")
 
     inner class OriginalTreeSelectionListener : TreeSelectionListener{
         override fun valueChanged(e: TreeSelectionEvent?) {
@@ -117,7 +131,7 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
         }
     }
     val originalTreeSelectionListener = OriginalTreeSelectionListener()
-    val entryLabels = arrayOf(JLabel(), JLabel())
+    //val entryLabels = arrayOf(JLabel(), JLabel())
     val treeTopLabel = JLabel()
     val treeLastLabel = JLabel()
     val existsLabel = JLabel()
@@ -207,6 +221,15 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
                    existsLabel.text = "Not exists"
             }
         }
+        cloneButton.addActionListener { e ->
+            val cloneModel = model.clone()
+            SwingUtilities.invokeLater {
+                val newFrame = BinarySearchTreeFrame(cloneModel, fromString)
+                newFrame.title = "Clone of ${newFrame.title}"
+                newFrame.pack()
+                newFrame.isVisible = true
+            }
+        }
         val existsPanel = JPanel()
         with(existsPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -218,6 +241,7 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             add(insertButton)
             add(existsPanel)
+            add(cloneButton)
         }
         treeSizeLabel.text = "Tree Size: ${model.size}"
         treeTopLabel.text = "Sorted 3 Tops: ${getTopN(3)}"
@@ -300,10 +324,24 @@ fun main(args:Array<String>){
     println()
     println("pre-order traversal with depth")
     btree.preTraverse_depth("") {s,d->println("$s:$d")}
-
+    println()
+    println("pre-order traversal with LR")
+    btree.preTraverseLR {k,lr -> println("$lr->$k")}
     println()
     println("post order traversal with depth")
     btree.postTraverse_depth {s,d->println("$s:$d")}
+    println("pre-order traversal with print")
+    btree.preTraversePrint {s -> print("$s")}
+    println()
+    // node copy
+    val newRoot = btree.rootBinaryNode?.copy()
+    if (newRoot != null){
+        val newBtree = BinarySearchTree<Int>()
+        newBtree.rootBinaryNode = newRoot
+        println("Cloned binary search tree:")
+        newBtree.preTraversePrint { s -> print("$s") }
+        println()
+    }
 
     println("\nBTree in-order traversal:")
     btree.inTraverse { x ->
