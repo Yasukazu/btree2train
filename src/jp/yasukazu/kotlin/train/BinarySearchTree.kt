@@ -197,24 +197,36 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
     /**
      * find key
      */
+    enum class FindResult {NOT_FOUND, FOUND}
     fun find(key: T):Boolean{
+        class _BreakException(val e: FindResult): Exception()
         /**
          * pre-find
          * return non-null if found
          */
-        tailrec fun _find(binaryNode: BinaryNode<T>?): BinaryNode<T>? {
+        var result = false
+        tailrec fun _find(binaryNode: BinaryNode<T>?){//: BinaryNode<T>? {
             if (binaryNode == null) {
-                return null
+                //result = false
+                throw _BreakException(FindResult.NOT_FOUND)
+                //return null
             } else { // Otherwise, recur down the tree
                 if (key < binaryNode.key) {
-                    return _find(binaryNode.left)
+                    _find(binaryNode.left)
                 } else if (key > binaryNode.key) {
-                    return _find(binaryNode.right)
+                    _find(binaryNode.right)
+                } else {
+                    //result = true
+                    throw _BreakException(FindResult.FOUND)
                 }
             }
-            return binaryNode
         }
-        return _find(rootBinaryNode) != null
+        try {
+           _find(rootBinaryNode)
+        } catch (e: _BreakException){
+            result = e.e == FindResult.FOUND
+        }
+        return result
     }
 
     /**
@@ -486,7 +498,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
     enum class DeleteResult {SELF_DELETE, L_REPLACE, R_REPLACE, SUCC_REPLACE, NO_MATCH, EMPTY}
     fun delete(key: T): DeleteResult {
         //class ImproperArgumentException(msg:String) : Exception(msg)
-        fun _delete_node(self: BinaryNode<T>?, parent: BinaryNode<T>?): DeleteResult { //Pair<T, T>?{
+        tailrec fun _delete_node(self: BinaryNode<T>?, parent: BinaryNode<T>?): DeleteResult { //Pair<T, T>?{
             // Delete self binaryNode
             fun __delete_self_node(self: BinaryNode<T>, parent: BinaryNode<T>?){
                 assert(self.left == null && self.right == null)
