@@ -23,14 +23,14 @@ Usage
    bst.size
    # iterate
    for n in bst:
-     print 
+     print(n)
    # check existence
    'b' in bst
    # delete key
    bst.delete(3)
    # get node list
    nodeList = bst.preTraverseNodeList()
-   # use object type number
+   # import any number class to use number
    from java.lang import Double
    # create a new binary search tree
    bst2 = BinarySearchTree()
