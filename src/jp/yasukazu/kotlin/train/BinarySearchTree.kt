@@ -34,6 +34,20 @@ open class BinaryNode<T: Comparable<T>> (var key: T, var left: BinaryNode<T>? = 
     val childrenStatus: Int get(){
         return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 2 else 0)
     }
+
+    fun copy(): BinaryNode<T>?{
+        fun _copy(node: BinaryNode<T>?): BinaryNode<T>?{
+            if (node == null)
+                return null
+           val newNode = BinaryNode(node.key, node.left, node.right)
+            if (node.left != null)
+                newNode.left = _copy(node.left)
+            if (node.right != null)
+                newNode.right = _copy(node.right)
+            return newNode
+        }
+        return _copy(this)
+    }
 }
 
 open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
@@ -268,48 +282,94 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
     }
 
     fun preTraverseNodeList(): List<BinaryNode<T>?>{
-        fun _preTraverseList(binaryNode: BinaryNode<T>?, list: MutableList<BinaryNode<T>?>){
+        val list = mutableListOf<BinaryNode<T>?>()
+        fun _preTraverseList(binaryNode: BinaryNode<T>?){
             if (binaryNode == null)
                 return
             else {
                 list += binaryNode
-                _preTraverseList(binaryNode.left, list)
-                _preTraverseList(binaryNode.right, list)
+                _preTraverseList(binaryNode.left)
+                _preTraverseList(binaryNode.right)
             }
         }
-        val list = mutableListOf<BinaryNode<T>?>()
-        _preTraverseList(rootBinaryNode, list)
+        _preTraverseList(rootBinaryNode)
         return list
-    }
-
-    private fun _preTraverseList(binaryNode: BinaryNode<T>?, list: MutableList<T>){
-        if (binaryNode == null)
-            return
-        else {
-            list += binaryNode.key
-            _preTraverseList(binaryNode.left, list)
-            _preTraverseList(binaryNode.right, list)
-        }
     }
 
     fun preTraverseList(): List<T>{
         val list = mutableListOf<T>()
-        _preTraverseList(rootBinaryNode, list)
+        fun _preTraverseList(binaryNode: BinaryNode<T>?){
+            if (binaryNode == null)
+                return
+            else {
+                list += binaryNode.key
+                _preTraverseList(binaryNode.left)
+                _preTraverseList(binaryNode.right)
+            }
+        }
+        _preTraverseList(rootBinaryNode)
         return list
     }
 
-    private fun _preTraverse(binaryNode: BinaryNode<T>?, callback:(T)->Unit){
-        if (binaryNode == null)
-            return
-        else {
-            callback(binaryNode.key)
-            _preTraverse(binaryNode.left, callback)
-            _preTraverse(binaryNode.right, callback)
+    /*
+    enum class ChildPos {NONE, L, R}
+    fun clone(): BinaryNode<T>?{
+        var node: BinaryNode<T>?
+        fun _preTraverseList(src: BinaryNode<T>?, child: BinaryNode<T>?, pos:ChildPos){
+            if (src == null || child == null)
+                return
+            else {
+                when(pos){
+                    ChildPos.L -> {
+                        child.left = src.copy()
+                _preTraverseList(src.left, child, ChildPos.L)
+                if (src.)
+                    }
+                }
+                node = BinaryNode(binaryNode.key, left=binaryNode.left, right = binaryNode.right)
+                _preTraverseList(binaryNode.left)
+                _preTraverseList(binaryNode.right)
+            }
         }
-    }
+        if (rootBinaryNode == null)
+            return null
+        node = rootBinaryNode?.copy()
+        if (node?.left != null)
+            _preTraverseList(node!!, node?.left, ChildPos.L)
+        _preTraverseList(rootBinaryNode, rootBinaryNode?.copy())
+        if (node?.right != null)
+            _preTraverseList(node!!, node?.right, ChildPos.L)
+        _preTraverseList(rootBinaryNode, node)
+        return node
+    }*/
 
     fun preTraverse(callback:(T)->Unit){
-        _preTraverse(rootBinaryNode, callback)
+        fun _preTraverse(binaryNode: BinaryNode<T>?){
+            if (binaryNode == null)
+                return
+            else {
+                callback(binaryNode.key)
+                _preTraverse(binaryNode.left)
+                _preTraverse(binaryNode.right)
+            }
+        }
+
+        _preTraverse(rootBinaryNode)
+    }
+
+    fun preTraversePrint(callback:(String)->Unit){
+        fun _preTraverse(binaryNode: BinaryNode<T>?){
+            if (binaryNode == null)
+                return
+            else {
+                callback("${binaryNode.key}:(")// callback("(")//Left recur starts;")
+                _preTraverse(binaryNode.left)
+                callback(",")//Right recur starts;")
+                _preTraverse(binaryNode.right)
+                callback(")")
+            }
+        }
+        _preTraverse(rootBinaryNode)
     }
 
     tailrec fun _preTraverseTreeNode(binaryNode: BinaryNode<T>?, tnode: MutableTreeNode){
@@ -340,20 +400,32 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
         return null
     }
 
-    private fun _preTraverse_depth(binaryNode: BinaryNode<T>?, depth: String, callback:(T, String)->Unit){
-        if (binaryNode == null)
-            return
-        else {
-            callback(binaryNode.key, depth)
-            _preTraverse_depth(binaryNode.left, depth + "<", callback)
-            _preTraverse_depth(binaryNode.right, depth + ">", callback)
-        }
-    }
-
     fun preTraverse_depth(s: String, callback:(T, String)->Unit){
-       _preTraverse_depth(rootBinaryNode, s, callback)
+        fun _preTraverse_depth(binaryNode: BinaryNode<T>?, depth: String){
+            if (binaryNode == null)
+                return
+            else {
+                callback(binaryNode.key, depth)
+                _preTraverse_depth(binaryNode.left, depth + "<")
+                _preTraverse_depth(binaryNode.right, depth + ">")
+            }
+        }
+       _preTraverse_depth(rootBinaryNode, s)
     }
 
+    enum class TraverseLR {NONE, L, R}
+    fun preTraverseLR(callback:(T, TraverseLR)->Unit){
+        fun _preTraverseLR(binaryNode: BinaryNode<T>?, L_R: TraverseLR){
+            if (binaryNode == null)
+                return
+            else {
+                callback(binaryNode.key, L_R)
+                _preTraverseLR(binaryNode.left, TraverseLR.L)
+                _preTraverseLR(binaryNode.right, TraverseLR.R)
+            }
+        }
+        _preTraverseLR(rootBinaryNode, TraverseLR.NONE)
+    }
 
     private fun _postTraverse_depth(binaryNode: BinaryNode<T>?, depth: String, callback:(T, String)->Unit){
         if (binaryNode == null)
