@@ -5,7 +5,8 @@
  */
 import jp.yasukazu.kotlin.train.BinarySearchTreeModel
 import jp.yasukazu.kotlin.train.BinarySearchTreeFrame
-import java.text.CollationKey
+import jp.yasukazu.kotlin.train.KollationKey
+//import java.text.CollationKey
 import java.text.Collator
 import java.text.Normalizer
 import java.util.*
