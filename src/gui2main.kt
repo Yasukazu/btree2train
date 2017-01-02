@@ -31,7 +31,7 @@ fun main(args:Array<String>){
 
     val kollatorTreeModel = BinarySearchTreeModel<KollationKey>()
     fun fromStringToKollationKey(it: String): KollationKey {
-        val collator = Collator.getInstance(Locale.JAPANESE)
+        val collator = Collator.getInstance()//Locale.JAPANESE)
         collator.strength = Collator.SECONDARY
         return KollationKey(collator.getCollationKey(Normalizer.normalize((it), Normalizer.Form.NFKC)))
     }
