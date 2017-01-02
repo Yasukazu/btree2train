@@ -44,7 +44,7 @@ fun main(args: Array<String>){
         return sourceString
     }
 
-    val collator = Collator.getInstance(Locale.JAPANESE)
+    val collator = Collator.getInstance()//Locale.JAPANESE)
     collator.strength = Collator.SECONDARY
     //val trans = Transliterator.getInstance("Fullwidth-Halfwidth")//-Fullwidth")
     val root = BinarySearchTree<KollationKey>()
