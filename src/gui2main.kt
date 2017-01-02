@@ -6,10 +6,13 @@
 import jp.yasukazu.kotlin.train.BinarySearchTreeModel
 import jp.yasukazu.kotlin.train.BinarySearchTreeFrame
 import jp.yasukazu.kotlin.train.KollationKey
+import java.io.FileOutputStream
+import java.io.ObjectOutputStream
 //import java.text.CollationKey
 import java.text.Collator
 import java.text.Normalizer
 import java.util.*
+import javax.swing.JButton
 import javax.swing.JFrame
 import javax.swing.SwingUtilities
 
@@ -55,7 +58,19 @@ fun main(args:Array<String>){
             isVisible = true
         }
         val kollationKeyFrame = BinarySearchTreeFrame(kollatorTreeModel, ::fromStringToKollationKey)
-        with(stringTreeFrame){
+        with(kollationKeyFrame){
+            /*
+            val filename = "___outputStream___.$$$"
+            val serializeButton = JButton("Serialize to $filename")
+            serializeButton.addActionListener {
+                FileOutputStream(filename).use { output ->
+                    ObjectOutputStream(output).use { oo ->
+                        oo.writeObject(this.tree)
+                    }
+                }
+            }
+            entryPanel.add(serializeButton)
+            */
             title = "Collation String Tree"
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             pack()
