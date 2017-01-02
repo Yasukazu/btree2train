@@ -1,6 +1,8 @@
 package jp.yasukazu.kotlin.train
 
 import java.awt.BorderLayout
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
 import java.util.*
 import javax.swing.*
 import javax.swing.event.TreeModelListener
@@ -93,9 +95,9 @@ class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) : Bin
 
 }
 
-
+//enum class Insert_Delete {INSERT, DELETE}
 class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<T>, val fromString:(String)->T?) : JFrame() {
-    val inputField = JTextField()
+    val inputArea = JTextArea()
     val insertButton = JButton("Insert")
     val deleteButton = JButton("Delete")
     val statusLabels = arrayOf(JLabel(), JLabel(), JLabel(), JLabel(), JLabel(), JLabel())
@@ -134,7 +136,7 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
     //val entryLabels = arrayOf(JLabel(), JLabel())
     val treeTopLabel = JLabel()
     val treeLastLabel = JLabel()
-    val existsLabel = JLabel()
+    val existsList = JList<String>()//JLabel()
 
     fun getTopN(i:Int, reverse:Boolean=false):String {
         var n = i
@@ -171,54 +173,104 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
             add(leftColumn)
             add(rightColumn)
         }
+
         fun setTreeStatus(n: Int = 10){
             treeSizeLabel.text = "Tree Size: ${model.size}"
             treeTopLabel.text = "Sorted $n Tops: ${getTopN(n)}"
             treeLastLabel.text = "Sorted $n Lasts: ${getTopN(n, reverse = true)}"
         }
+        /*
+        class InsertActionListener(val method: Insert_Delete): ActionListener {
+            //val resultStr = if (method == Insert_Delete.INSERT) "Insert" else "Delete"
+            override fun actionPerformed(e: ActionEvent?) {
+                val listModel = DefaultListModel<String>()
+                //val sb = StringBuilder("$resultStr result:")
+                inputArea.text.split('\n').forEach { s ->
+                    val i: T? = fromString(s.trim())
+                    if (i != null) {
+                        val result: Any?
+                        when (method) {
+                            Insert_Delete.INSERT -> result = model.insert(i)
+                            else -> result = model.delete(i)
+                        }
+                        //sb.append("$result ")
+                        listModel.addElement("$i->$result")
+                    }
+                }
+                subPanel.removeAll()
+                tree = JTree(model)
+                tree?.addTreeSelectionListener(originalTreeSelectionListener)
+                subPanel.add(JScrollPane(tree))
+                existsList.model = listModel
+                subPanel.revalidate()
+                setTreeStatus()
+                //existsList.text = sb.toString()
+            }
+        }*/
+
+        class InsertActionListener2(val method: (T)->Any?): ActionListener {
+            override fun actionPerformed(e: ActionEvent?) {
+                val listModel = DefaultListModel<String>()
+                inputArea.text.split('\n').forEach { s ->
+                    val i: T? = fromString(s.trim())
+                    if (i != null) {
+                        val result = method(i)
+                        listModel.addElement("$i->$result")
+                    }
+                }
+                subPanel.removeAll()
+                tree = JTree(model)
+                tree?.addTreeSelectionListener(originalTreeSelectionListener)
+                subPanel.add(JScrollPane(tree))
+                existsList.model = listModel
+                subPanel.revalidate()
+                setTreeStatus()
+                //existsList.text = sb.toString()
+            }
+        }
+        insertButton.addActionListener(InsertActionListener2{i->model.insert(i)})//(Insert_Delete.INSERT))
+        /*
         insertButton.addActionListener {
-            val i:T? = fromString(inputField.text)
-            //val i:Int? = try {inputField.text.toInt() } catch (e: NumberFormatException) { null}
-            if (i != null){
-                val result = model.insert(i)
-                subPanel.removeAll()
-                tree = JTree(model)
-                tree?.addTreeSelectionListener(originalTreeSelectionListener)
-                subPanel.add(JScrollPane(tree))
-                subPanel.revalidate()
-                setTreeStatus()
-                existsLabel.text = "Insert result: $result"
+            val sb = StringBuilder("Insert result:")
+            inputArea.text.split('\n').forEach { s ->
+                val i: T? = fromString(s)
+                //val i:Int? = try {inputArea.text.toInt() } catch (e: NumberFormatException) { null}
+                if (i != null) {
+                    val result = model.insert(i)
+
+                    sb.append("$result ")
+                }
             }
-        }
-        deleteButton.addActionListener {
-            val i:T? = fromString(inputField.text)
-            //val i:Int? = try {inputField.text.toInt() } catch (e: NumberFormatException) { null}
-            if (i != null) {
-                val result = model.delete(i)
-                subPanel.removeAll()
-                tree = JTree(model)
-                tree?.addTreeSelectionListener(originalTreeSelectionListener)
-                subPanel.add(JScrollPane(tree))
-                subPanel.revalidate()
-                setTreeStatus()
-                existsLabel.text = "Delete result: $result"
-            }
-        }
+            subPanel.removeAll()
+            tree = JTree(model)
+            tree?.addTreeSelectionListener(originalTreeSelectionListener)
+            subPanel.add(JScrollPane(tree))
+            subPanel.revalidate()
+            setTreeStatus()
+            existsList.text = "Insert result: $sb"
+        }*/
+        deleteButton.addActionListener(InsertActionListener2{i->model.delete(i)})//InsertActionListener(Insert_Delete.DELETE))
+
         val existsButton = JButton("Check existence")
         existsButton.addActionListener { e ->
-            val i:T? = fromString(inputField.text)
-            //    val i = try { inputField.text.toInt() } catch (e: NumberFormatException){null}
-            if (i != null){// && model != null){
-                val path = model.findPath(i)
-               if (path != null) {//i in model)
-                   val sb = StringBuilder()
-                   path.forEach { it ->
-                       sb.append("${it.key}, ")
+            val listModel = DefaultListModel<String>()
+            inputArea.text.split("\n").forEach { s ->
+                val i: T? = fromString(s.trim())
+                if (i != null){// && model != null){
+                    val sb = StringBuilder()
+                    val path = model.findPath(i)
+                   if (path != null) {//i in model)
+                       //val sb = StringBuilder()
+                       path.forEach { it ->
+                           sb.append("${it.key}, ")
+                       }
+                       listModel.addElement(sb.toString())
                    }
-                   existsLabel.text = "Exists. Path: $sb"
-               }
-                else
-                   existsLabel.text = "Not exists"
+                    else
+                       listModel.addElement("$i does not exists.")
+                }
+                existsList.model = listModel
+                existsList.revalidate()
             }
         }
         cloneButton.addActionListener { e ->
@@ -234,7 +286,7 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
         with(existsPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             add(existsButton)
-            add(existsLabel)
+            add(JScrollPane(existsList))
         }
         val westPanel = JPanel()
         with(westPanel){
@@ -250,7 +302,7 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
         with(entryPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             add(JLabel("Input below:"))
-            add(inputField)
+            add(inputArea)
             add(JLabel("Tree status:"))
             add(treeSizeLabel)
             add(treeTopLabel)
@@ -411,84 +463,7 @@ fun main(args:Array<String>){
     btree.preTraverse { k ->
         treeModel.insert(k)
     }
-    /*
-    val modelTree = JTree(treeModel)
 
-    class TreeControlPanel<T:Comparable<T>>(tr: JTree) : JPanel() {
-        //var binaryNode: BinarySearchTree.BinaryNode<T>? = null
-        val textField = JTextField()
-        init {
-            layout = BoxLayout(this, BoxLayout.Y_AXIS)
-            add(JScrollPane(tr))
-            add(textField)
-            tr.addTreeSelectionListener { e ->
-                val last = tr.lastSelectedPathComponent
-                val node = last as BinaryNode<T>?
-                textField.text = node?.key.toString()
-            }
-            val deleteButton = JButton("Delete")
-            deleteButton.addActionListener { e ->
-                val i = try { textField.text.toInt()} catch (e: IllegalFormatException) { null }
-                if (i != null){
-                    treeModel -= i //.delete(i)
-                }
-            }
-            add(deleteButton)
-        }
-    }
-    val treeControlPanel = TreeControlPanel<Int>(modelTree)
-    val treePanel = JPanel()
-    with(treePanel){
-        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
-        add(JScrollPane(tree))
-        add(treeControlPanel)//JScrollPane(modelTree))
-    }
-    val notifyLabel = JLabel("Blank leaf is left leaf.")
-    for(i in 0 .. tree.rowCount-1)
-        tree.expandRow(i)
-    val delBtn = JButton("Delete item")//Keep data model delete")
-    with(delBtn){
-        addActionListener {
-            val delete_value: Int? = try{ msgLabel.text.toInt() } catch(e: IllegalFormatException){ null }
-            if(delete_value != null) {
-                btree.delete(delete_value)
-                root = btree.preTraverseTreeNode()
-                model.setRoot(root)
-                for (i in 0..tree.rowCount - 1)
-                    tree.expandRow(i)
-            }
-        }
-    }
-    val btnPanel = JPanel()
-    with(btnPanel){
-        layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
-        //add(showTreeButton)
-        add(delBtn)
-    }
-    val msgPanel = JPanel()
-    msgPanel.layout = BoxLayout(msgPanel, BoxLayout.PAGE_AXIS)
-    msgPanel.add(msgLabel)
-    msgPanel.add(msgLabel2)
-    val initialPanel = JPanel()
-    var newFrame: JFrame? = null
-    with(initialPanel){
-        layout = BoxLayout(this, BoxLayout.Y_AXIS)
-        add(notifyLabel)
-        val newFrameButton = JButton("Click to create a new frame")
-        with(newFrameButton){
-            addActionListener {
-                SwingUtilities.invokeLater {
-                    if (newFrame != null)
-                        newFrame?.isVisible = false
-                    newFrame = JFrame("New Frame")
-                    newFrame?.add(JScrollPane(modelTree))
-                    newFrame?.pack()
-                    newFrame?.isVisible = true
-                }
-            }
-        }
-        add(newFrameButton)
-    }*/
 
     fun stringToInt(a:String):Int?{
          return try { a.toInt() } catch (e: NumberFormatException){null}
