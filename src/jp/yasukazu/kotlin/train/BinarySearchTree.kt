@@ -616,7 +616,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
      * Delete a binaryNode following the procedure written in Wikipedia
      * @return success => true
      */
-    enum class DeleteResult {SELF_DELETE, L_REPLACE, R_REPLACE, SUCC_REPLACE, NO_MATCH, EMPTY}
+    enum class DeleteResult {SELF_DELETE, LEFT_REPLACE, RIGHT_REPLACE, PREDEC_REPLACE, NO_MATCH, EMPTY}
     fun delete(key: T): DeleteResult {
         //class ImproperArgumentException(msg:String) : Exception(msg)
         tailrec fun _delete_node(self: BinaryNode<T>?, parent: BinaryNode<T>?): DeleteResult { //Pair<T, T>?{
@@ -695,15 +695,15 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                         }
                         1 -> {
                             __replace(self, self.left!!, parent)
-                            return DeleteResult.L_REPLACE
+                            return DeleteResult.LEFT_REPLACE
                         }
                         2 -> {
                             __replace(self, self.right!!, parent)
-                            return DeleteResult.R_REPLACE
+                            return DeleteResult.RIGHT_REPLACE
                         }
                         else -> {
                             __replace2(self)
-                            return DeleteResult.SUCC_REPLACE
+                            return DeleteResult.PREDEC_REPLACE
                         }
                     }
                 }
