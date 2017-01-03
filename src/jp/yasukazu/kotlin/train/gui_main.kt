@@ -26,12 +26,12 @@ class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) : Bin
     val listenerList = mutableListOf<TreeModelListener>()
     init {
         if (_root != null) {
-            rootBinaryNode = _root
+            rootNode = _root
             //forceSetSize(_root.count)
         }
 
     }
-    override fun getRoot(): BinaryNode<T>? { return rootBinaryNode
+    override fun getRoot(): BinaryNode<T>? { return rootNode
     }
     override fun isLeaf(_n: Any): Boolean {
         val n = _n as BinaryNode<T>
@@ -89,7 +89,7 @@ class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) : Bin
 
     fun clone(): BinarySearchTreeModel<T>{
         val tree = copy()
-        val newModel = BinarySearchTreeModel(tree?.rootBinaryNode)
+        val newModel = BinarySearchTreeModel(tree?.rootNode)
         return newModel
     }
 
@@ -101,21 +101,26 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
     val insertButton = JButton("Insert")
     val deleteButton = JButton("Delete")
     val statusLabels = arrayOf(JLabel(), JLabel(), JLabel(), JLabel(), JLabel(), JLabel())
-    enum class StatusLabelEnum(val value: Int) {
-        KEY(0), LEFT(1), RIGHT(2), SIZE(3), STATUS(4)
-    }
+    //enum class StatusLabelEnum(val value: Int) { KEY(0), LEFT(1), RIGHT(2), SIZE(3), STATUS(4) }
     val panel = JPanel()
     val subPanel = JPanel()
     val statusPanel = JPanel()
     var tree: JTree? = null
     val treeSizeLabel = JLabel()
     val cloneButton = JButton("Clone self")
-
+    val treeTopLabel = JLabel()
+    val treeLastLabel = JLabel()
+    val existsListModel = DefaultListModel<String>()
+    val existsList = JList<String>(existsListModel)//JLabel()
+    val entryPanel = JPanel()
     inner class OriginalTreeSelectionListener : TreeSelectionListener{
         override fun valueChanged(e: TreeSelectionEvent?) {
             val last = tree?.lastSelectedPathComponent
             if (last != null) {
+                @Suppress("UNCHECKED_CAST")
                 val node = last as BinaryNode<T>
+                //existsListModel.clear()
+                inputArea.text = "${node.key}"
                 statusLabels[0].text = "${node.key}"
                 statusLabels[1].text = "${node.left?.key}"
                 statusLabels[2].text = "${node.right?.key}"
@@ -134,9 +139,7 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
     }
     val originalTreeSelectionListener = OriginalTreeSelectionListener()
     //val entryLabels = arrayOf(JLabel(), JLabel())
-    val treeTopLabel = JLabel()
-    val treeLastLabel = JLabel()
-    val existsList = JList<String>()//JLabel()
+
 
     fun getTopN(i:Int, reverse:Boolean=false):String {
         var n = i
@@ -179,81 +182,40 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
             treeTopLabel.text = "Sorted $n Tops: ${getTopN(n)}"
             treeLastLabel.text = "Sorted $n Lasts: ${getTopN(n, reverse = true)}"
         }
-        /*
-        class InsertActionListener(val method: Insert_Delete): ActionListener {
-            //val resultStr = if (method == Insert_Delete.INSERT) "Insert" else "Delete"
-            override fun actionPerformed(e: ActionEvent?) {
-                val listModel = DefaultListModel<String>()
-                //val sb = StringBuilder("$resultStr result:")
-                inputArea.text.split('\n').forEach { s ->
-                    val i: T? = fromString(s.trim())
-                    if (i != null) {
-                        val result: Any?
-                        when (method) {
-                            Insert_Delete.INSERT -> result = model.insert(i)
-                            else -> result = model.delete(i)
-                        }
-                        //sb.append("$result ")
-                        listModel.addElement("$i->$result")
-                    }
-                }
-                subPanel.removeAll()
-                tree = JTree(model)
-                tree?.addTreeSelectionListener(originalTreeSelectionListener)
-                subPanel.add(JScrollPane(tree))
-                existsList.model = listModel
-                subPanel.revalidate()
-                setTreeStatus()
-                //existsList.text = sb.toString()
-            }
-        }*/
 
-        class InsertActionListener2(val method: (T)->Any?): ActionListener {
+
+        /**
+         * @param method: like {i->model.insert(i)}
+         */
+        class InsertActionListener2(val method: (T)->Any): ActionListener {
             override fun actionPerformed(e: ActionEvent?) {
-                val listModel = DefaultListModel<String>()
+                existsListModel.clear()
+                //val listModel = DefaultListModel<String>()
                 inputArea.text.split('\n').forEach { s ->
                     val i: T? = fromString(s.trim())
                     if (i != null) {
                         val result = method(i)
-                        listModel.addElement("$i->$result")
+                        existsListModel.addElement("$i->$result")
                     }
                 }
                 subPanel.removeAll()
                 tree = JTree(model)
                 tree?.addTreeSelectionListener(originalTreeSelectionListener)
                 subPanel.add(JScrollPane(tree))
-                existsList.model = listModel
+                //existsList.model = listModel
                 subPanel.revalidate()
                 setTreeStatus()
                 //existsList.text = sb.toString()
             }
         }
         insertButton.addActionListener(InsertActionListener2{i->model.insert(i)})//(Insert_Delete.INSERT))
-        /*
-        insertButton.addActionListener {
-            val sb = StringBuilder("Insert result:")
-            inputArea.text.split('\n').forEach { s ->
-                val i: T? = fromString(s)
-                //val i:Int? = try {inputArea.text.toInt() } catch (e: NumberFormatException) { null}
-                if (i != null) {
-                    val result = model.insert(i)
 
-                    sb.append("$result ")
-                }
-            }
-            subPanel.removeAll()
-            tree = JTree(model)
-            tree?.addTreeSelectionListener(originalTreeSelectionListener)
-            subPanel.add(JScrollPane(tree))
-            subPanel.revalidate()
-            setTreeStatus()
-            existsList.text = "Insert result: $sb"
-        }*/
         deleteButton.addActionListener(InsertActionListener2{i->model.delete(i)})//InsertActionListener(Insert_Delete.DELETE))
 
         val existsButton = JButton("Check existence")
         existsButton.addActionListener { e ->
-            val listModel = DefaultListModel<String>()
+            //val listModel = DefaultListModel<String>()
+            existsListModel.clear()
             inputArea.text.split("\n").forEach { s ->
                 val i: T? = fromString(s.trim())
                 if (i != null){// && model != null){
@@ -264,12 +226,12 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
                        path.forEach { it ->
                            sb.append("${it.key}, ")
                        }
-                       listModel.addElement(sb.toString())
+                       existsListModel.addElement(sb.toString())
                    }
                     else
-                       listModel.addElement("$i does not exists.")
+                       existsListModel.addElement("$i does not exist.")
                 }
-                existsList.model = listModel
+                //existsList.model = listModel
                 existsList.revalidate()
             }
         }
@@ -298,10 +260,10 @@ class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<
         treeSizeLabel.text = "Tree Size: ${model.size}"
         treeTopLabel.text = "Sorted 3 Tops: ${getTopN(3)}"
         treeLastLabel.text = "Sorted 3 Lasts: ${getTopN(3, reverse = true)}"
-        val entryPanel = JPanel()
+
         with(entryPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
-            add(JLabel("Input below:"))
+            add(JLabel("Input below(multi-line OK:"))
             add(inputArea)
             add(JLabel("Tree status:"))
             add(treeSizeLabel)
@@ -346,10 +308,11 @@ fun main(args:Array<String>){
         if (i != null){
             val inserted_pos = btree.insert(i)
             val pos = when(inserted_pos) {
-                BinarySearchTree.InsertedPos.LEFT -> "Left"
-                BinarySearchTree.InsertedPos.RIGHT -> "Right"
-                BinarySearchTree.InsertedPos.NONE -> "None"
-                BinarySearchTree.InsertedPos.NEW -> "New"
+                InsertedPos.LEFT -> "Left"
+                InsertedPos.RIGHT -> "Right"
+                InsertedPos.NONE -> "None"
+                InsertedPos.NEW -> "New"
+                else -> "??"
             }
             println("$x insert result: $pos")
         }
@@ -386,10 +349,10 @@ fun main(args:Array<String>){
     btree.preTraversePrint {s -> print("$s")}
     println()
     // node copy
-    val newRoot = btree.rootBinaryNode?.copy()
+    val newRoot = btree.rootNode?.copy()
     if (newRoot != null){
         val newBtree = BinarySearchTree<Int>()
-        newBtree.rootBinaryNode = newRoot
+        newBtree.rootNode = newRoot
         println("Cloned binary search tree:")
         newBtree.preTraversePrint { s -> print("$s") }
         println()
