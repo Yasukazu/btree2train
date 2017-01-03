@@ -1,5 +1,6 @@
 package jp.yasukazu.kotlin.train
 
+import java.io.Serializable
 import java.util.NoSuchElementException
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.MutableTreeNode
@@ -27,8 +28,35 @@ open class BinaryNode<T: Comparable<T>> (var key: T, var left: BinaryNode<T>? = 
         }
     }
 
+    /*
+    inner class ChildrenIterator: Iterator<BinaryNode<T>?>{
+        var list = mutableListOf<BinaryNode<T>>()
+        var n = 0
+        init {
+            when(childrenStatus){
+                0 -> {}
+                1 -> list.add(left!!)
+                2 -> { list.add(right!!) }
+                else -> { list.add(left!!)
+                    list.add(right!!) }
+            }
+        }
+        override fun hasNext(): Boolean {
+            return list.size > n
+        }
+
+        override fun next(): BinaryNode<T>? {
+            if (n >= list.size)
+                throw NoSuchElementException()
+            return list[n++]
+        }
+    }
+
+    override operator fun iterator(): Iterator<BinaryNode<T>>{ return ChildrenIterator() }
+    */
+
     /**
-     * children count
+     * iterCount count
      */
     val size: Int
         get(){
@@ -36,11 +64,11 @@ open class BinaryNode<T: Comparable<T>> (var key: T, var left: BinaryNode<T>? = 
     }
 
     val childrenStatus: Int get(){
-        return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 2 else 0)
+        return (if (this[0] != null) 1 else 0) or (if (this[1] != null) 2 else 0)
     }
 
     /**
-     * recursive count self and children
+     * recursive count self and iterCount
      */
     val count: Int
         get(){
@@ -73,17 +101,24 @@ open class BinaryNode<T: Comparable<T>> (var key: T, var left: BinaryNode<T>? = 
     }
 }
 
-open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
+enum class InsertedPos {
+    LEFT, NEW, RIGHT, NONE
+}
 
-    var rootBinaryNode: BinaryNode<T>? = null
+enum class DeleteResult {SELF_DELETE, LEFT_REPLACE, RIGHT_REPLACE, PREDEC_REPLACE, NO_MATCH, EMPTY}
+
+interface InsertDeletable<in T> {
+    fun insert(i: T): InsertedPos
+    fun delete(i: T): DeleteResult
+}
+
+open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>  {
+
+    var rootNode: BinaryNode<T>? = null
     private var _size: Int = 0
     val size: Int get() = count()//_size
-      //  set(i){_size = i}
+    private val serialVersionUID = 45456465444654634L
 
-
-    enum class InsertedPos {
-        LEFT, NEW, RIGHT, NONE
-    }
 
     fun forceSetSize(i: Int?){
         if(i != null)
@@ -116,19 +151,19 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
             return Node_InsertedPos(binaryNode, InsertedPos.NONE) // Return the (unchanged) binaryNode pointer
         }
 
-        if (rootBinaryNode == null){
-            rootBinaryNode = BinaryNode(key)
+        if (rootNode == null){
+            rootNode = BinaryNode(key)
             ++_size
             return InsertedPos.NEW
         }
         else {
-            val node_InsertedPos = _insert(rootBinaryNode, key)
+            val node_InsertedPos = _insert(rootNode, key)
             return node_InsertedPos.pos
         }
     }
 
 
-    fun insert(key: T): InsertedPos {
+    override fun insert(key: T): InsertedPos {
         class _BreakException(val e: InsertedPos): Exception()
         var insertedPos = InsertedPos.NONE
         tailrec fun _insert(node: BinaryNode<T>) {//: BinaryNode<T>, node: BinaryNode<T>?, pos: InsertedPos){
@@ -171,14 +206,14 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
             }
         }
 
-        if (rootBinaryNode == null){
-            rootBinaryNode = BinaryNode(key)
+        if (rootNode == null){
+            rootNode = BinaryNode(key)
             ++_size
             return InsertedPos.NEW
         }
         else {
             try {
-                _insert(rootBinaryNode!!)
+                _insert(rootNode!!)
             } catch (e: _BreakException) {
                 insertedPos = e.e
             }
@@ -206,7 +241,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
      */
     val min: T?
         get() {
-            val node = _getMinNode(rootBinaryNode)
+            val node = _getMinNode(rootNode)
             if (node != null) {
                 return node.key
             }
@@ -228,7 +263,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
      */
     val max: T?
         get() {
-            val node = _getMaxNode(rootBinaryNode)
+            val node = _getMaxNode(rootNode)
             if (node != null) {
                 return node.key
             }
@@ -266,7 +301,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
             }
         }
         try {
-           _find(rootBinaryNode)
+           _find(rootNode)
         } catch (e: _BreakException){
             result = e.e == FindResult.FOUND
         }
@@ -305,7 +340,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
             }
         }
         //try { val lastNode =
-                    _find(rootBinaryNode)
+                    _find(rootNode)
             //assert(if(path.size > 0)lastNode == path[path.size - 1] else true)
             return if(path.size > 0) path else null
         //} catch (e: NoMatchException) return null
@@ -322,7 +357,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                 _preTraverseList(binaryNode.right)
             }
         }
-        _preTraverseList(rootBinaryNode)
+        _preTraverseList(rootNode)
         return list
     }
 
@@ -337,7 +372,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                 _preTraverseList(binaryNode.right)
             }
         }
-        _preTraverseList(rootBinaryNode)
+        _preTraverseList(rootNode)
         return list
     }
 
@@ -345,18 +380,18 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
      * count up keys
      */
     fun count(): Int{
-        return rootBinaryNode?.count ?: 0
+        return rootNode?.count ?: 0
     }
 
     /**
      * copy/clone self
      */
     open fun copy(): BinarySearchTree<T>?{
-       if (rootBinaryNode == null)
+       if (rootNode == null)
            return null
-        val newRoot = rootBinaryNode?.copy()
+        val newRoot = rootNode?.copy()
         val newTree = BinarySearchTree<T>()
-        newTree.rootBinaryNode = newRoot
+        newTree.rootNode = newRoot
         newTree._size = this.count()
         return newTree
     }
@@ -380,15 +415,15 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                 _preTraverseList(binaryNode.right)
             }
         }
-        if (rootBinaryNode == null)
+        if (rootNode == null)
             return null
-        node = rootBinaryNode?.copy()
+        node = rootNode?.copy()
         if (node?.left != null)
             _preTraverseList(node!!, node?.left, ChildPos.L)
-        _preTraverseList(rootBinaryNode, rootBinaryNode?.copy())
+        _preTraverseList(rootNode, rootNode?.copy())
         if (node?.right != null)
             _preTraverseList(node!!, node?.right, ChildPos.L)
-        _preTraverseList(rootBinaryNode, node)
+        _preTraverseList(rootNode, node)
         return node
     }*/
 
@@ -403,7 +438,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
             }
         }
 
-        _preTraverse(rootBinaryNode)
+        _preTraverse(rootNode)
     }
 
     fun preTraversePrint(callback:(String)->Unit){
@@ -418,7 +453,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                 callback(")")
             }
         }
-        _preTraverse(rootBinaryNode)
+        _preTraverse(rootNode)
     }
 
     tailrec fun _preTraverseTreeNode(binaryNode: BinaryNode<T>?, tnode: MutableTreeNode){
@@ -441,9 +476,9 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
     }
 
     fun preTraverseTreeNode(): MutableTreeNode?{
-        if (rootBinaryNode != null) {
-            val treeNode = DefaultMutableTreeNode(rootBinaryNode!!.key)
-            _preTraverseTreeNode(rootBinaryNode, treeNode)
+        if (rootNode != null) {
+            val treeNode = DefaultMutableTreeNode(rootNode!!.key)
+            _preTraverseTreeNode(rootNode, treeNode)
             return treeNode
         }
         return null
@@ -459,7 +494,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                 _preTraverse_depth(binaryNode.right, depth + ">")
             }
         }
-       _preTraverse_depth(rootBinaryNode, s)
+       _preTraverse_depth(rootNode, s)
     }
 
     enum class TraverseLR {NONE, L, R}
@@ -473,7 +508,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                 _preTraverseLR(binaryNode.right, TraverseLR.R)
             }
         }
-        _preTraverseLR(rootBinaryNode, TraverseLR.NONE)
+        _preTraverseLR(rootNode, TraverseLR.NONE)
     }
 
     private fun _postTraverse_depth(binaryNode: BinaryNode<T>?, depth: String, callback:(T, String)->Unit){
@@ -487,7 +522,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
     }
 
     fun postTraverse_depth(callback:(T, String)->Unit){
-        _postTraverse_depth(rootBinaryNode, "", callback)
+        _postTraverse_depth(rootNode, "", callback)
     }
 
     //enum class LR {L, }
@@ -501,7 +536,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                 _preTraverse_depth_LR(binaryNode.right, callback, depth + 1, '>')
             }
         }
-        _preTraverse_depth_LR(rootBinaryNode, callback, 0, '_')
+        _preTraverse_depth_LR(rootNode, callback, 0, '_')
     }
 
     /**
@@ -524,7 +559,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                 traverseDepth(binaryNode.right, depth + 1)
             }
         }
-        traverseDepth(rootBinaryNode, 0)
+        traverseDepth(rootNode, 0)
         return depthMap
     }
 
@@ -551,12 +586,12 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                 countUp(binaryNode.right)
             }
         }
-        countUp(rootBinaryNode)
+        countUp(rootNode)
         return map
     }
 
     /**
-     * in-order traverse from rootBinaryNode
+     * in-order traverse from rootNode
      * key is fed to [callback] function
      * interrupt break if callback returns false
      *
@@ -586,9 +621,9 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
         }
         try {
             if (reverse)
-                _reverseInTraverse(rootBinaryNode)
+                _reverseInTraverse(rootNode)
             else
-                _inTraverse(rootBinaryNode)
+                _inTraverse(rootNode)
         }
         catch (e: _InterrruptException){
         }
@@ -606,7 +641,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
     }
 
     fun inOrderTraverse(callback: (T, String)->Unit){
-        _inOrderTraverse(rootBinaryNode, "", callback)
+        _inOrderTraverse(rootNode, "", callback)
     }
 
 
@@ -616,8 +651,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
      * Delete a binaryNode following the procedure written in Wikipedia
      * @return success => true
      */
-    enum class DeleteResult {SELF_DELETE, LEFT_REPLACE, RIGHT_REPLACE, PREDEC_REPLACE, NO_MATCH, EMPTY}
-    fun delete(key: T): DeleteResult {
+    override fun delete(key: T): DeleteResult {
         //class ImproperArgumentException(msg:String) : Exception(msg)
         tailrec fun _delete_node(self: BinaryNode<T>?, parent: BinaryNode<T>?): DeleteResult { //Pair<T, T>?{
             // Delete self binaryNode
@@ -625,7 +659,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                 assert(self.left == null && self.right == null)
                 //val parent = self.parent
                 if (parent == null)
-                    rootBinaryNode = null
+                    rootNode = null
                 else {
                     if (parent.left == self)
                         parent.left = null
@@ -638,7 +672,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
             // replace self with child
             fun __replace(self: BinaryNode<T>, child: BinaryNode<T>, parent: BinaryNode<T>?){
                 if (parent == null) {
-                    rootBinaryNode = child
+                    rootNode = child
                 } else {
                     if (parent.left == self)
                         parent.left = child
@@ -685,7 +719,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                 } else if (key > self.key) {
                     return _delete_node(self.right, self)
                 } else { // key == self.key
-                    // 3. delete self if no children
+                    // 3. delete self if no iterCount
                     val bL = if(self.left == null) 0 else 1
                     val bR = if(self.right == null) 0 else 2
                     when(bL or bR){
@@ -709,8 +743,8 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T> {
                 }
             }
         }
-        if (rootBinaryNode != null) {
-            val deleted = _delete_node(rootBinaryNode, null)
+        if (rootNode != null) {
+            val deleted = _delete_node(rootNode, null)
             if (deleted != DeleteResult.NO_MATCH){
                 --_size
             }
