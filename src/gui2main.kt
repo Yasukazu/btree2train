@@ -6,6 +6,7 @@
 import jp.yasukazu.kotlin.train.BinarySearchTreeModel
 import jp.yasukazu.kotlin.train.BinarySearchTreeFrame
 import jp.yasukazu.kotlin.train.KollationKey
+import java.awt.Rectangle
 import java.io.FileOutputStream
 import java.io.ObjectOutputStream
 //import java.text.CollationKey
@@ -47,6 +48,7 @@ fun main(args:Array<String>){
         with(intTreeFrame){
             title = "Real Number Tree"
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+            setBounds(0, 0, 400, 600)
             pack()
             isVisible = true
         }
@@ -54,6 +56,7 @@ fun main(args:Array<String>){
         with(stringTreeFrame){
             title = "String Tree"
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+            setBounds(50, 50, 400, 600)
             pack()
             isVisible = true
         }
@@ -73,6 +76,7 @@ fun main(args:Array<String>){
             */
             title = "Collation String Tree"
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+            setBounds(100, 100, 400, 600)
             pack()
             isVisible = true
         }
