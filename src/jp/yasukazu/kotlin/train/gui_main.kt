@@ -22,7 +22,7 @@ fun List<String>.join(d:String):String{
 /**
  * Custom JTree Model
  */
-class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) : BinarySearchTree<T>(), TreeModel {
+open class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) : BinarySearchTree<T>(), TreeModel {
     val listenerList = mutableListOf<TreeModelListener>()
     init {
         if (_root != null) {
@@ -96,7 +96,7 @@ class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) : Bin
 }
 
 //enum class Insert_Delete {INSERT, DELETE}
-class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<T>, val fromString:(String)->T?) : JFrame() {
+open class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<T>, val fromString:(String)->T?) : JFrame() {
     val inputArea = JTextArea()
     val insertButton = JButton("Insert")
     val deleteButton = JButton("Delete")
@@ -399,29 +399,30 @@ fun main(args:Array<String>){
         //println(if(btree.find(x)) "$x exists" else "$x does not exist")
         println(if(x in btree) "$x exists." else "$x does not exist.")
     }
+    println()
+    println("BTree in-order n-ths")
+    for (n in 1..btree.size){
+        val iN2 = btree.inOrderNth(n)
+        println("BTree in-order n-th($n)=$iN2")
+    }
+    println()
+
+    /* Iterate 1 */
+    println("Iterator by list")
+    btree.NodeIterator1().forEach { it -> print("$it, ") }
+    println()
+    /* Iterate 2 */
+    println("Iterator by inOrderNth")
+    val it2 = btree.NodeIterator2()
+    it2.forEach { it -> print("$it, ") }
+    println()
     /* Iterate */
     println("Iteration of Tree:")
     btree.forEach { it ->
         print("$it, ")
     }
     println()
-    //val delete_value = 12 //"C"
-    /*
-    var root = btree.preTraverseTreeNode() //DefaultMutableTreeNode("root")
-    val model = DefaultTreeModel(root)
-    val msgLabel = JLabel()
-    val msgLabel2 = JLabel()
-    val tree = JTree(model)
-    tree.addTreeSelectionListener { e ->
-        val node = tree.lastSelectedPathComponent
-        if (node != null){
-            msgLabel.text = node.toString()
-            val sb = StringBuilder()
-            for (path in  e.paths)
-                sb.append("$path,")
-            msgLabel2.text = sb.toString()
-        }
-    } */
+
     val treeModel = BinarySearchTreeModel<Int>()
     btree.preTraverse { k ->
         treeModel.insert(k)
