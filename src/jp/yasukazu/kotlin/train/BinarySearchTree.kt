@@ -804,7 +804,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
     /**
      * NodeIterator using nthKey
      */
-    inner class NodeIterator2: Iterator<T> {
+    inner class NodeIterator2(val reverse: Boolean=false): Iterator<T> {
         var progress = 0
 
         override fun hasNext(): Boolean {
@@ -812,7 +812,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
         }
 
         override fun next(): T {
-            val nthKey = inOrderNth(++progress)
+            val nthKey = inOrderNth(++progress, reverse)
             if (nthKey != null)
                 return nthKey
             else
