@@ -774,13 +774,13 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
      * Iterable
      */
     override operator fun iterator(): Iterator<T>{
-        return NodeIterator()
+        return NodeIterator2()
     }
 
     /**
-     * NodeIterator
+     * NodeIterator by list
      */
-    inner class NodeIterator: Iterator<T> {
+    inner class NodeIterator1: Iterator<T> {
         val list = mutableListOf<T>()
         var n = 0
 
@@ -802,48 +802,23 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
         }
     }
     /**
-     * NodeIterator count-up and break version
+     * NodeIterator using nthKey
+     */
     inner class NodeIterator2: Iterator<T> {
         var progress = 0
-        val limit = rootNode.size
-        val traverser = rootNode
-        init {
-
-        }
 
         override fun hasNext(): Boolean {
-            return traverser != null//list.size > n
+            return progress < size
         }
 
-        inner class _BreakException: Exception()
         override fun next(): T {
-            var steps = 0
-            var _k: T?
-            fun _next(t: BinaryNode<T>?, n: Int): T? {
-                if (t == null)
-                    return null
-                if (steps++ < limit)
-
-                return t.key
-                if (n >= steps)
-                    throw _BreakException()
-                _next(t.left, n + 1)
-                _next(t.right, n + 1)
-            }
-            try {
-                _k = _next(rootNode, 0)
-            }
-            catch (e: _BreakException){
-
-            }
-            val k = _next(rootNode)
-            if (k != null)
-                return k
+            val nthKey = inOrderNth(++progress)
+            if (nthKey != null)
+                return nthKey
             else
                 throw NoSuchElementException()
         }
     }
-    */
 }
 
 
