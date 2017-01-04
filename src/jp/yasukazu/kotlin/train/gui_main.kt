@@ -412,8 +412,8 @@ fun main(args:Array<String>){
     btree.NodeIterator1().forEach { it -> print("$it, ") }
     println()
     /* Iterate 2 */
-    println("Iterator by inOrderNth")
-    val it2 = btree.NodeIterator2()
+    println("Iterator by inOrderNth reverse")
+    val it2 = btree.NodeIterator2(reverse=true)
     it2.forEach { it -> print("$it, ") }
     println()
     /* Iterate */
