@@ -108,8 +108,8 @@ enum class InsertedPos {
 enum class DeleteResult {SELF_DELETE, LEFT_REPLACE, RIGHT_REPLACE, PREDEC_REPLACE, NO_MATCH, EMPTY}
 
 interface InsertDeletable<in T> {
-    fun insert(i: T): InsertedPos
-    fun delete(i: T): DeleteResult
+    fun insert(key: T): InsertedPos
+    fun delete(key: T): DeleteResult
 }
 
 open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>  {
@@ -395,37 +395,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
         newTree._size = this.count()
         return newTree
     }
-    /*
-    enum class ChildPos {NONE, L, R}
-    fun clone(): BinaryNode<T>?{
-        var node: BinaryNode<T>?
-        fun _preTraverseList(src: BinaryNode<T>?, child: BinaryNode<T>?, pos:ChildPos){
-            if (src == null || child == null)
-                return
-            else {
-                when(pos){
-                    ChildPos.L -> {
-                        child.left = src.copy()
-                _preTraverseList(src.left, child, ChildPos.L)
-                if (src.)
-                    }
-                }
-                node = BinaryNode(binaryNode.key, left=binaryNode.left, right = binaryNode.right)
-                _preTraverseList(binaryNode.left)
-                _preTraverseList(binaryNode.right)
-            }
-        }
-        if (rootNode == null)
-            return null
-        node = rootNode?.copy()
-        if (node?.left != null)
-            _preTraverseList(node!!, node?.left, ChildPos.L)
-        _preTraverseList(rootNode, rootNode?.copy())
-        if (node?.right != null)
-            _preTraverseList(node!!, node?.right, ChildPos.L)
-        _preTraverseList(rootNode, node)
-        return node
-    }*/
+
 
     fun preTraverse(callback:(T)->Unit){
         fun _preTraverse(binaryNode: BinaryNode<T>?){
@@ -629,6 +599,48 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
         }
     }
 
+    /**
+     * get nth of in-order traverse from rootNode
+     * @param nth: starts from 1
+     * @return null if no N-th
+     */
+    fun inOrderNth(nth: Int, reverse:Boolean=false): T? {
+        val limit = size
+        if (nth > limit)
+            return null
+        var progress = 0
+        class _InterException(val key: T) :Exception()
+        fun _inTraverse(node: BinaryNode<T>?){
+            if (node == null)
+                return
+            else {
+                _inTraverse(node.left)
+                if(++progress >= nth)
+                    throw _InterException(node.key)
+                _inTraverse(node.right)
+            }
+        }
+        fun _reverseInTraverse(node: BinaryNode<T>?){
+            if (node == null)
+                return
+            else {
+                _reverseInTraverse(node.right)
+                if(++progress >= nth)
+                    throw _InterException(node.key)
+                _reverseInTraverse(node.left)
+            }
+        }
+        try {
+            if (reverse)
+                _reverseInTraverse(rootNode)
+            else
+                _inTraverse(rootNode)
+        }
+        catch (e: _InterException){
+            return e.key
+        }
+        return null
+    }
 
     private fun _inOrderTraverse(binaryNode: BinaryNode<T>?, depth: String, callback: (T, String)->Unit){
         if (binaryNode == null)
@@ -789,5 +801,49 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
             return list[n++]
         }
     }
+    /**
+     * NodeIterator count-up and break version
+    inner class NodeIterator2: Iterator<T> {
+        var progress = 0
+        val limit = rootNode.size
+        val traverser = rootNode
+        init {
+
+        }
+
+        override fun hasNext(): Boolean {
+            return traverser != null//list.size > n
+        }
+
+        inner class _BreakException: Exception()
+        override fun next(): T {
+            var steps = 0
+            var _k: T?
+            fun _next(t: BinaryNode<T>?, n: Int): T? {
+                if (t == null)
+                    return null
+                if (steps++ < limit)
+
+                return t.key
+                if (n >= steps)
+                    throw _BreakException()
+                _next(t.left, n + 1)
+                _next(t.right, n + 1)
+            }
+            try {
+                _k = _next(rootNode, 0)
+            }
+            catch (e: _BreakException){
+
+            }
+            val k = _next(rootNode)
+            if (k != null)
+                return k
+            else
+                throw NoSuchElementException()
+        }
+    }
+    */
 }
+
 
