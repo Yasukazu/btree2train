@@ -44,7 +44,7 @@ fun main(args:Array<String>){
     }
 
     SwingUtilities.invokeLater {
-        val intTreeFrame = BinarySearchTreeFrame(treeModel){try{it.toFloat()}catch (e:NumberFormatException){null}}
+        val intTreeFrame = BinarySearchTreeFrame(treeModel){it.toFloat()} // catch (e:NumberFormatException){null}}
         with(intTreeFrame){
             title = "Real Number Tree"
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
@@ -62,18 +62,17 @@ fun main(args:Array<String>){
         }
         val kollationKeyFrame = BinarySearchTreeFrame(kollatorTreeModel, ::fromStringToKollationKey)
         with(kollationKeyFrame){
-            /*
+            val list = kollatorTreeModel.preTraverseList()
             val filename = "___outputStream___.$$$"
             val serializeButton = JButton("Serialize to $filename")
             serializeButton.addActionListener {
                 FileOutputStream(filename).use { output ->
                     ObjectOutputStream(output).use { oo ->
-                        oo.writeObject(this.tree)
+                        oo.writeObject(list)
                     }
                 }
             }
             entryPanel.add(serializeButton)
-            */
             title = "Collation String Tree"
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             setBounds(100, 100, 400, 600)
