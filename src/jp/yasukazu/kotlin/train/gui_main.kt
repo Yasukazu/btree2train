@@ -96,7 +96,7 @@ open class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) 
 }
 
 //enum class Insert_Delete {INSERT, DELETE}
-open class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<T>, val fromString:(String)->T?) : JFrame() {
+open class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<T>, val fromString:(String)->T) : JFrame() {
     val inputArea = JTextArea()
     val insertButton = JButton("Insert")
     val deleteButton = JButton("Delete")
@@ -191,12 +191,16 @@ open class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeM
             override fun actionPerformed(e: ActionEvent?) {
                 existsListModel.clear()
                 //val listModel = DefaultListModel<String>()
-                inputArea.text.split('\n').forEach { s ->
-                    val i: T? = fromString(s.trim())
-                    if (i != null) {
-                        val result = method(i)
-                        existsListModel.addElement("$i->$result")
+                inputArea.text.split('\n').forEach {
+                    val s = it.trim()
+                    try {
+                        val k = fromString(s)
+                        val result = method(k)
+                        existsListModel.addElement("$k: $result")
                     }
+                        catch(e: Exception){
+                            existsListModel.addElement("$s caused an exception: $e")
+                        }
                 }
                 subPanel.removeAll()
                 tree = JTree(model)
@@ -429,12 +433,12 @@ fun main(args:Array<String>){
     }
 
 
-    fun stringToInt(a:String):Int?{
-         return try { a.toInt() } catch (e: NumberFormatException){null}
-    }
+    // fun stringToInt(a:String):Int?{ return try { a.toInt() } catch (e: NumberFormatException){null} }
+
+    fun stoi(a: String): Int = a.toInt()
 
     SwingUtilities.invokeLater {
-        val treeFrame = BinarySearchTreeFrame(treeModel, ::stringToInt)
+        val treeFrame = BinarySearchTreeFrame(treeModel, ::stoi)
         with(treeFrame){
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             pack()
