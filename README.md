@@ -53,15 +53,15 @@ import javax.swing.SwingUtilities
 fun main(args:Array<String>){
     val treeModel = BinarySearchTreeModel<Int>()
     args.forEach { a ->
-        val i = try { a.toInt() } catch (e: NumberFormatException){
-            println("$a caused $e")
+        val i = try { a.toInt() } catch (pos: NumberFormatException){
+            println("$a caused $pos")
             null }
         if (i != null){
             treeModel += i
         }
     }
     SwingUtilities.invokeLater {
-        val intTreeFrame = BinarySearchTreeFrame(treeModel){ try {it.toInt()} catch (e: NumberFormatException){ null }}
+        val intTreeFrame = BinarySearchTreeFrame(treeModel) { it.toInt() }
         with(intTreeFrame){
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             pack()
