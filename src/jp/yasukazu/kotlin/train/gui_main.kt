@@ -48,7 +48,7 @@ open class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) 
     }
 
     override fun valueForPathChanged(path: TreePath?, newValue: Any?) {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        println("valueForPathChanged called: path=$path, newValue=$newValue")
     }
 
     override fun getIndexOfChild(parent: Any?, child: Any?): Int {
@@ -96,7 +96,7 @@ open class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) 
 }
 
 //enum class Insert_Delete {INSERT, DELETE}
-open class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeModel<T>, val fromString:(String)->T) : JFrame() {
+open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeModel<T>, val fromString: (String)->T) : JFrame() {
     val inputArea = JTextArea()
     val insertButton = JButton("Insert")
     val deleteButton = JButton("Delete")
@@ -140,6 +140,12 @@ open class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeM
     val originalTreeSelectionListener = OriginalTreeSelectionListener()
     //val entryLabels = arrayOf(JLabel(), JLabel())
 
+    /**
+     * secondary constructor
+    constructor(val fromString:(String)->T) : this(model, fromString){
+        this(BinarySearchTreeModel<T>, fromString)
+    }
+     */
 
     fun getTopN(i:Int, reverse:Boolean=false):String {
         var n = i
@@ -197,6 +203,18 @@ open class BinarySearchTreeFrame<T : Comparable<T>>(val model: BinarySearchTreeM
                         val k = fromString(s)
                         val result = method(k)
                         existsListModel.addElement("$k: $result")
+                    }
+                    /*
+                    catch (idE: BinarySearchTree.InsertDeleteException){
+                        when(idE) {
+                            BinarySearchTree.InsertException -> existsListModel.addElement("$s caused an exception: $e")
+                        }
+                    }*/
+                    catch (idE: BinarySearchTree.InsertDeleteException){
+                        if (idE is BinarySearchTree.InsertFailException)
+                            existsListModel.addElement("$s caused an InsertFailException")
+                        else
+                            existsListModel.addElement("$s caused a DeleteFailException")
                     }
                         catch(e: Exception){
                             existsListModel.addElement("$s caused an exception: $e")
