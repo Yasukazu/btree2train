@@ -163,12 +163,24 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
     }
 
 
+    open class InsertDeleteException: Exception()
+    open class InsertException: InsertDeleteException()
+    class InsertFailException: InsertException()
+    open class DeleteException: InsertDeleteException()
+    class DeleteFailException: DeleteException()
+    class DeleteSuccessException(val result: DeleteResult): DeleteException()
+    /**
+     * insert
+     * @parak key
+     * @return InsertedPos
+     * @throws InsertException
+     */
     override fun insert(key: T): InsertedPos {
-        class _BreakException(val e: InsertedPos): Exception()
+        class _BreakException(val pos: InsertedPos): Exception()
         var insertedPos = InsertedPos.NONE
         tailrec fun _insert(node: BinaryNode<T>) {//: BinaryNode<T>, node: BinaryNode<T>?, pos: InsertedPos){
             if (node.key == key)
-                throw _BreakException(InsertedPos.NONE)
+                throw InsertFailException() //(InsertedPos.NONE)
             when (node.childrenStatus) {
                 0 -> {
                     if (key < node.key) {
@@ -215,10 +227,10 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
             try {
                 _insert(rootNode!!)
             } catch (e: _BreakException) {
-                insertedPos = e.e
+                insertedPos = e.pos
             }
-            if (insertedPos != InsertedPos.NONE)
-                ++_size
+            //if (insertedPos != InsertedPos.NONE)
+            ++_size
             return insertedPos
         }
     }
@@ -661,11 +673,13 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
 
     /**
      * Delete a binaryNode following the procedure written in Wikipedia
+     * @param key
      * @return success => true
+     * @throws DeleteException
      */
     override fun delete(key: T): DeleteResult {
         //class ImproperArgumentException(msg:String) : Exception(msg)
-        tailrec fun _delete_node(self: BinaryNode<T>?, parent: BinaryNode<T>?): DeleteResult { //Pair<T, T>?{
+        tailrec fun _delete_node(self: BinaryNode<T>?, parent: BinaryNode<T>?){//: DeleteResult { //Pair<T, T>?{
             // Delete self binaryNode
             fun __delete_self_node(self: BinaryNode<T>, parent: BinaryNode<T>?){
                 assert(self.left == null && self.right == null)
@@ -724,7 +738,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
             }
             // code starts here
             if (self == null)
-                return DeleteResult.NO_MATCH
+                throw DeleteFailException()//return DeleteResult.NO_MATCH
             else {
                 if (key < self.key) {
                     return _delete_node(self.left, self)
@@ -737,32 +751,38 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
                     when(bL or bR){
                         0 -> {
                             __delete_self_node(self, parent)
-                            return DeleteResult.SELF_DELETE
+                            throw DeleteSuccessException(DeleteResult.SELF_DELETE)
                         }
                         1 -> {
                             __replace(self, self.left!!, parent)
-                            return DeleteResult.LEFT_REPLACE
+                            throw DeleteSuccessException(DeleteResult.LEFT_REPLACE)
                         }
                         2 -> {
                             __replace(self, self.right!!, parent)
-                            return DeleteResult.RIGHT_REPLACE
+                            throw DeleteSuccessException(DeleteResult.RIGHT_REPLACE)
                         }
                         else -> {
                             __replace2(self)
-                            return DeleteResult.PREDEC_REPLACE
+                            throw DeleteSuccessException(DeleteResult.PREDEC_REPLACE)
                         }
                     }
                 }
             }
         }
+        var result = DeleteResult.EMPTY
         if (rootNode != null) {
-            val deleted = _delete_node(rootNode, null)
-            if (deleted != DeleteResult.NO_MATCH){
-                --_size
+            try {
+                _delete_node(rootNode, null)
+            } catch(dE: DeleteException) {
+                if (dE is DeleteSuccessException) {
+                    //if (deleted != DeleteResult.NO_MATCH){
+                    --_size
+                    result = dE.result
+                } else
+                    throw dE // result = DeleteResult.NO_MATCH
             }
-            return deleted
         }
-        return DeleteResult.EMPTY
+        return result
     }
 
     /**
