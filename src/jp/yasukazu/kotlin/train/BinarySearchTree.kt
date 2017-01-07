@@ -173,14 +173,13 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
      * insert
      * @parak key
      * @return InsertedPos
-     * @throws InsertException
+     * @throws InsertFailException
      */
     override fun insert(key: T): InsertedPos {
         class _BreakException(val pos: InsertedPos): Exception()
         var insertedPos = InsertedPos.NONE
         tailrec fun _insert(node: BinaryNode<T>) {//: BinaryNode<T>, node: BinaryNode<T>?, pos: InsertedPos){
-            if (node.key == key)
-                throw InsertFailException() //(InsertedPos.NONE)
+            if (node.key < key || node.key > key)
             when (node.childrenStatus) {
                 0 -> {
                     if (key < node.key) {
@@ -216,6 +215,8 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
                         _insert(node.right!!)
                 }
             }
+            else
+                throw InsertFailException()
         }
 
         if (rootNode == null){
@@ -675,7 +676,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
      * Delete a binaryNode following the procedure written in Wikipedia
      * @param key
      * @return success => true
-     * @throws DeleteException
+     * @throws DeleteFailException
      */
     override fun delete(key: T): DeleteResult {
         //class ImproperArgumentException(msg:String) : Exception(msg)
