@@ -105,7 +105,7 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
     val panel = JPanel()
     val subPanel = JPanel()
     val statusPanel = JPanel()
-    var tree: JTree? = null
+    var tree = JTree(model) // ? = null
     val treeSizeLabel = JLabel()
     val cloneButton = JButton("Clone self")
     val treeTopLabel = JLabel()
@@ -115,7 +115,7 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
     val entryPanel = JPanel()
     inner class OriginalTreeSelectionListener : TreeSelectionListener{
         override fun valueChanged(e: TreeSelectionEvent?) {
-            val last = tree?.lastSelectedPathComponent
+            val last = tree.lastSelectedPathComponent
             if (last != null) {
                 @Suppress("UNCHECKED_CAST")
                 val node = last as BinaryNode<T>
@@ -151,7 +151,7 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
         var n = i
         val keyList = mutableListOf<String>()
         class _BreakException: Exception()
-        fun keyListAdd(it: T) {
+        val keyListAdd = fun(it: T) {
             keyList.add("$it")
             if (--n <= 0)
                 throw _BreakException()
@@ -159,15 +159,15 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
         try {
             when (reverse) {
                 false -> model.inTraverse { keyListAdd(it) }
-                true -> model.reverseInTraverse(::keyListAdd)
+                else -> model.reverseInTraverse(keyListAdd)
             }
         } catch (e: _BreakException) { }
         return keyList.join(" ")
     }
 
     init {
-        tree = JTree(model)
-        tree?.addTreeSelectionListener(originalTreeSelectionListener)
+        //tree = JTree(model)
+        tree.addTreeSelectionListener(originalTreeSelectionListener)
         with(subPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             add(JScrollPane(tree))
@@ -201,11 +201,11 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
         /**
          * @param method: like {i->model.insert(i)}
          */
-        class InsertActionListener2(val method: (T)->Any): ActionListener {
-            override fun actionPerformed(e: ActionEvent?) {
+        class InsertActionListener2(val method: (T)->Any) : ActionListener {
+            override fun actionPerformed(actionEvent: ActionEvent?) {
                 existsListModel.clear()
-                //val listModel = DefaultListModel<String>()
-                inputArea.text.split('\n').forEach {
+                val ss = inputArea.text.split('\n')
+                ss.forEach {
                     val s = it.trim()
                     try {
                         val k = fromString(s)
@@ -215,7 +215,7 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
                     /*
                     catch (idE: BinarySearchTree.InsertDeleteException){
                         when(idE) {
-                            BinarySearchTree.InsertException -> existsListModel.addElement("$s caused an exception: $e")
+                            BinarySearchTree.InsertException -> existsListModel.addElement("$s caused an exception: $actionEvent")
                         }
                     }*/
                     catch (idE: BinarySearchTree.InsertDeleteException){
@@ -228,17 +228,22 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
                             existsListModel.addElement("$s caused an exception: $e")
                         }
                 }
+                /*
+                tree.revalidate()
+                */
                 subPanel.removeAll()
                 tree = JTree(model)
-                tree?.addTreeSelectionListener(originalTreeSelectionListener)
+                tree.addTreeSelectionListener(originalTreeSelectionListener)
                 subPanel.add(JScrollPane(tree))
+                //tree.collapseRow(0)
+                tree.expandRow(0)
                 //existsList.model = listModel
-                subPanel.revalidate()
+                tree.revalidate()
                 setTreeStatus()
                 //existsList.text = sb.toString()
             }
         }
-        insertButton.addActionListener(InsertActionListener2{i->model.insert(i)})//(Insert_Delete.INSERT))
+        insertButton.addActionListener(InsertActionListener2 { model.insert(it) })//(Insert_Delete.INSERT))
 
         deleteButton.addActionListener(InsertActionListener2{i->model.delete(i)})//InsertActionListener(Insert_Delete.DELETE))
 
@@ -460,18 +465,19 @@ fun main(args:Array<String>){
     }
     println()
 
-    val treeModel = BinarySearchTreeModel<Int>()
+    val treeModel = BinarySearchTreeModel(btree.rootNode)
+    /*
     btree.preTraverse { k ->
         treeModel.insert(k)
     }
-
+    */
 
     // fun stringToInt(a:String):Int?{ return try { a.toInt() } catch (e: NumberFormatException){null} }
 
-    fun stoi(a: String): Int = a.toInt()
+    val atoi = fun(a: String) = a.toInt()
 
     SwingUtilities.invokeLater {
-        val treeFrame = BinarySearchTreeFrame(treeModel, ::stoi)
+        val treeFrame = BinarySearchTreeFrame(treeModel, atoi)
         with(treeFrame){
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             pack()
