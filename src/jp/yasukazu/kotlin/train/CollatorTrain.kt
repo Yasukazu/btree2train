@@ -21,7 +21,7 @@ interface toStringable {
 /* interface toTextable {
     fun toText():String
 }*/
-class KollationKey(val key: CollationKey):Comparable<KollationKey>{
+class KollationKey(val key: CollationKey) : Comparable<KollationKey>{
     override operator fun compareTo(other: KollationKey): Int = key.compareTo(other.key)
     /*
     override fun toText(): String {
@@ -30,6 +30,15 @@ class KollationKey(val key: CollationKey):Comparable<KollationKey>{
     override fun toString(): String {
         return key.sourceString
     }
+}
+
+class NormalizerCollator(strength: Int = Collator.SECONDARY){
+    val collator: Collator = Collator.getInstance()
+    init {
+        collator.strength = strength
+    }
+    fun kollationKey(key: String): KollationKey = KollationKey(collator.getCollationKey(Normalizer.normalize(key, Normalizer.Form.NFKC)))
+    operator fun get(key: String): KollationKey = kollationKey(key)
 }
 /*
 class CollatorString<T:Comparable<T>>:Comparable(val s:T){
@@ -44,29 +53,28 @@ fun main(args: Array<String>){
         return sourceString
     }
 
-    val collator = Collator.getInstance()//Locale.JAPANESE)
-    collator.strength = Collator.SECONDARY
+    //val collator = Collator.getInstance()//Locale.JAPANESE)
+    //collator.strength = Collator.SECONDARY
     //val trans = Transliterator.getInstance("Fullwidth-Halfwidth")//-Fullwidth")
     val root = BinarySearchTree<KollationKey>()
     val treeMap = TreeMap<KollationKey, String>()
 
 
+    val nK = NormalizerCollator()
     args.forEach { a ->
         println(a)
-        val cKey = KollationKey(collator.getCollationKey(Normalizer.normalize((a), Normalizer.Form.NFKC)))
+        val cKey = nK[a]//KollationKey(collator.getCollationKey(Normalizer.normalize((a), Normalizer.Form.NFKC)))
         root.insert(cKey)
         treeMap[cKey] = a
     }
     println()
-    root.inTraverse { k ->
-        println("${k}")
-        return@inTraverse false
+    root.inTraverse {
+        println("${it}")
     }
     println()
     // Reverse: not as expected..{Kanji(not 50on jun), ANK, Hiragana}
-    root.inTraverse(reverse = true){ k ->
-        println("${k}")//{k.sourceString}")
-        return@inTraverse false
+    root.inTraverse {
+        println("${it}")//{k.sourceString}")
     }
     println()
     for((k, v) in treeMap.entries){
