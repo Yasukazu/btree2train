@@ -1,7 +1,7 @@
 # Binary Search Tree structure and algorithm as Computer Science
- 
 Usage
 -----
+ - [Wiki](https://github.com/Yasukazu/btree2train/wiki)
 ### Quick Trial ###
 
  + by Jython
