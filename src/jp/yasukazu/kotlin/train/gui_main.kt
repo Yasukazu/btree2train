@@ -150,10 +150,18 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
     fun getTopN(i:Int, reverse:Boolean=false):String {
         var n = i
         val keyList = mutableListOf<String>()
-        model.inTraverse(reverse=reverse){ k ->
-            keyList.add("$k")
-            return@inTraverse --n > 0
+        class _BreakException: Exception()
+        fun keyListAdd(it: T) {
+            keyList.add("$it")
+            if (--n <= 0)
+                throw _BreakException()
         }
+        try {
+            when (reverse) {
+                false -> model.inTraverse { keyListAdd(it) }
+                true -> model.reverseInTraverse(::keyListAdd)
+            }
+        } catch (e: _BreakException) { }
         return keyList.join(" ")
     }
 
@@ -356,8 +364,18 @@ fun main(args:Array<String>){
     for(x in preOrderTraversalList)
         print("$x\n")
     println()
-    println("pre-order traversal")
-    btree.preTraverse { x -> print("$x\n") }
+    println("pre-order traversal:")
+    btree.preTraverse {print("$it\n") }
+    println()
+    println("pre-order traversal 1st 3 break: ")
+    class _BreakException : Exception()
+    var n = 3
+    try {
+        btree.preTraverse { print("$it, ") }
+        if (--n <= 0)
+            throw _BreakException()
+    } catch (e: _BreakException) {
+    }
     println()
     println("pre-order traversal with depth")
     btree.preTraverse_depth("") {s,d->println("$s:$d")}
@@ -368,7 +386,7 @@ fun main(args:Array<String>){
     println("post order traversal with depth")
     btree.postTraverse_depth {s,d->println("$s:$d")}
     println("pre-order traversal with print")
-    btree.preTraversePrint {s -> print("$s")}
+    btree.preTraversePrint {print("$it, ")}
     println()
     // node copy
     val newRoot = btree.rootNode?.copy()
@@ -376,30 +394,28 @@ fun main(args:Array<String>){
         val newBtree = BinarySearchTree<Int>()
         newBtree.rootNode = newRoot
         println("Cloned binary search tree:")
-        newBtree.preTraversePrint { s -> print("$s") }
+        newBtree.preTraversePrint {print("$it, ") }
         println()
     }
 
-    println("\nBTree in-order traversal:")
-    btree.inTraverse { x ->
-        println(x)
-        return@inTraverse true
-    }
+    println("BTree in-order traversal:")
+    btree.inTraverse { println(it) }
     println()
-    print("\nBTree reverse in-order traversal:\n")
-    btree.inTraverse(reverse = true, callback={ x ->
-        println(x)
-        return@inTraverse true
-    })
+    print("BTree reverse in-order traversal:\n")
+    btree.reverseInTraverse { println(it) }
     println()
-    println("\nBTree interrupt in-order traversal:")
+    println("BTree interrupt in-order traversal:")
+    class _InterruptException: Exception()
     var count = 2
-    btree.inTraverse(reverse = true) { x ->
-        // writeInt(x)
-        println(x)
-        return@inTraverse --count > 0 //if(count <= 0) true else false
-    }
+    try {
+        btree.inTraverse {
+            println(it)
+            if (--count <= 0)
+                throw _InterruptException()
+        }
+    } catch(e: _InterruptException){}
     println()
+        /*
     // try catch version
     class InterruptException: Exception()
     count = 2
@@ -408,11 +424,10 @@ fun main(args:Array<String>){
             println(x)
             if(--count <= 0)
                 throw InterruptException()
-            return@inTraverse true
         }
     }
     catch(e: InterruptException){}
-    println()
+    println() */
     print("\nBTree in-order traversal with depth:\n")
     btree.inOrderTraverse {s,d->println("$s:$d")}
     print("\n")
@@ -423,9 +438,9 @@ fun main(args:Array<String>){
     }
     println()
     println("BTree in-order n-ths")
-    for (n in 1..btree.size){
-        val iN2 = btree.inOrderNth(n)
-        println("BTree in-order n-th($n)=$iN2")
+    for (_n in 1..btree.size){
+        val iN2 = btree.inOrderNth(_n)
+        println("BTree in-order n-th($_n)=$iN2")
     }
     println()
 
