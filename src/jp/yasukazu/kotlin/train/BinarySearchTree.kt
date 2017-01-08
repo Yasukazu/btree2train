@@ -1,6 +1,5 @@
 package jp.yasukazu.kotlin.train
 
-import java.io.Serializable
 import java.util.NoSuchElementException
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.MutableTreeNode
@@ -410,18 +409,26 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
     }
 
 
-    fun preTraverse(callback:(T)->Unit){
-        fun _preTraverse(binaryNode: BinaryNode<T>?){
-            if (binaryNode == null)
+    fun preTraverse(callback: (T)->Unit){//Boolean){
+        //class _BreakException: Exception()
+        fun _preTraverse(node: BinaryNode<T>?){
+            if (node == null)
                 return
             else {
-                callback(binaryNode.key)
-                _preTraverse(binaryNode.left)
-                _preTraverse(binaryNode.right)
+               // if (!
+                callback(node.key)
+                    //throw _BreakException()
+                _preTraverse(node.left)
+                _preTraverse(node.right)
             }
         }
+        //try {
+            _preTraverse(rootNode)
+        /*
+        }
+        catch (e: _BreakException){
 
-        _preTraverse(rootNode)
+        } */
     }
 
     fun preTraversePrint(callback:(String)->Unit){
@@ -494,18 +501,36 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
         _preTraverseLR(rootNode, TraverseLR.NONE)
     }
 
-    private fun _postTraverse_depth(binaryNode: BinaryNode<T>?, depth: String, callback:(T, String)->Unit){
-        if (binaryNode == null)
-            return
-        else {
-            _postTraverse_depth(binaryNode.left, depth + "<", callback)
-            _postTraverse_depth(binaryNode.right, depth + ">",  callback)
-            callback(binaryNode.key, depth)
+    /**
+     * post order traverse
+     * @param callback: like fun(k: T) = println("$k")
+     */
+    fun postTraverse(callback:(T)->Unit){
+        fun _postTraverse(node: BinaryNode<T>?){
+            if (node == null)
+                return
+            else {
+                _postTraverse(node.left)
+                _postTraverse(node.right)
+                callback(node.key)
+            }
         }
+
+        _postTraverse(rootNode)
     }
 
     fun postTraverse_depth(callback:(T, String)->Unit){
-        _postTraverse_depth(rootNode, "", callback)
+        fun _postTraverse_depth(node: BinaryNode<T>?, depth: String){
+            if (node == null)
+                return
+            else {
+                _postTraverse_depth(node.left, depth + "<")
+                _postTraverse_depth(node.right, depth + ">")
+                callback(node.key, depth)
+            }
+        }
+
+        _postTraverse_depth(rootNode, "")
     }
 
     //enum class LR {L, }
@@ -576,40 +601,35 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
     /**
      * in-order traverse from rootNode
      * key is fed to [callback] function
-     * interrupt break if callback returns false
-     *
      */
-    fun inTraverse(reverse:Boolean=false, callback: (T) -> Boolean){
-        //val list = MutableList<T>()
-        class _InterrruptException() :Exception()
-        fun _inTraverse(binaryNode: BinaryNode<T>?){
-            if (binaryNode == null)
+    fun inTraverse(callback: (T) -> Unit){
+        fun _inTraverse(node: BinaryNode<T>?){
+            if (node == null)
                 return
             else {
-                _inTraverse(binaryNode.left)
-                if(!callback(binaryNode.key))// <= 0)
-                    throw _InterrruptException()
-                _inTraverse(binaryNode.right)
+                _inTraverse(node.left)
+                callback(node.key)
+                _inTraverse(node.right)
             }
         }
-        fun _reverseInTraverse(binaryNode: BinaryNode<T>?){
-            if (binaryNode == null)
+        _inTraverse(rootNode)
+    }
+
+    /**
+     * reverse in-order traverse from rootNode
+     * @param callback: key is fed to [callback] function
+     */
+    fun reverseInTraverse(callback: (T) -> Unit){
+        fun _reverseInTraverse(node: BinaryNode<T>?){
+            if (node == null)
                 return
             else {
-                _reverseInTraverse(binaryNode.right)
-                if(!callback(binaryNode.key)) // <= 0)
-                    throw _InterrruptException()
-                _reverseInTraverse(binaryNode.left)
+                _reverseInTraverse(node.right)
+                callback(node.key)
+                _reverseInTraverse(node.left)
             }
         }
-        try {
-            if (reverse)
-                _reverseInTraverse(rootNode)
-            else
-                _inTraverse(rootNode)
-        }
-        catch (e: _InterrruptException){
-        }
+        _reverseInTraverse(rootNode)
     }
 
     /**
@@ -808,7 +828,6 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
         init {
             inTraverse { k ->
                 list.add(k)
-                return@inTraverse true
             }
         }
 
