@@ -22,7 +22,6 @@ fun List<String>.join(d:String):String{
 /**
  * Custom JTree Model
  */
-@Suppress("UNCHECKED_CAST")
 open class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) : BinarySearchTree<T>(), TreeModel {
     val listenerList = mutableListOf<TreeModelListener>()
     init {
@@ -35,10 +34,12 @@ open class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) 
     override fun getRoot(): BinaryNode<T>? { return rootNode
     }
     override fun isLeaf(_n: Any): Boolean {
+        @Suppress("UNCHECKED_CAST")
             val n = _n as BinaryNode<T>
             return n.left == null && n.right == null
     }
     override fun getChildCount(_n: Any): Int {
+        @Suppress("UNCHECKED_CAST")
         val n = _n as BinaryNode<T>
        return n.size //j(if(n.left != null) 1 else 0) + (if(n.right != null) 1 else 0)
     }
@@ -56,12 +57,14 @@ open class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) 
         if (parent == null && child == null)
             return -1
         else {
+            @Suppress("UNCHECKED_CAST")
             val p = parent as BinaryNode<T>
             when(p.childrenStatus){
                 0 -> return -1
                 1 -> return 0
                 2 -> return 1
                 else -> {
+                    @Suppress("UNCHECKED_CAST")
                     val c = child as BinaryNode<T>
                     return if (c == p.left) 0 else 1
                 }
@@ -73,6 +76,7 @@ open class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) 
         if (parent == null)
             return null//BinaryNode<T>(null)
         else {
+            @Suppress("UNCHECKED_CAST")
             val p = parent as BinaryNode<T>
             return when(p.childrenStatus){
                 0 -> null
