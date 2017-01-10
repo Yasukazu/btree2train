@@ -22,6 +22,7 @@ fun List<String>.join(d:String):String{
 /**
  * Custom JTree Model
  */
+@Suppress("UNCHECKED_CAST")
 open class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) : BinarySearchTree<T>(), TreeModel {
     val listenerList = mutableListOf<TreeModelListener>()
     init {
@@ -34,8 +35,8 @@ open class BinarySearchTreeModel<T:Comparable<T>>(_root: BinaryNode<T>? = null) 
     override fun getRoot(): BinaryNode<T>? { return rootNode
     }
     override fun isLeaf(_n: Any): Boolean {
-        val n = _n as BinaryNode<T>
-        return n.left == null && n.right == null
+            val n = _n as BinaryNode<T>
+            return n.left == null && n.right == null
     }
     override fun getChildCount(_n: Any): Int {
         val n = _n as BinaryNode<T>
@@ -113,6 +114,10 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
     val existsListModel = DefaultListModel<String>()
     val existsList = JList<String>(existsListModel)//JLabel()
     val entryPanel = JPanel()
+    val controlPanel = JPanel()
+    val outputPanel = JPanel()
+    val outputArea = JTextArea()
+
     inner class OriginalTreeSelectionListener : TreeSelectionListener{
         override fun valueChanged(e: TreeSelectionEvent?) {
             val last = tree.lastSelectedPathComponent
@@ -165,6 +170,12 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
         return keyList.join(" ")
     }
 
+    fun setTreeStatus(n: Int = 10){
+        treeSizeLabel.text = "Tree Size: ${model.size}"
+        treeTopLabel.text = "Sorted $n Tops: ${getTopN(n)}"
+        treeLastLabel.text = "Sorted $n Lasts: ${getTopN(n, reverse = true)}"
+    }
+
     init {
         //tree = JTree(model)
         tree.addTreeSelectionListener(originalTreeSelectionListener)
@@ -191,11 +202,6 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
             add(rightColumn)
         }
 
-        fun setTreeStatus(n: Int = 10){
-            treeSizeLabel.text = "Tree Size: ${model.size}"
-            treeTopLabel.text = "Sorted $n Tops: ${getTopN(n)}"
-            treeLastLabel.text = "Sorted $n Lasts: ${getTopN(n, reverse = true)}"
-        }
 
 
         /**
@@ -270,6 +276,7 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
                 existsList.revalidate()
             }
         }
+
         cloneButton.addActionListener { e ->
             val cloneModel = model.clone()
             SwingUtilities.invokeLater {
@@ -279,18 +286,45 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
                 newFrame.isVisible = true
             }
         }
+
         val existsPanel = JPanel()
         with(existsPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             add(existsButton)
             add(JScrollPane(existsList))
         }
-        val westPanel = JPanel()
-        with(westPanel){
+        val preTraverseButton = JButton("Pre-order traversal")
+        preTraverseButton.addActionListener {
+            val sb = StringBuilder()
+            model.preTraverse { sb.append("$it\n") }
+            outputArea.text = sb.toString()
+            outputPanel.revalidate()
+        }
+        val preTraverseDepthButton = JButton("Pre-order traversal with depth")
+        preTraverseDepthButton.addActionListener {
+            val sb = StringBuilder()
+            model.preTraverse_depth_LR { t, i, c ->
+                var n =i
+                while(n-- > 0)
+                    sb.append(c)
+                sb.append(" $t\n")
+            }
+            outputArea.text = sb.toString()
+            outputPanel.revalidate()
+        }
+        with(controlPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
-            add(insertButton)
             add(existsPanel)
+            add(Box.createGlue())
+            add(insertButton)
+            add(Box.createGlue())
             add(cloneButton)
+            add(Box.createGlue())
+            add(deleteButton)
+            add(Box.createGlue())
+            add(preTraverseButton)
+            add(Box.createGlue())
+            add(preTraverseDepthButton)
         }
         treeSizeLabel.text = "Tree Size: ${model.size}"
         treeTopLabel.text = "Sorted 3 Tops: ${getTopN(3)}"
@@ -304,6 +338,12 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
             add(treeSizeLabel)
             add(treeTopLabel)
             add(treeLastLabel)
+            add(Box.createGlue())
+            add(statusPanel)
+        }
+        with(outputPanel){
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            add(JScrollPane(outputArea))
         }
         with(panel) {
             val _layout = BorderLayout()//this, BoxLayout.Y_AXIS)
@@ -311,10 +351,9 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
             _layout.vgap = 20
             layout = _layout
             add(entryPanel, BorderLayout.NORTH)
-            add(westPanel, BorderLayout.WEST)
+            add(controlPanel, BorderLayout.WEST)
             add(subPanel, BorderLayout.CENTER)
-            add(deleteButton, BorderLayout.EAST)
-            add(statusPanel, BorderLayout.SOUTH)
+            add(outputPanel, BorderLayout.EAST)
         }
         setTreeStatus()
         add(panel)
