@@ -111,11 +111,26 @@ interface InsertDeletable<in T> {
     fun delete(key: T): DeleteResult
 }
 
-open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>  {
+/**
+ * interface(like Object Pascal)
+ */
+interface BasicBinarySearchTree<T: Comparable<T>> {
+    val size: Int
+    fun insert(key: T): InsertedPos
+    fun delete(key: T): DeleteResult
+    fun preTraverse(callback: (T)->Unit)
+    fun inTraverse(callback: (T)->Unit)
+    fun postTraverse(callback: (T)->Unit)
+}
+
+/**
+ * implementation: implemented items cap 'override'
+ */
+open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>, BasicBinarySearchTree<T>  {
 
     var rootNode: BinaryNode<T>? = null
     private var _size: Int = 0
-    val size: Int get() = count()//_size
+    override val size: Int get() = count()//_size
     private val serialVersionUID = 45456465444654634L
 
 
@@ -409,7 +424,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
     }
 
 
-    fun preTraverse(callback: (T)->Unit){//Boolean){
+    override fun preTraverse(callback: (T)->Unit){//Boolean){
         //class _BreakException: Exception()
         fun _preTraverse(node: BinaryNode<T>?){
             if (node == null)
@@ -488,10 +503,10 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
     }
 
     enum class TraverseLR {NONE, L, R}
-    fun preTraverseLR(callback:(T, TraverseLR)->Unit){
+    fun preTraverseLR(callback:(T?, TraverseLR)->Unit){
         fun _preTraverseLR(binaryNode: BinaryNode<T>?, L_R: TraverseLR){
             if (binaryNode == null)
-                return
+                callback(null, L_R)
             else {
                 callback(binaryNode.key, L_R)
                 _preTraverseLR(binaryNode.left, TraverseLR.L)
@@ -503,9 +518,9 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
 
     /**
      * post order traverse
-     * @param callback: like fun(k: T) = println("$k")
+     * @param callback: like fun(k: T?) = println("$k")
      */
-    fun postTraverse(callback:(T)->Unit){
+    override fun postTraverse(callback:(T)->Unit){
         fun _postTraverse(node: BinaryNode<T>?){
             if (node == null)
                 return
@@ -519,13 +534,13 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
         _postTraverse(rootNode)
     }
 
-    fun postTraverse_depth(callback:(T, String)->Unit){
+    fun postTraverse_depth(callback:(T?, String)->Unit){
         fun _postTraverse_depth(node: BinaryNode<T>?, depth: String){
             if (node == null)
-                return
+                callback(null, depth)
             else {
-                _postTraverse_depth(node.left, depth + "<")
-                _postTraverse_depth(node.right, depth + ">")
+                _postTraverse_depth(node.left, depth + "+")
+                _postTraverse_depth(node.right, depth + "+")
                 callback(node.key, depth)
             }
         }
@@ -602,7 +617,7 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
      * in-order traverse from rootNode
      * key is fed to [callback] function
      */
-    fun inTraverse(callback: (T) -> Unit){
+    override fun inTraverse(callback: (T) -> Unit){
         fun _inTraverse(node: BinaryNode<T>?){
             if (node == null)
                 return
