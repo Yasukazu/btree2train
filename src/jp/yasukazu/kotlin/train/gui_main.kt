@@ -8,6 +8,7 @@ import javax.swing.*
 import javax.swing.event.TreeModelListener
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.event.TreeSelectionListener
+import javax.swing.table.DefaultTableModel
 //import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeModel
 import javax.swing.tree.TreePath
@@ -120,7 +121,14 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
     val entryPanel = JPanel()
     val controlPanel = JPanel()
     val outputPanel = JPanel()
-    val outputArea = JTextArea()
+    //val outputArea = JTextArea()
+    //val outputModel = DefaultListModel<T>()
+    //val outputList = JList(outputModel)
+    //val outputModel2 = DefaultListModel<BinarySearchTree.TraverseLR>()
+    //val outputList2 = JList(outputModel2)
+    //val outputTableModel = DefaultTableModel()//11, 3)
+    //var outputTable = JTable(outputTableModel)
+    //val outputTablePanel = JPanel()
 
     inner class OriginalTreeSelectionListener : TreeSelectionListener{
         override fun valueChanged(e: TreeSelectionEvent?) {
@@ -299,36 +307,125 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
         }
         val preTraverseButton = JButton("Pre-order traversal")
         preTraverseButton.addActionListener {
-            val sb = StringBuilder()
-            model.preTraverse { sb.append("$it\n") }
-            outputArea.text = sb.toString()
-            outputPanel.revalidate()
+            val listModel = DefaultListModel<T>()
+            //outputModel.clear()
+            //val sb = StringBuilder()
+            model.preTraverse {
+                //sb.append("$it\n")
+                listModel.addElement(it)
+            }
+            with(outputPanel) { //outputArea.text = sb.toString()
+                removeAll()
+                add(JLabel(preTraverseButton.text))
+                add(JScrollPane(JList(listModel)))
+                revalidate()
+            }
         }
         val preTraverseDepthButton = JButton("Pre-order traversal with depth")
         preTraverseDepthButton.addActionListener {
-            val sb = StringBuilder()
-            model.preTraverse_depth_LR { t, i, c ->
-                var n =i
-                while(n-- > 0)
-                    sb.append(c)
-                sb.append(" $t\n")
+            val tableModel = DefaultTableModel()
+            //val sb = StringBuilder()
+            arrayOf("Key", "Depth", "L or R").forEach {
+                tableModel.addColumn(it)
             }
-            outputArea.text = sb.toString()
+            model.preTraverse_depth_LR { t, i, c ->
+                //var n =i
+                //while(n-- > 0) sb.append(c)
+                //sb.append(" $t\n")
+                //outputModel.addElement(t)
+                tableModel.addRow(arrayOf("$t", "$i", "$c"))
+            }
+            //outputArea.text = sb.toString() outputPanel.revalidate()
+            with(outputPanel){
+                removeAll()
+                add(JLabel(preTraverseDepthButton.text))
+                add(JScrollPane(JTable(tableModel)))
+                revalidate()
+            }
+        }
+        val inTraverseButton = JButton("In-order traversal")
+        inTraverseButton.addActionListener {
+            val listModel = DefaultListModel<T>()
+            model.inTraverse {
+                listModel.addElement(it)
+            }
+            with(outputPanel){
+                removeAll()
+                add(JLabel(inTraverseButton.text))
+                add(JScrollPane(JList(listModel)))
+                revalidate()
+            }
+        }
+        val preTraverseLrButton = JButton("Pre-order traversal with L R")
+        preTraverseLrButton.addActionListener {
+            val tableModel = DefaultTableModel()
+            //outputModel.clear() outputModel2.clear()
+            tableModel.addColumn("Key")
+            tableModel.addColumn("L or R")
+            model.preTraverseLR { t, lr ->
+                //outputModel.addElement(t) outputModel2.addElement(lr)
+                tableModel.addRow(arrayOf(t.toString(), lr.toString()))
+            }
+            //outputPanel.revalidate()
+            //outputTable = JTable(tableModel)
+            with(outputPanel) {
+                removeAll()
+                add(JLabel(preTraverseLrButton.text))
+                add(JScrollPane(JTable(tableModel)))
+                revalidate()
+            }
+        }
+        val postTraverseButton = JButton("Post-order traversal")
+        postTraverseButton.addActionListener {
+            val listModel = DefaultListModel<T>()
+            //outputModel.clear()
+            //val sb = StringBuilder()
+            model.postTraverse { t ->
+                //sb.append("$t \n")
+                listModel.addElement(t)
+            }
+            //outputArea.text = sb.toString()
+            outputPanel.removeAll()
+            outputPanel.add(JLabel(postTraverseButton.text))
+            outputPanel.add(JScrollPane(JList(listModel)))
             outputPanel.revalidate()
         }
+        //val outputModelPanel = JPanel()
+        val postTraverseDepthButton = JButton("Post-order traversal with depth")
+        postTraverseDepthButton.addActionListener {
+            val tableModel = DefaultTableModel()
+            tableModel.addColumn("Key")
+            tableModel.addColumn("Depth")
+            //val sb = StringBuilder()
+            model.postTraverse_depth { t, s ->
+                //sb.append("$t $s\n")
+                tableModel.addRow(arrayOf(t.toString(), s))
+                //outputModel.addElement(t)
+            }
+            //outputArea.text = sb.toString()
+            with(outputPanel){
+                removeAll()
+                add(JLabel("Post Traversal with Depth"))
+                add(JScrollPane(JTable(tableModel)))
+                revalidate()
+            }
+        }
+        //with(outputModelPanel){ layout = BoxLayout(this, BoxLayout.X_AXIS) add(outputList) add(outputList2) }
         with(controlPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             add(existsPanel)
-            add(Box.createGlue())
             add(insertButton)
-            add(Box.createGlue())
             add(cloneButton)
-            add(Box.createGlue())
             add(deleteButton)
             add(Box.createGlue())
             add(preTraverseButton)
-            add(Box.createGlue())
             add(preTraverseDepthButton)
+            add(preTraverseLrButton)
+            add(Box.createGlue())
+            add(inTraverseButton)
+            add(Box.createGlue())
+            add(postTraverseButton)
+            add(postTraverseDepthButton)
         }
         treeSizeLabel.text = "Tree Size: ${model.size}"
         treeTopLabel.text = "Sorted 3 Tops: ${getTopN(3)}"
@@ -347,8 +444,11 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
         }
         with(outputPanel){
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
-            add(JScrollPane(outputArea))
+            //add(JScrollPane(outputArea))
+            //add(Box.createGlue())
+            //add(JScrollPane(outputList))
         }
+        //with(outputTablePanel){ layout = BoxLayout(this, BoxLayout.Y_AXIS) //add(JScrollPane(outputTable)) }
         with(panel) {
             val _layout = BorderLayout()//this, BoxLayout.Y_AXIS)
             _layout.hgap = 20
@@ -358,6 +458,7 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
             add(controlPanel, BorderLayout.WEST)
             add(subPanel, BorderLayout.CENTER)
             add(outputPanel, BorderLayout.EAST)
+            //add(outputTablePanel, BorderLayout.EAST)
         }
         setTreeStatus()
         add(panel)
