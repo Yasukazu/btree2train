@@ -112,13 +112,21 @@ interface InsertDeletable<in T> {
 }
 
 /**
- * interface(like Object Pascal)
+ * interface
  */
 interface BasicBinarySearchTree<T: Comparable<T>> {
+    var rootNode: BinaryNode<T>?
     val size: Int
     fun insert(key: T): InsertedPos
     fun delete(key: T): DeleteResult
-    fun preTraverse(callback: (T)->Unit)
+    fun _preTraverseNode(node: BinaryNode<T>?, callback: (BinaryNode<T>)->Unit)
+    fun preTraverseNode(callback: (BinaryNode<T>)->Unit){
+        _preTraverseNode(rootNode, callback)
+    }
+    fun _preTraverse(node: BinaryNode<T>?, callback: (T)->Unit)
+    fun preTraverse(callback: (T)->Unit){
+        _preTraverse(rootNode, callback)
+    }
     fun inTraverse(callback: (T)->Unit)
     fun postTraverse(callback: (T)->Unit)
 }
@@ -128,7 +136,7 @@ interface BasicBinarySearchTree<T: Comparable<T>> {
  */
 open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>, BasicBinarySearchTree<T>  {
 
-    var rootNode: BinaryNode<T>? = null
+    override var rootNode: BinaryNode<T>? = null
     private var _size: Int = 0
     override val size: Int get() = count()//_size
     private val serialVersionUID = 45456465444654634L
@@ -423,7 +431,27 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
         return newTree
     }
 
+    override fun _preTraverseNode(node: BinaryNode<T>?, callback: (BinaryNode<T>)->Unit){
+        if (node == null)
+            return
+        else {
+            callback(node)
+            _preTraverseNode(node.left, callback)
+            _preTraverseNode(node.right, callback)
+        }
+    }
 
+    override fun _preTraverse(node: BinaryNode<T>?, callback: (T)->Unit){
+        if (node == null)
+            return
+        else {
+            callback(node.key)
+            _preTraverse(node.left, callback)
+            _preTraverse(node.right, callback)
+        }
+    }
+
+    /*
     override fun preTraverse(callback: (T)->Unit){//Boolean){
         //class _BreakException: Exception()
         fun _preTraverse(node: BinaryNode<T>?){
@@ -437,14 +465,10 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
                 _preTraverse(node.right)
             }
         }
-        //try {
-            _preTraverse(rootNode)
-        /*
-        }
-        catch (e: _BreakException){
-
-        } */
-    }
+        //try { _preTraverse(rootNode)  }
+        //catch (e: _BreakException){ }
+        // }
+        */
 
     fun preTraversePrint(callback:(String)->Unit){
         fun _preTraverse(binaryNode: BinaryNode<T>?){
