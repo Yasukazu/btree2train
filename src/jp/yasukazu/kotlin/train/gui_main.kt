@@ -321,6 +321,25 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
                 revalidate()
             }
         }
+        val preTraverseNodeButton = JButton("Pre-order traversal node")
+        preTraverseNodeButton.addActionListener {
+            val tableModel = DefaultTableModel()
+            arrayOf("Node", "Key", "L", "R").forEach {
+                tableModel.addColumn(it)
+            }
+            model.preTraverseNode {
+                val hex = "%X".format(it.hashCode())
+                val lHex = "%X".format(it.left?.hashCode())
+                val rHex = "%X".format(it.right?.hashCode())
+                tableModel.addRow(arrayOf(hex, "${it.key}", lHex, rHex))
+            }
+            with(outputPanel){
+                removeAll()
+                add(JLabel(preTraverseNodeButton.text))
+                add(JScrollPane(JTable(tableModel)))
+                revalidate()
+            }
+        }
         val preTraverseDepthButton = JButton("Pre-order traversal with depth")
         preTraverseDepthButton.addActionListener {
             val tableModel = DefaultTableModel()
@@ -419,6 +438,7 @@ open class BinarySearchTreeFrame<T: Comparable<T>>(val model: BinarySearchTreeMo
             add(deleteButton)
             add(Box.createGlue())
             add(preTraverseButton)
+            add(preTraverseNodeButton)
             add(preTraverseDepthButton)
             add(preTraverseLrButton)
             add(Box.createGlue())
