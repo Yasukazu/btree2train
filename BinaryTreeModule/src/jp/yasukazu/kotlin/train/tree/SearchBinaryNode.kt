@@ -8,19 +8,37 @@ package jp.yasukazu.kotlin.train.tree
 enum class InsertedPos { LEFT, NEW, RIGHT, NONE }
 
 interface SearchBinaryNodeInterface<T: Comparable<T>>{
-    val key: T
+    var key: T
     val left: SearchBinaryNodeInterface<T>?
     val right: SearchBinaryNodeInterface<T>?
-    fun add(item: T)
+    fun add(item: T, callback: ((InsertedPos)->Unit)?=null)
+    operator fun contains(item: T): Boolean
 }
 
+class IllegalAssignmentException : Exception()
 open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterface<T>{
     data class BinaryNodeData<T: Comparable<T>> (var key: T, var left: BinaryNodeData<T>? = null, var right: BinaryNodeData<T>? = null)
     private var data = BinaryNodeData(_key)
     constructor(nodeData: BinaryNodeData<T>) : this(nodeData.key){
         data = nodeData
     }
-    override val key = data.key //: T get() { return data.key }
+    override var key: T
+        get() {return data.key}
+        set(newKey) {
+            if (left != null && right != null){
+                if (newKey < left!!.key || newKey > right!!.key)
+                    throw IllegalAssignmentException()
+            }
+            else if (left == null){
+                if (newKey > right!!.key)
+                    throw IllegalAssignmentException()
+            }
+            else if (right == null){
+                if (newKey < left!!.key)
+                    throw IllegalAssignmentException()
+            }
+            data.key = newKey
+        }
     override val left: SearchBinaryNode<T>?
         get() {
           return if(data.left != null) this(data.left!!) else null
@@ -29,7 +47,42 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
         get() {
             return if(data.right != null) this(data.right!!) else null
         }
+    /**
+     * find key
+     */
+    enum class FindResult {NOT_FOUND, FOUND}
+    fun find(item: T):Boolean{
+        class _BreakException(val e: FindResult): Exception()
+        /**
+         * pre-find
+         * return non-null if found
+         */
+        var result = false
+        tailrec fun _find(nodeData: BinaryNodeData<T>?){
+            if (nodeData == null) {
+                throw _BreakException(FindResult.NOT_FOUND)
+            } else { // Otherwise, recur down the tree
+                if (item < nodeData.key) {
+                    _find(nodeData.left)
+                } else if (item > nodeData.key) {
+                    _find(nodeData.right)
+                } else {
+                    throw _BreakException(FindResult.FOUND)
+                }
+            }
+        }
+        try {
+            _find(data)
+        } catch (e: _BreakException){
+            result = e.e == FindResult.FOUND
+        }
+        return result
+    }
 
+    /**
+     * in operator
+     */
+    override operator fun contains(item: T) = find(item)
     open class InsertDeleteException: Exception()
     open class InsertException: InsertDeleteException()
     class InsertFailException: InsertException()
@@ -38,9 +91,8 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
      * add
      * @throws InsertFailException
      */
-    override fun add(item: T) {
+    override fun add(item: T, callback: ((InsertedPos)->Unit)?){
         class _BreakException(val pos: InsertedPos) : Exception()
-        //var insertedPos = InsertedPos.NONE
         tailrec fun _insert(data: BinaryNodeData<T>, newKey: T) {
             if (data.key < newKey || data.key > newKey) {
                 val childrenStatus = (if (data.left != null) 1 else 0) + (if (data.right != null) 2 else 0)
@@ -83,6 +135,8 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
             _insert(data, item)
         }
         catch (e: _BreakException){
+            if (callback != null)
+                callback(e.pos)
         }
         return
     }
@@ -209,8 +263,10 @@ fun main(args: Array<String>){
             |$nodeData2,
             |$nodeData3""")
             */
-    val node1 = SearchBinaryNode(5)
-    println("As key=${node1.key}, SearchBinaryNode is generated: $node1")
+    val item1 = 5
+    val node1 = SearchBinaryNode(item1)
+    println("As parameter=$item1, SearchBinaryNode is generated: $node1")
+    println(if (item1 in node1) "node1 contains $item1." else "node1 does not contains $item1.")
     val newKey = 3
     val retval = node1.add(newKey)
     println("Added $newKey: returned $retval")
