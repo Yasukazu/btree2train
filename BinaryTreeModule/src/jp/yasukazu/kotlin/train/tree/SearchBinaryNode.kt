@@ -15,7 +15,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
     operator fun contains(item: T): Boolean
 }
 
-class IllegalAssignmentException : Exception()
+class IllegalAssignmentException(msg: String) : Exception(msg)
 open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterface<T>{
     data class BinaryNodeData<T: Comparable<T>> (var key: T, var left: BinaryNodeData<T>? = null, var right: BinaryNodeData<T>? = null)
     private var data = BinaryNodeData(_key)
@@ -25,19 +25,17 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
     override var key: T
         get() {return data.key}
         set(newKey) {
-            if (left != null && right != null){
-                if (newKey < left!!.key || newKey > right!!.key)
-                    throw IllegalAssignmentException()
+            if (newKey in this)
+                throw IllegalAssignmentException("a key already exists in this node tree!")
+            with(data) {
+                if ((left != null && right != null) && (newKey < left!!.key || newKey > right!!.key ))
+                    throw IllegalAssignmentException("new key is smaller than this key or larger than this key!")
+                else if (right == null && newKey < left!!.key)
+                    throw IllegalAssignmentException("new key is smaller than left key!!")
+                else if (left == null && newKey > right!!.key)
+                    throw IllegalAssignmentException("new key is larger than right key!")
+                key = newKey
             }
-            else if (left == null){
-                if (newKey > right!!.key)
-                    throw IllegalAssignmentException()
-            }
-            else if (right == null){
-                if (newKey < left!!.key)
-                    throw IllegalAssignmentException()
-            }
-            data.key = newKey
         }
     override val left: SearchBinaryNode<T>?
         get() {
