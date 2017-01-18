@@ -11,7 +11,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
     val key: T
     val left: SearchBinaryNodeInterface<T>?
     val right: SearchBinaryNodeInterface<T>?
-    fun add(_key: T): InsertedPos
+    fun add(item: T)
 }
 
 open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterface<T>{
@@ -38,9 +38,9 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
      * add
      * @throws InsertFailException
      */
-    override fun add(newKey: T): InsertedPos {
+    override fun add(item: T) {
         class _BreakException(val pos: InsertedPos) : Exception()
-        var insertedPos = InsertedPos.NONE
+        //var insertedPos = InsertedPos.NONE
         tailrec fun _insert(data: BinaryNodeData<T>, newKey: T) {
             if (data.key < newKey || data.key > newKey) {
                 val childrenStatus = (if (data.left != null) 1 else 0) + (if (data.right != null) 2 else 0)
@@ -80,13 +80,13 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
                 throw InsertFailException()
         }
         try {
-            _insert(data, newKey)
+            _insert(data, item)
         }
         catch (e: _BreakException){
-           insertedPos = e.pos 
         }
-        return insertedPos
+        return
     }
+
 
     override fun toString():String{
         return "SearchBinaryNode: "+ data.toString()
@@ -118,7 +118,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
     val count: Int
         get(){
             var n = 0
-            tailrec fun _count(node: BinaryNodeData<T>?){
+            fun _count(node: BinaryNodeData<T>?){
                 if (node == null)
                     return
                 ++n
@@ -134,6 +134,64 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
     fun copy(): SearchBinaryNode<T>{
          val copy = data.copy()
         return this(copy)
+    }
+}
+
+interface SearchBinaryTreeInterface<T: Comparable<T>> {
+    fun add(item: T)
+    fun remove(item: T)
+    fun preTraverse(callback: (T)->Unit)
+    fun inTraverse(callback: (T)->Unit)
+    fun postTraverse(callback: (T)->Unit)
+}
+
+class SearchBinaryTree<T: Comparable<T>>(node: SearchBinaryNode<T>?=null) : SearchBinaryTreeInterface<T> {
+    var rootNode = node
+    override fun remove(item: T) {
+        throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+    override fun add(item: T){
+        if (rootNode != null)
+            rootNode!!.add(item)
+        else
+            rootNode = SearchBinaryNode(item)
+    }
+
+    override fun preTraverse(callback: (T) -> Unit){
+        fun _traverse(node: SearchBinaryNode<T>?){
+            if (node == null)
+                return
+            else {
+                callback(node.key)
+                _traverse(node.left)
+                _traverse(node.right)
+            }
+        }
+        _traverse(rootNode)
+    }
+    override fun inTraverse(callback: (T) -> Unit){
+        fun _inTraverse(node: SearchBinaryNode<T>?){
+            if (node == null)
+                return
+            else {
+                _inTraverse(node.left)
+                callback(node.key)
+                _inTraverse(node.right)
+            }
+        }
+        _inTraverse(rootNode)
+    }
+    override fun postTraverse(callback: (T) -> Unit){
+        fun _traverse(node: SearchBinaryNode<T>?){
+            if (node == null)
+                return
+            else {
+                _traverse(node.left)
+                _traverse(node.right)
+                callback(node.key)
+            }
+        }
+        _traverse(rootNode)
     }
 }
 
@@ -163,5 +221,17 @@ fun main(args: Array<String>){
     println("New key $newKey3 is added to Node 2")
     println("Node 1(count=${node1.count}): $node1")
     println("Node 2(count=${node2.count}): $node2")
+    val tree = SearchBinaryTree<Int>()
+    tree.add(7)
+    tree.add(9)
+    tree.add(5)
+    println("Pre-order Traversal:")
+    tree.preTraverse(::println)
+    println()
+    println("In-order Traversal:")
+    tree.inTraverse(::println)
+    println()
+    println("Post-order Traversal:")
+    tree.postTraverse(::println)
 }
 
