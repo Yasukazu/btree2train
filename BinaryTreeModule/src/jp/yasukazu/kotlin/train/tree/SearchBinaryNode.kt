@@ -5,18 +5,27 @@ package jp.yasukazu.kotlin.train.tree
  * Created by Yasukazu on 2017/01/18.
  */
 
-open class SearchBinaryNode<T: Comparable<T>> (_key: T) {
+enum class InsertedPos { LEFT, NEW, RIGHT, NONE }
+
+interface SearchBinaryNodeInterface<T: Comparable<T>>{
+    val key: T
+    val left: SearchBinaryNodeInterface<T>?
+    val right: SearchBinaryNodeInterface<T>?
+    fun add(_key: T): InsertedPos
+}
+
+open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterface<T>{
     data class BinaryNodeData<T: Comparable<T>> (var key: T, var left: BinaryNodeData<T>? = null, var right: BinaryNodeData<T>? = null)
     private var data = BinaryNodeData(_key)
     constructor(nodeData: BinaryNodeData<T>) : this(nodeData.key){
         data = nodeData
     }
-    val key = data.key //: T get() { return data.key }
-    val left: SearchBinaryNode<T>?
+    override val key = data.key //: T get() { return data.key }
+    override val left: SearchBinaryNode<T>?
         get() {
           return if(data.left != null) this(data.left!!) else null
         }
-    val right: SearchBinaryNode<T>?
+    override val right: SearchBinaryNode<T>?
         get() {
             return if(data.right != null) this(data.right!!) else null
         }
@@ -24,13 +33,12 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) {
     open class InsertDeleteException: Exception()
     open class InsertException: InsertDeleteException()
     class InsertFailException: InsertException()
-    enum class InsertedPos { LEFT, NEW, RIGHT, NONE }
 
     /**
      * add
      * @throws InsertFailException
      */
-    fun add(newKey: T): InsertedPos {
+    override fun add(newKey: T): InsertedPos {
         class _BreakException(val pos: InsertedPos) : Exception()
         var insertedPos = InsertedPos.NONE
         tailrec fun _insert(data: BinaryNodeData<T>, newKey: T) {
@@ -110,7 +118,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) {
     val count: Int
         get(){
             var n = 0
-            fun _count(node: BinaryNodeData<T>?){
+            tailrec fun _count(node: BinaryNodeData<T>?){
                 if (node == null)
                     return
                 ++n
@@ -153,7 +161,7 @@ fun main(args: Array<String>){
     val newKey3 = 7
     node2.add(newKey3)
     println("New key $newKey3 is added to Node 2")
-    println("Node 1: $node1")
-    println("Node 2: $node2")
+    println("Node 1(count=${node1.count}): $node1")
+    println("Node 2(count=${node2.count}): $node2")
 }
 
