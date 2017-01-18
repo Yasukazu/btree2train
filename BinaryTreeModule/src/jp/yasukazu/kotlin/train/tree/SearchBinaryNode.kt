@@ -9,10 +9,11 @@ enum class InsertedPos { LEFT, NEW, RIGHT, NONE }
 
 interface SearchBinaryNodeInterface<T: Comparable<T>>{
     var key: T
-    val left: SearchBinaryNodeInterface<T>?
+    var left: SearchBinaryNodeInterface<T>?
     val right: SearchBinaryNodeInterface<T>?
     fun add(item: T, callback: ((InsertedPos)->Unit)?=null)
     operator fun contains(item: T): Boolean
+    fun isLeaf(): Boolean
 }
 
 class IllegalAssignmentException(msg: String) : Exception(msg)
@@ -37,9 +38,23 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
                 key = newKey
             }
         }
-    override val left: SearchBinaryNode<T>?
+    override fun isLeaf() = data.left == null && data.right == null
+
+    override var left: SearchBinaryNodeInterface<T>?
         get() {
           return if(data.left != null) this(data.left!!) else null
+        }
+        set(newNodeOrNull){
+            if (newNodeOrNull != null)
+                throw IllegalAssignmentException("Left assignment is only to null!")
+            with(data){
+                if (left == null)
+                    return
+               else if (left!!.left != null && left!!.right != null) {
+                   throw IllegalAssignmentException("Left has child(ren)!")
+               }
+               left = null
+            }
         }
     override val right: SearchBinaryNode<T>?
         get() {
@@ -213,7 +228,7 @@ class SearchBinaryTree<T: Comparable<T>>(node: SearchBinaryNode<T>?=null) : Sear
     }
 
     override fun preTraverse(callback: (T) -> Unit){
-        fun _traverse(node: SearchBinaryNode<T>?){
+        fun _traverse(node: SearchBinaryNodeInterface<T>?){
             if (node == null)
                 return
             else {
@@ -225,7 +240,7 @@ class SearchBinaryTree<T: Comparable<T>>(node: SearchBinaryNode<T>?=null) : Sear
         _traverse(rootNode)
     }
     override fun inTraverse(callback: (T) -> Unit){
-        fun _inTraverse(node: SearchBinaryNode<T>?){
+        fun _inTraverse(node: SearchBinaryNodeInterface<T>?){
             if (node == null)
                 return
             else {
@@ -237,7 +252,7 @@ class SearchBinaryTree<T: Comparable<T>>(node: SearchBinaryNode<T>?=null) : Sear
         _inTraverse(rootNode)
     }
     override fun postTraverse(callback: (T) -> Unit){
-        fun _traverse(node: SearchBinaryNode<T>?){
+        fun _traverse(node: SearchBinaryNodeInterface<T>?){
             if (node == null)
                 return
             else {
