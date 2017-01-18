@@ -7,7 +7,11 @@ package jp.yasukazu.kotlin.train.tree
 
 open class SearchBinaryNode<T: Comparable<T>> (_key: T) {
     data class BinaryNodeData<T: Comparable<T>> (var key: T, var left: BinaryNodeData<T>? = null, var right: BinaryNodeData<T>? = null)
-    private val data = BinaryNodeData(_key)
+    private var data = BinaryNodeData(_key)
+    constructor(nodeData: BinaryNodeData<T>) : this(nodeData.key){
+        data = nodeData
+    }
+    val key = data.key //: T get() { return data.key }
     val left: SearchBinaryNode<T>?
         get() {
           return if(data.left != null) this(data.left!!) else null
@@ -29,44 +33,46 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) {
     fun add(newKey: T): InsertedPos {
         class _BreakException(val pos: InsertedPos) : Exception()
         var insertedPos = InsertedPos.NONE
-        tailrec fun _insert(node: SearchBinaryNode<T>, newKey: T) {
-            if (node.data.key < newKey || node.data.key > newKey)
-                when (node.childrenStatus) {
+        tailrec fun _insert(data: BinaryNodeData<T>, newKey: T) {
+            if (data.key < newKey || data.key > newKey) {
+                val childrenStatus = (if (data.left != null) 1 else 0) + (if (data.right != null) 2 else 0)
+                when (childrenStatus) {
                     0 -> {
-                        if (newKey < node.data.key) {
-                            node.data.left = BinaryNodeData(newKey)
+                        if (newKey < data.key) {
+                            data.left = BinaryNodeData(newKey)
                             throw _BreakException(InsertedPos.LEFT)
                         } else {
-                            node.data.right = BinaryNodeData(newKey)
+                            data.right = BinaryNodeData(newKey)
                             throw _BreakException(InsertedPos.RIGHT)
                         }
                     }
                     1 -> {
-                        if (newKey > node.data.key) {
-                            node.data.right = BinaryNodeData(newKey)
+                        if (newKey > data.key) {
+                            data.right = BinaryNodeData(newKey)
                             throw _BreakException(InsertedPos.RIGHT)
                         } else
-                            _insert(node.left!!, newKey)
+                            _insert(data.left!!, newKey)
                     }
                     2 -> {
-                        if (newKey < node.data.key) {
-                            node.data.left = BinaryNodeData(newKey)
+                        if (newKey < data.key) {
+                            data.left = BinaryNodeData(newKey)
                             throw  _BreakException(InsertedPos.LEFT)
                         } else
-                            _insert(node.right!!, newKey)
+                            _insert(data.right!!, newKey)
                     }
                     3 -> {
-                        if (newKey < node.data.key)
-                            _insert(node.left!!, newKey)
+                        if (newKey < data.key)
+                            _insert(data.left!!, newKey)
                         else
-                            _insert(node.right!!, newKey)
+                            _insert(data.right!!, newKey)
                     }
                 }
+            }
             else
                 throw InsertFailException()
         }
         try {
-            _insert(this, newKey)
+            _insert(data, newKey)
         }
         catch (e: _BreakException){
            insertedPos = e.pos 
@@ -79,7 +85,9 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) {
     }
 
     operator fun invoke(data: BinaryNodeData<T>): SearchBinaryNode<T>{
-       return SearchBinaryNode(data.key)
+       val copy = data.copy()
+        val newNode = SearchBinaryNode(copy)
+        return newNode
     }
 
     operator fun get(i: Int): SearchBinaryNode<T>? {
@@ -94,9 +102,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) {
             return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 1 else 0)
         }
 
-    val childrenStatus: Int get(){
-        return (if (this[0] != null) 1 else 0) or (if (this[1] != null) 2 else 0)
-    }
+    val childrenStatus = (if (data.left != null) 1 else 0) + (if (data.right != null) 2 else 0)
 
     /**
      * recursive count self and iterCount
@@ -118,8 +124,8 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) {
         }
 
     fun copy(): SearchBinaryNode<T>{
-        val newData = data.copy()
-        return this(newData)
+         val copy = data.copy()
+        return this(copy)
     }
 }
 
@@ -135,10 +141,19 @@ fun main(args: Array<String>){
             |$nodeData3""")
             */
     val node1 = SearchBinaryNode(5)
-    println("SearchBinaryNode generated: $node1")
+    println("As key=${node1.key}, SearchBinaryNode is generated: $node1")
     val newKey = 3
     val retval = node1.add(newKey)
     println("Added $newKey: returned $retval")
     println("$node1")
+    val newKey2 = 4
+    node1.add(newKey2)
+    val node2 = node1.copy()
+    println("A copy of SearchBinaryNode is generated.")
+    val newKey3 = 7
+    node2.add(newKey3)
+    println("New key $newKey3 is added to Node 2")
+    println("Node 1: $node1")
+    println("Node 2: $node2")
 }
 
