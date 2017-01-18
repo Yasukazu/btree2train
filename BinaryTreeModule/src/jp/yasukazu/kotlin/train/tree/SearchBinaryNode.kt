@@ -138,6 +138,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
 }
 
 interface SearchBinaryTreeInterface<T: Comparable<T>> {
+    val root: SearchBinaryNode<T>?
     fun add(item: T)
     fun remove(item: T)
     fun preTraverse(callback: (T)->Unit)
@@ -147,6 +148,8 @@ interface SearchBinaryTreeInterface<T: Comparable<T>> {
 
 class SearchBinaryTree<T: Comparable<T>>(node: SearchBinaryNode<T>?=null) : SearchBinaryTreeInterface<T> {
     var rootNode = node
+    override val root: SearchBinaryNode<T>?
+            get() { return rootNode }
     override fun remove(item: T) {
         throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -233,5 +236,12 @@ fun main(args: Array<String>){
     println()
     println("Post-order Traversal:")
     tree.postTraverse(::println)
+    println("Make a copy of tree 1:")
+    val tree_root_copy = tree.root?.copy()
+    val tree2 = SearchBinaryTree(tree_root_copy)
+    tree2.inTraverse ( ::println )
+    println()
+    tree2.add(1)
+    tree2.inTraverse (::println)
 }
 
