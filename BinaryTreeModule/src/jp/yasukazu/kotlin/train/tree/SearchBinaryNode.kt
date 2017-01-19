@@ -12,6 +12,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
     var left: SearchBinaryNodeInterface<T>?
     var right: SearchBinaryNodeInterface<T>?
     fun add(item: T, callback: ((InsertedPos)->Unit)?=null)
+    fun findNode(item: T): SearchBinaryNodeInterface<T>?
     operator fun contains(item: T): Boolean
     fun isLeaf() = left == null && right == null
     fun childCount() = (if (left != null) 1 else 0) + (if(right != null) 1 else 0)
@@ -43,7 +44,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
             }
         }
     //override fun isLeaf() = data.left == null && data.right == null
-    
+
     /**
      * find minimum key node
      */
@@ -53,7 +54,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
         else
             return _getMinNode(node.left!!)
     }
-    
+
     override val min: T get(){ return _getMinNode(this).key }
 
     /**
@@ -66,8 +67,8 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
             return _getMaxNode(node.right!!)
     }
 
-    override val max: T get(){ return _getMaxNode(this).key }  
-    
+    override val max: T get(){ return _getMaxNode(this).key }
+
     override var left: SearchBinaryNodeInterface<T>?
         get() {
           return if(data.left != null) this(data.left!!) else null
@@ -104,7 +105,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
      * find key
      */
     enum class FindResult {NOT_FOUND, FOUND}
-    fun find(item: T):Boolean{
+    fun find(item: T): Boolean{
         class _BreakException(val e: FindResult): Exception()
         /**
          * pre-find
@@ -131,7 +132,34 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
         }
         return result
     }
+    override fun findNode(item: T): SearchBinaryNodeInterface<T>?{
+        class _BreakException(val e: FindResult): Exception()
+        /**
+         * pre-find
+         * return non-null if found
+         */
+        var result: SearchBinaryNode<T>? = null
+        tailrec fun _find(node: SearchBinaryNode<T>?){
+            if (node == null) {
+                throw _BreakException(FindResult.NOT_FOUND)
+            } else { // Otherwise, recur down the tree
+                if (item < node.key) {
+                    _find(node.left as SearchBinaryNode<T>)
+                } else if (item > node.key) {
+                    _find(node.right as SearchBinaryNode<T>)
+                } else {
+                    result = node
+                    throw _BreakException(FindResult.FOUND)
+                }
+            }
+        }
+        try {
+            _find(this)
+        } catch (e: _BreakException){
 
+        }
+        return result
+    }
     /**
      * in operator
      */
@@ -253,6 +281,7 @@ class DeleteSuccessException(val result: DeleteResult): DeleteException()
 
 interface SearchBinaryTreeInterface<T: Comparable<T>> {
     val size: Int
+    operator fun contains(item: T): Boolean
     //val root: SearchBinaryNode<T>?
     fun add(item: T)
     fun remove(item: T, callback: ((DeleteResult)->Unit)?=null)
@@ -260,12 +289,19 @@ interface SearchBinaryTreeInterface<T: Comparable<T>> {
     fun inTraverse(callback: (T)->Unit)
     fun postTraverse(callback: (T)->Unit)
     fun rootNodeCopy(): SearchBinaryNode<T>?
+    fun nodeCopy(item: T): SearchBinaryNode<T>?
 }
 
 class SearchBinaryTree<T: Comparable<T>>(private var rootNode: SearchBinaryNode<T>?=null) : SearchBinaryTreeInterface<T> {
     //var rootNode = node
     ///override val root: SearchBinaryNode<T>? get() { return rootNode }
     override val size: Int get() {return count()}
+
+    override fun contains(item: T): Boolean {
+        if (rootNode != null)
+            return item in rootNode!!
+        return false
+    }
     //override fun remove(item: T) { throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates. }
     /**
      * Delete a binaryNode following the procedure written in Wikipedia
@@ -436,6 +472,13 @@ class SearchBinaryTree<T: Comparable<T>>(private var rootNode: SearchBinaryNode<
     override fun rootNodeCopy(): SearchBinaryNode<T>?{
         return rootNode?.copy()
     }
+
+    override fun nodeCopy(item: T): SearchBinaryNode<T>? {
+        val result = rootNode?.findNode(item)
+        if (result != null)
+            return (result as SearchBinaryNode<T>).copy()
+        return null
+    }
 }
 
 fun main(args: Array<String>){
@@ -466,10 +509,12 @@ fun main(args: Array<String>){
     println("New key $newKey3 is added to Node 2")
     println("Node 1(count=${node1.count}): $node1")
     println("Node 2(count=${node2.count}): $node2")
-    val tree = SearchBinaryTree<Int>()
+    val tree: SearchBinaryTreeInterface<Int> = SearchBinaryTree()
     tree.add(7)
     tree.add(9)
     tree.add(5)
+    tree.add(10)
+    tree.add(4)
     val size = tree.size
     println("Tree size = $size")
     println("Pre-order Traversal:")
@@ -482,7 +527,8 @@ fun main(args: Array<String>){
     tree.postTraverse(::println)
     println("Make a copy of tree 1:")
     val tree_root_copy = tree.rootNodeCopy()
-    val tree2 = SearchBinaryTree(tree_root_copy)
+    println("Tree root node copy: $tree_root_copy")
+    val tree2: SearchBinaryTreeInterface<Int> = SearchBinaryTree(tree_root_copy)
     tree2.inTraverse ( ::println )
     println()
     val add = 1
