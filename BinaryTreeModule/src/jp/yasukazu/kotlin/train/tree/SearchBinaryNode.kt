@@ -19,6 +19,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
     fun childStatus() = (if (left != null) 1 else 0) or (if(right != null) 2 else 0)
     val min: T
     val max: T
+    val total: Int // node count
 }
 
 class IllegalAssignmentException(msg: String) : Exception(msg)
@@ -44,6 +45,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
             }
         }
     //override fun isLeaf() = data.left == null && data.right == null
+    override val total: Int get() = count()
 
     /**
      * find minimum key node
@@ -240,11 +242,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
         }
     }
 
-    val size: Int
-        get(){
-            return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 1 else 0)
-        }
-
+    val size: Int get(){ return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 1 else 0) }
     val childrenStatus = (if (data.left != null) 1 else 0) + (if (data.right != null) 2 else 0)
 
     /**
@@ -269,6 +267,19 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
     fun copy(): SearchBinaryNode<T>{
          val copy = data.copy()
         return this(copy)
+    }
+
+    fun count(): Int {
+        var n = 0
+        fun _count(node: SearchBinaryNodeInterface<T>?){
+            if (node == null)
+                return
+            ++n
+            _count(node?.left)
+            _count(node?.right)
+        }
+        _count(this)
+        return n
     }
 }
 
