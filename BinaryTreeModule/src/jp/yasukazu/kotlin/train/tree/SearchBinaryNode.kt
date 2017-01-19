@@ -25,9 +25,9 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
 
 class IllegalAssignmentException(msg: String) : Exception(msg)
 open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterface<T>{
-    data class BinaryNodeData<T: Comparable<T>> (var key: T, var left: BinaryNodeData<T>? = null, var right: BinaryNodeData<T>? = null)
+    private data class BinaryNodeData<T: Comparable<T>> (var key: T, var left: BinaryNodeData<T>? = null, var right: BinaryNodeData<T>? = null)
     private var data = BinaryNodeData(_key)
-    constructor(nodeData: BinaryNodeData<T>) : this(nodeData.key){
+    private constructor(nodeData: BinaryNodeData<T>) : this(nodeData.key){
         data = nodeData
     }
     override var key: T
@@ -230,7 +230,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
         return "SearchBinaryNode: "+ data.toString()
     }
 
-    operator fun invoke(data: BinaryNodeData<T>): SearchBinaryNode<T>{
+    private operator fun invoke(data: BinaryNodeData<T>): SearchBinaryNode<T>{
        val copy = data.copy()
         val newNode = SearchBinaryNode(copy)
         return newNode
