@@ -282,17 +282,18 @@ class DeleteSuccessException(val result: DeleteResult): DeleteException()
 interface SearchBinaryTreeInterface<T: Comparable<T>> {
     val size: Int
     operator fun contains(item: T): Boolean
-    //val root: SearchBinaryNode<T>?
+    val root: SearchBinaryNodeInterface<T>?
     fun add(item: T)
     fun remove(item: T, callback: ((DeleteResult)->Unit)?=null)
     fun preTraverse(callback: (T)->Unit)
     fun inTraverse(callback: (T)->Unit)
     fun postTraverse(callback: (T)->Unit)
     fun rootNodeCopy(): SearchBinaryNode<T>?
+    fun nodeInterface(item: T): SearchBinaryNodeInterface<T>?
     fun nodeCopy(item: T): SearchBinaryNode<T>?
 }
 
-class SearchBinaryTree<T: Comparable<T>>(private var rootNode: SearchBinaryNode<T>?=null) : SearchBinaryTreeInterface<T> {
+class SearchBinaryTree<T: Comparable<T>>(private var rootNode: SearchBinaryNodeInterface<T>?=null) : SearchBinaryTreeInterface<T> {
     //var rootNode = node
     ///override val root: SearchBinaryNode<T>? get() { return rootNode }
     override val size: Int get() {return count()}
@@ -302,6 +303,7 @@ class SearchBinaryTree<T: Comparable<T>>(private var rootNode: SearchBinaryNode<
             return item in rootNode!!
         return false
     }
+    override val root: SearchBinaryNodeInterface<T>? = rootNodeInterface()
     //override fun remove(item: T) { throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates. }
     /**
      * Delete a binaryNode following the procedure written in Wikipedia
@@ -469,9 +471,19 @@ class SearchBinaryTree<T: Comparable<T>>(private var rootNode: SearchBinaryNode<
         }
         _traverse(rootNode)
     }
-    override fun rootNodeCopy(): SearchBinaryNode<T>?{
-        return rootNode?.copy()
+
+    fun rootNodeInterface(): SearchBinaryNodeInterface<T>? {
+        return rootNode
     }
+
+    override fun rootNodeCopy(): SearchBinaryNode<T>?{
+        if (rootNode != null)
+            return (rootNode as SearchBinaryNode<T>).copy()
+        else
+            return null
+    }
+
+    override fun nodeInterface(item: T): SearchBinaryNodeInterface<T>? = rootNode?.findNode(item)
 
     override fun nodeCopy(item: T): SearchBinaryNode<T>? {
         val result = rootNode?.findNode(item)
@@ -515,6 +527,12 @@ fun main(args: Array<String>){
     tree.add(5)
     tree.add(10)
     tree.add(4)
+    val treeRoot = tree.root//NodeInterface()//tree as SearchBinaryTree).rootNode
+    println("Tree root is $treeRoot")
+    val min = tree.root?.min
+    val max = tree.root?.max
+    println("Min = $min, Max = $max")
+
     val size = tree.size
     println("Tree size = $size")
     println("Pre-order Traversal:")
