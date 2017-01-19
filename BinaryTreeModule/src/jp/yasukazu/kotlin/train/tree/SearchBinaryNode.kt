@@ -17,6 +17,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
     fun isLeaf() = left == null && right == null
     fun childCount() = (if (left != null) 1 else 0) + (if(right != null) 1 else 0)
     fun childStatus() = (if (left != null) 1 else 0) or (if(right != null) 2 else 0)
+    fun traverse(callback : ((T) -> Unit)? = null): Int
     val min: T
     val max: T
     val total: Int // node count
@@ -275,8 +276,23 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
             if (node == null)
                 return
             ++n
-            _count(node?.left)
-            _count(node?.right)
+            _count(node.left)
+            _count(node.right)
+        }
+        _count(this)
+        return n
+    }
+
+    override fun traverse(callback : ((T) -> Unit)?): Int {
+        var n = 0
+        fun _count(node: SearchBinaryNodeInterface<T>?){
+            if (node == null)
+                return
+            ++n
+            if (callback != null)
+                callback(node.key)
+            _count(node.left)
+            _count(node.right)
         }
         _count(this)
         return n
@@ -532,6 +548,9 @@ fun main(args: Array<String>){
     println("New key $newKey3 is added to Node 2")
     println("Node 1(count=${node1.count}): $node1")
     println("Node 2(count=${node2.count}): $node2")
+    println("Node 1 traverse")
+    val node1count = node1.traverse { println(it) }
+    println("Count = $node1count")
     val tree: SearchBinaryTreeInterface<Int> = SearchBinaryTree()
     tree.add(7)
     tree.add(9)
