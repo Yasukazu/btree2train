@@ -119,14 +119,10 @@ interface BasicBinarySearchTree<T: Comparable<T>> {
     val size: Int
     fun insert(key: T): InsertedPos
     fun delete(key: T): DeleteResult
-    fun _preTraverseNode(node: BinaryNode<T>?, callback: (BinaryNode<T>)->Unit)
-    fun preTraverseNode(callback: (BinaryNode<T>)->Unit){
-        _preTraverseNode(rootNode, callback)
-    }
-    fun _preTraverse(node: BinaryNode<T>?, callback: (T)->Unit)
-    fun preTraverse(callback: (T)->Unit){
-        _preTraverse(rootNode, callback)
-    }
+    fun preTraverseNode(node: BinaryNode<T>?=rootNode, callback: (BinaryNode<T>)->Unit)
+    //fun preTraverseNode(callback: (BinaryNode<T>)->Unit){ _preTraverseNode(rootNode, callback) }
+    fun preTraverse(node: BinaryNode<T>?=rootNode, callback: (T)->Unit)
+    //fun preTraverse(callback: (T)->Unit){ _preTraverse(rootNode, callback) }
     fun inTraverse(callback: (T)->Unit)
     fun postTraverse(callback: (T)->Unit)
 }
@@ -431,23 +427,23 @@ open class BinarySearchTree <T: Comparable<T>> : Iterable<T>, InsertDeletable<T>
         return newTree
     }
 
-    override fun _preTraverseNode(node: BinaryNode<T>?, callback: (BinaryNode<T>)->Unit){
+    override fun preTraverseNode(node: BinaryNode<T>?, callback: (BinaryNode<T>)->Unit){
         if (node == null)
             return
         else {
             callback(node)
-            _preTraverseNode(node.left, callback)
-            _preTraverseNode(node.right, callback)
+            preTraverseNode(node.left, callback)
+            preTraverseNode(node.right, callback)
         }
     }
 
-    override fun _preTraverse(node: BinaryNode<T>?, callback: (T)->Unit){
+    override fun preTraverse(node: BinaryNode<T>?, callback: (T)->Unit){
         if (node == null)
             return
         else {
             callback(node.key)
-            _preTraverse(node.left, callback)
-            _preTraverse(node.right, callback)
+            preTraverse(node.left, callback)
+            preTraverse(node.right, callback)
         }
     }
 
