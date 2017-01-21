@@ -44,28 +44,24 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
     fun childCount() = (if (left != null) 1 else 0) + (if(right != null) 1 else 0)
     fun memberCount() = childCount() + 1
     fun childStatus() = (if (left != null) 1 else 0) or (if(right != null) 2 else 0)
-    //fun traverse(callback : ((T) -> Unit)? = null): Int
     val min: T
     val max: T
-    //val total: Int // node count
+    val total: Int get() { return count()}
     /**
      * recursive count self and iterCount
      */
-    val count: Int
-        get(){
-            var n = 0
-            fun _count(node: SearchBinaryNodeInterface<T>?){
-                if (node == null)
-                    return
-                ++n
-                if (node.left != null)
-                    _count(node.left)
-                if (node.right != null)
-                    _count(node.right)
-            }
-            _count(this)
-            return n
-        }
+    fun count(): Int {
+        var n = 0
+        traverse { ++n }
+        return n
+    }
+
+    fun traverse(callback : ((T) -> Unit)?){
+        _traverse(this, callback)
+    }
+
+    fun _traverse(node: SearchBinaryNodeInterface<T>?, callback : ((T) -> Unit)?)
+
 }
 
 class IllegalAssignmentException(msg: String) : Exception(msg)
@@ -209,6 +205,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
      * @throws InsertFailException
      */
     override fun add(item: T, callback: ((InsertedPos)->Unit)?){
+        /*
         if (item < key){
             if (left == null)
                 left = this(BinaryNodeData(item))
@@ -227,7 +224,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
             throw InsertFailException()
         }
     }
-        /*
+    */
         class _BreakException(val pos: InsertedPos) : Exception()
         tailrec fun _insert(data: BinaryNodeData<T>, newKey: T) {
             if (data.key < newKey || data.key > newKey) {
@@ -275,7 +272,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
                 callback(e.pos)
         }
         return
-    } */
+    }
 
     override fun toString():String{
         return "SearchBinaryNode: "+ data.toString()
@@ -304,34 +301,17 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
         return this(copy)
     }
 
-    fun count(): Int {
-        var n = 0
-        fun _count(node: SearchBinaryNodeInterface<T>?){
-            if (node == null)
-                return
-            ++n
-            _count(node.left)
-            _count(node.right)
-        }
-        _count(this)
-        return n
-    }
 
-    /*
-    override fun traverse(callback : ((T) -> Unit)?): Int {
-        var n = 0
-        fun _count(node: SearchBinaryNodeInterface<T>?){
-            if (node == null)
-                return
-            ++n
-            if (callback != null)
-                callback(node.key)
-            _count(node.left)
-            _count(node.right)
-        }
-        _count(this)
-        return n
-    } */
+
+
+    override  fun _traverse(node: SearchBinaryNodeInterface<T>?, callback : ((T) -> Unit)?){
+        if (node == null)
+            return
+        if (callback != null)
+            callback(node.key)
+        _traverse(node.left, callback)
+        _traverse(node.right, callback)
+    }
 }
 
 
