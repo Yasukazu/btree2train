@@ -9,14 +9,36 @@ enum class InsertedPos { LEFT, NEW, RIGHT, NONE }
 
 /**
  * Node Interface is only about self, right and left
- * no recursive property/functions
+ * includes recursive properties/functions
  */
 interface SearchBinaryNodeInterface<T: Comparable<T>>{
     var key: T
     var left: SearchBinaryNodeInterface<T>?
     var right: SearchBinaryNodeInterface<T>?
     fun add(item: T, callback: ((InsertedPos)->Unit)?=null)
-    //fun findNode(item: T): SearchBinaryNodeInterface<T>?
+    fun findNode(item: T): SearchBinaryNodeInterface<T>?{
+        class _FoundException(val found: Boolean, val node: SearchBinaryNodeInterface<T>?): Exception()
+        tailrec fun _find(item: T, node: SearchBinaryNodeInterface<T>?){
+            if (node == null) {
+                throw _FoundException(found=false, node=node)
+            } else { // Otherwise, recur down the tree
+                if (item < node.key) {
+                    _find(item, node.left)
+                } else if (item > node.key) {
+                    _find(item, node.right)
+                } else {
+                    throw _FoundException(found=true, node=node)
+                }
+            }
+        }
+        try {
+            _find(item, this)
+        } catch (ex: _FoundException){
+            if (ex.found)
+                return ex.node
+        }
+        return null
+    }
     operator fun contains(item: T): Boolean // at most 3 members
     fun isLeaf() = left == null && right == null
     fun childCount() = (if (left != null) 1 else 0) + (if(right != null) 1 else 0)
@@ -26,6 +48,24 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
     val min: T
     val max: T
     //val total: Int // node count
+    /**
+     * recursive count self and iterCount
+     */
+    val count: Int
+        get(){
+            var n = 0
+            fun _count(node: SearchBinaryNodeInterface<T>?){
+                if (node == null)
+                    return
+                ++n
+                if (node.left != null)
+                    _count(node.left)
+                if (node.right != null)
+                    _count(node.right)
+            }
+            _count(this)
+            return n
+        }
 }
 
 class IllegalAssignmentException(msg: String) : Exception(msg)
@@ -140,31 +180,8 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
         return result
     }
      */
-    /*
-    override fun findNode(item: T): SearchBinaryNodeInterface<T>?{
-        class _BreakException(val e: FindResult): Exception()
-        var result: SearchBinaryNode<T>? = null
-        tailrec fun _find(node: SearchBinaryNode<T>?){
-            if (node == null) {
-                throw _BreakException(FindResult.NOT_FOUND)
-            } else { // Otherwise, recur down the tree
-                if (item < node.key) {
-                    _find(node.left as SearchBinaryNode<T>)
-                } else if (item > node.key) {
-                    _find(node.right as SearchBinaryNode<T>)
-                } else {
-                    result = node
-                    throw _BreakException(FindResult.FOUND)
-                }
-            }
-        }
-        try {
-            _find(this)
-        } catch (e: _BreakException){
 
-        }
-        return result
-    } */
+
     /**
      * in operator
      */
@@ -280,24 +297,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
     val size: Int get(){ return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 1 else 0) }
     val childrenStatus = (if (data.left != null) 1 else 0) + (if (data.right != null) 2 else 0)
 
-    /**
-     * recursive count self and iterCount
-     */
-    val count: Int
-        get(){
-            var n = 0
-            fun _count(node: BinaryNodeData<T>?){
-                if (node == null)
-                    return
-                ++n
-                if (node.left != null)
-                    _count(node.left)
-                if (node.right != null)
-                    _count(node.right)
-            }
-            _count(this.data)
-            return n
-        }
+
 
     fun copy(): SearchBinaryNode<T>{
          val copy = data.copy()
