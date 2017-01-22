@@ -11,33 +11,40 @@ enum class InsertedPos { LEFT, NEW, RIGHT, NONE }
  * Node Interface is only about self, right and left
  * includes recursive properties/functions
  */
+class _FoundException(val found: Boolean) : Exception()//, val node: SearchBinaryNodeInterface<T>?, val parent: SearchBinaryNodeInterface<T>?): Exception()
 interface SearchBinaryNodeInterface<T: Comparable<T>>{
     var key: T
     var left: SearchBinaryNodeInterface<T>?
     var right: SearchBinaryNodeInterface<T>?
     fun add(item: T, callback: ((InsertedPos)->Unit)?)
-    fun findNode(item: T): SearchBinaryNodeInterface<T>?{
-        class _FoundException(val found: Boolean, val node: SearchBinaryNodeInterface<T>?): Exception()
-        tailrec fun _find(item: T, node: SearchBinaryNodeInterface<T>?){
-            if (node == null) {
-                throw _FoundException(found=false, node=node)
-            } else { // Otherwise, recur down the tree
-                if (item < node.key) {
-                    _find(item, node.left)
-                } else if (item > node.key) {
-                    _find(item, node.right)
-                } else {
-                    throw _FoundException(found=true, node=node)
-                }
+    tailrec fun _find(item: T, node: SearchBinaryNodeInterface<T>?, parent: SearchBinaryNodeInterface<T>?, callback: ((SearchBinaryNodeInterface<T>?, SearchBinaryNodeInterface<T>?)->Unit)?){
+        if (node == null) {
+            if (callback != null)
+                callback(node, parent)
+            throw _FoundException(false)
+        } else { // Otherwise, recur down the tree
+            if (item < node.key) {
+                _find(item, node.left, node, callback)
+            } else if (item > node.key) {
+                _find(item, node.right, node, callback)
+            } else {
+                if (callback != null)
+                    callback(node, parent)
+                throw _FoundException(true)
             }
         }
+    }
+    fun findNode(item: T): Pair<SearchBinaryNodeInterface<T>?, SearchBinaryNodeInterface<T>?> {
+        var node: SearchBinaryNodeInterface<T>? = null
+        var parent: SearchBinaryNodeInterface<T>? = null
         try {
-            _find(item, this)
+            _find(item, this, null) { n, p -> node = n
+                parent = p}
         } catch (ex: _FoundException){
             if (ex.found)
-                return ex.node
+                return Pair(node, parent)
         }
-        return null
+        return Pair(null, null)
     }
     operator fun contains(item: T): Boolean // at most 3 members
     fun isLeaf() = left == null && right == null
