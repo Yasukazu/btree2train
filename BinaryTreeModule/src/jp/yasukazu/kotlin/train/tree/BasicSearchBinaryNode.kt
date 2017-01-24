@@ -57,12 +57,12 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (private var _key: T) : Searc
     override var left: SearchBinaryNodeInterface<T>?
         get() = _left
         set(newNodeOrNull) {
-                if (_left != null){
+            /* if (_left != null){
                     with(_left) {
                         if (_left != null || _right != null)
                             throw IllegalAssignmentException("Left has child(ren)!")
                     }
-                }
+                }*/
                 if (newNodeOrNull != null)
                     _left = newNodeOrNull as BasicSearchBinaryNode<T>
                 else
@@ -72,12 +72,12 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (private var _key: T) : Searc
     override var right: SearchBinaryNodeInterface<T>?
         get() = _right
         set(newNodeOrNull) {
-                if (_right != null) {
+            /* if (_right != null) {
                     with(_right) {
                         if (_left != null || _right != null)
                             throw IllegalAssignmentException("Right has child(ren)!")
                     }
-                }
+                }*/
                 if (newNodeOrNull != null)
                     _right = newNodeOrNull as BasicSearchBinaryNode<T>
                 else
