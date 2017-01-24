@@ -1,90 +1,51 @@
 package jp.yasukazu.kotlin.train.tree
 
-open class BasicSearchBinaryNode<T: Comparable<T>> (private var _key: T) : SearchBinaryNodeInterface<T> {
+open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNodeInterface<T> {
     //private data class BinaryNodeData<T : Comparable<T>>(var key: T, var left: BinaryNodeData<T>? = null, var right: BinaryNodeData<T>? = null)
 
     //private var data = BinaryNodeData(_key)
 
     //private constructor(nodeData: BinaryNodeData<T>) : this(nodeData.key) { data = nodeData }
 
-    override var key: T
-        get() {
-            return _key
-        }
+    private var _key = item
+    override var key: T get() = _key
         set(newKey) {
             if (newKey in this)
                 throw IllegalAssignmentException("a key already exists in this node tree!")
-                if ((left != null && right != null) && (newKey < left!!.key || newKey > right!!.key))
-                    throw IllegalAssignmentException("new key is smaller than this key or larger than this key!")
-                else if (right == null && newKey < left!!.key)
-                    throw IllegalAssignmentException("new key is smaller than left key!!")
-                else if (left == null && newKey > right!!.key)
-                    throw IllegalAssignmentException("new key is larger than right key!")
-                key = newKey
+            if (left != null && newKey < left!!.key)
+                throw IllegalAssignmentException("new key is smaller than left key!!")
+            else if (right != null && newKey > right!!.key)
+                throw IllegalAssignmentException("new key is larger than right key!")
+            _key = newKey
         }
-    //override fun isLeaf() = data.left == null && data.right == null
-    //override val total: Int get() = count()
-
-    /**
-     * find minimum key node
-     */
-    tailrec fun _getMinNode(node: SearchBinaryNodeInterface<T>): SearchBinaryNodeInterface<T> {
-        if (node.left == null)
-            return node
-        else
-            return _getMinNode(node.left!!)
-    }
-
-    override val min: T get() {
-        return _getMinNode(this).key
-    }
-
-    /**
-     * find maximum key node
-     */
-    tailrec fun _getMaxNode(node: SearchBinaryNodeInterface<T>): SearchBinaryNodeInterface<T> {
-        if (node.right == null)
-            return node
-        else
-            return _getMaxNode(node.right!!)
-    }
-
-    override val max: T get() {
-        return _getMaxNode(this).key
-    }
 
     private var _left: BasicSearchBinaryNode<T>? = null
     override var left: SearchBinaryNodeInterface<T>?
         get() = _left
         set(newNodeOrNull) {
-            /* if (_left != null){
-                    with(_left) {
-                        if (_left != null || _right != null)
-                            throw IllegalAssignmentException("Left has child(ren)!")
-                    }
-                }*/
-                if (newNodeOrNull != null)
+            if (newNodeOrNull != null) {
+                if (newNodeOrNull.key < key)
                     _left = newNodeOrNull as BasicSearchBinaryNode<T>
                 else
-                    _left = null
+                    throw IllegalAssignmentException("Left key must be less than key!")
+            }
+            else
+                _left = null
         }
+
     private var _right: BasicSearchBinaryNode<T>? = null
     override var right: SearchBinaryNodeInterface<T>?
         get() = _right
         set(newNodeOrNull) {
-            /* if (_right != null) {
-                    with(_right) {
-                        if (_left != null || _right != null)
-                            throw IllegalAssignmentException("Right has child(ren)!")
-                    }
-                }*/
-                if (newNodeOrNull != null)
+            if (newNodeOrNull != null) {
+                if (newNodeOrNull.key > key)
                     _right = newNodeOrNull as BasicSearchBinaryNode<T>
                 else
-                    _right = null
+                    throw IllegalAssignmentException("Left key must be greater than key!")
+            }
+            else
+                _right = null
         }
-
-
 
     override fun new(key: T) = this(key)
 

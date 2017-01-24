@@ -19,6 +19,8 @@ fun main(args: Array<String>){
     val node1: SearchBinaryNodeInterface<Int> = BasicSearchBinaryNode(item1)
     println("As parameter=$item1, SearchBinaryNode is generated: $node1")
     println(if (item1 in node1) "node1 contains $item1." else "node1 does not contains $item1.")
+    val newKey0 = 6
+    node1.key = newKey0
     val newKey = 3
     var posNodeStr = ""
     node1.add(newKey) {node, pos, parent ->
@@ -29,6 +31,8 @@ fun main(args: Array<String>){
     println("$node1 " + (if (newKey in node1) "contains" else "does not contains") + " $newKey")
     println("Traversal of node1:")
     node1.traverse { println(it) }
+    println("Min of node1=${node1.min}")
+    println("Max of node1=${node1.max}")
     val newKey2 = 4
     node1.add(newKey2) {node, pos, parent ->
         val nodeHex = "%X".format(node.hashCode())
@@ -38,8 +42,17 @@ fun main(args: Array<String>){
     println("$node1 " + (if (newKey2 in node1) "contains" else "does not contains") + " $newKey2")
     println("Traversal of node1:")
     node1.traverse { println(it) }
+    println("Min of node1=${node1.min}")
+    println("Max of node1=${node1.max}")
     println("Remove 3:")
     node1.remove(3){println(it)}
+    println("Dare to remove 5:")
+    try {
+        node1.remove(5)
+    }
+    catch (ex: DeleteFailException){
+        println("Delete fail with message: ${ex.message}: $ex")
+    }
     println("Traversal of node1:")
     node1.traverse { println(it) }
     val node2: SearchBinaryNodeInterface<Int> = node1.copy()

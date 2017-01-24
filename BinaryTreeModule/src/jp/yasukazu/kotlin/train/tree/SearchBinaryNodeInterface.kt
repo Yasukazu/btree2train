@@ -8,7 +8,8 @@ package jp.yasukazu.kotlin.train.tree
 
 interface SearchBinaryNodeInterface<T: Comparable<T>>{
     var key: T
-    var left: SearchBinaryNodeInterface<T>?
+    //fun setKey(newKey: T)
+    var left: SearchBinaryNodeInterface<T>? // set() must have restriction
     var right: SearchBinaryNodeInterface<T>?
     fun new(key: T): SearchBinaryNodeInterface<T> // psudo constructor
     fun remove(item: T, callback : ((DeleteResult) -> Unit)?=null){
@@ -30,13 +31,13 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         // replace self with 1 child
         fun __replace(self: SearchBinaryNodeInterface<T>, child: SearchBinaryNodeInterface<T>, parent: SearchBinaryNodeInterface<T>?){
             if (parent == null)
-                throw DeleteFailException()
-                if (parent.left == self)
-                    parent.left = child
-                else if (parent.right == self)
-                    parent.right = child
-                else
-                    assert(true, {"Unable to replace self with a child: Parent has no self!"})
+                throw DeleteFailException("Parent is null!")
+            if (parent.left == self)
+                parent.left = child
+            else if (parent.right == self)
+                parent.right = child
+            else
+                assert(true) {"Unable to replace self with a child: Parent has no self!"}
         }
         /**
          * replace 2
@@ -63,7 +64,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         }
         // code starts here
         if (self == null)
-            throw DeleteFailException()//return DeleteResult.NO_MATCH
+            throw DeleteFailException("Self is null!")//return DeleteResult.NO_MATCH
         else {
             if (item < self.key) {
                 return _delete_node(item, self.left, self)
@@ -181,8 +182,26 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
     fun memberCount() = childCount() + 1
     fun childStatus() = (if (left != null) 1 else 0) or (if(right != null) 2 else 0)
     val childrenStatus: Int get() = (if (left != null) 1 else 0) + (if (right != null) 2 else 0)
-    val min: T
-    val max: T
+
+    tailrec fun _getMinNode(node: SearchBinaryNodeInterface<T>): SearchBinaryNodeInterface<T> {
+        if (node.left == null)
+            return node
+        else
+            return _getMinNode(node.left!!)
+    }
+
+    val min: T get() {
+        return _getMinNode(this).key
+    }
+
+    tailrec fun _getMaxNode(node: SearchBinaryNodeInterface<T>): SearchBinaryNodeInterface<T> {
+        if (node.right == null)
+            return node
+        else
+            return _getMaxNode(node.right!!)
+    }
+
+    val max: T get() { return _getMaxNode(this).key }
     val total: Int get() { return count()}
 
     fun copy(): SearchBinaryNodeInterface<T>
