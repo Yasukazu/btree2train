@@ -12,24 +12,128 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
     var right: SearchBinaryNodeInterface<T>?
     fun new(key: T): SearchBinaryNodeInterface<T> // psudo constructor
 
+    tailrec fun _delete_node(item: T, self: SearchBinaryNodeInterface<T>?, parent: SearchBinaryNodeInterface<T>?){
+        // Delete self binaryNode
+        fun __delete_self_node(self: SearchBinaryNodeInterface<T>, parent: SearchBinaryNodeInterface<T>?){
+            if (parent == null)
+                throw DeleteFailException()
+            assert(self.left == null && self.right == null)
+                if (parent.left == self)
+                    parent.left = null
+                else if (parent.right == self)
+                    parent.right = null
+                else
+                    assert(true) {"Unable to delete self: Parent has no self!"}
+        }
+        // replace self with 1 child
+        fun __replace(self: SearchBinaryNodeInterface<T>, child: SearchBinaryNodeInterface<T>, parent: SearchBinaryNodeInterface<T>?){
+            if (parent == null)
+                throw DeleteFailException()
+                if (parent.left == self)
+                    parent.left = child
+                else if (parent.right == self)
+                    parent.right = child
+                else
+                    assert(true, {"Unable to replace self with a child: Parent has no self!"})
+        }
+        /**
+         * replace 2
+        2) * Name the binaryNode with the value to be deleted as 'N binaryNode'.  Without deleting N binaryNode, after choosing its
+        in-order successor binaryNode (R binaryNode), copy the value of R to N.
+         */
+        fun __replace2(self: SearchBinaryNodeInterface<T>){
+            assert(self.left != null && self.right != null)
+            fun getPredecessorNode(_self: SearchBinaryNodeInterface<T>, _parent: SearchBinaryNodeInterface<T>) : Pair<SearchBinaryNodeInterface<T>, SearchBinaryNodeInterface<T>> {
+                var s = _self
+                var p = _parent
+                while (s.right != null) {
+                    p = s // Reserve the parent first
+                    s = s.right!!
+                }
+                return Pair(s, p)
+            }
+            val (predNode, predParent) = getPredecessorNode(self.left!!, self) // in-order predecessor
+            self.key = predNode.key
+            if(predParent.right == predNode)
+                predParent.right = predNode.left // delete maximum-value binaryNode
+            else if(predParent.left == predNode) // No need for this code
+                predParent.left = predNode.left // Never reach here
+        }
+        // code starts here
+        if (self == null)
+            throw DeleteFailException()//return DeleteResult.NO_MATCH
+        else {
+            if (item < self.key) {
+                return _delete_node(self.left!!.key, self, parent)
+            } else if (item > self.key) {
+                return _delete_node(self.right!!.key, self, parent)
+            } else { // item == self.item
+                // 3. delete self if no iterCount
+                val bL = if(self.left == null) 0 else 1
+                val bR = if(self.right == null) 0 else 2
+                when(bL or bR){
+                    0 -> {
+                        __delete_self_node(self, parent)
+                        throw DeleteSuccessException(DeleteResult.SELF_DELETE)
+                    }
+                    1 -> {
+                        __replace(self, self.left!!, parent)
+                        throw DeleteSuccessException(DeleteResult.LEFT_REPLACE)
+                    }
+                    2 -> {
+                        __replace(self, self.right!!, parent)
+                        throw DeleteSuccessException(DeleteResult.RIGHT_REPLACE)
+                    }
+                    else -> {
+                        __replace2(self)
+                        throw DeleteSuccessException(DeleteResult.PREDEC_REPLACE)
+                    }
+                }
+            }
+        }
+    }
 
-
-    fun add(item: T, callback: ((InsertedPos)->Unit)?=null){
-        //try {
-        val (found, node, parent) = findNode(item)
-        if (found)
+    fun add(item: T, callback: ((SearchBinaryNodeInterface<T>, InsertedPos, SearchBinaryNodeInterface<T>?)->Unit)?=null){
+        var _node: SearchBinaryNodeInterface<T>? = null
+        var _parent: SearchBinaryNodeInterface<T>? = null
+        var _found = false
+        tailrec fun _find(node: SearchBinaryNodeInterface<T>?, parent: SearchBinaryNodeInterface<T>?){
+            if (node == null) {
+                _node = node
+                _parent = parent
+                throw _FoundException(false)
+            } else { // Otherwise, recur down the tree
+                if (item < node.key) {
+                    _find(node.left, node)
+                } else if (item > node.key) {
+                    _find(node.right, node)
+                } else {
+                    _node = node
+                    _parent = parent
+                    throw _FoundException(true)
+                }
+            }
+        }
+        try {
+            _find(this, null)
+        } catch (ex: _FoundException){
+            _found = ex.found
+        }
+        if (_found)
             throw InsertFailException()
-        assert(node == null) {"Node must be null!"}
-        assert(parent != null) {"Parent must be non-null!"}
-        if (item < key) {
-           parent!!.left = new(item)
+        assert(_node == null) {"Node must be null!"}
+        assert(_parent != null) {"Parent must be non-null!"}
+        if (item < _parent!!.key) {
+           val newNode = new(item)
+           _parent!!.left = newNode
            if (callback != null)
-               callback(InsertedPos.LEFT)
+               callback(newNode, InsertedPos.LEFT, _parent)
         }
         else {
-           parent!!.right = new(item)
+           val newNode = new(item)
+           _parent!!.right = newNode
            if (callback != null)
-               callback(InsertedPos.RIGHT)
+               callback(newNode, InsertedPos.RIGHT, _parent)
         }
     }
 
@@ -62,7 +166,10 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         }
         return Triple(found, node, parent)
     }
-    operator fun contains(item: T): Boolean // at most 3 members
+    operator fun contains(item: T): Boolean {
+        val (found, node, parent) = findNode(item)
+        return found
+    }
     fun isLeaf() = left == null && right == null
     fun childCount() = (if (left != null) 1 else 0) + (if(right != null) 1 else 0)
     fun memberCount() = childCount() + 1
@@ -72,6 +179,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
     val max: T
     val total: Int get() { return count()}
 
+    fun copy(): SearchBinaryNodeInterface<T>
     fun count(): Int {
         var n = 0
         traverse { ++n }

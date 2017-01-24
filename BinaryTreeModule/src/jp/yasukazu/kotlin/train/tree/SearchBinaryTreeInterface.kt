@@ -17,7 +17,7 @@ interface SearchBinaryTreeInterface<T: Comparable<T>> {
     fun preTraverse(callback: (T)->Unit)
     fun inTraverse(callback: (T)->Unit)
     fun postTraverse(callback: (T)->Unit)
-    fun rootNodeCopy(): SearchBinaryNode<T>?
+    fun rootNodeCopy(): SearchBinaryNodeInterface<T>?
     fun nodeInterface(item: T): SearchBinaryNodeInterface<T>?
-    fun nodeCopy(item: T): SearchBinaryNode<T>?
+    fun nodeCopy(item: T): SearchBinaryNodeInterface<T>?
 }

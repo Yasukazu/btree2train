@@ -1,6 +1,7 @@
 package jp.yasukazu.kotlin.train.tree
 
 /**
+ *
  * Created by Yasukazu on 2017/01/23.
  */
 fun main(args: Array<String>){
@@ -15,16 +16,29 @@ fun main(args: Array<String>){
             |$nodeData3""")
             */
     val item1 = 5
-    val node1 = SearchBinaryNode(item1)
+    val node1: SearchBinaryNodeInterface<Int> = BasicSearchBinaryNode(item1)
     println("As parameter=$item1, SearchBinaryNode is generated: $node1")
     println(if (item1 in node1) "node1 contains $item1." else "node1 does not contains $item1.")
     val newKey = 3
-    val retval = node1.add(newKey)
-    println("Added $newKey: returned $retval")
-    println("$node1")
+    var posNodeStr = ""
+    node1.add(newKey) {node, pos, parent ->
+        val nodeHex = "%X".format(node.hashCode())
+        val parentHex = "%X".format(parent?.hashCode())
+        posNodeStr = "$nodeHex at $pos under $parentHex" }
+    println("Added $newKey : $posNodeStr")
+    println("$node1 " + (if (newKey in node1) "contains" else "does not contains") + " $newKey")
+    println("Traversal of node1:")
+    node1.traverse { println(it) }
     val newKey2 = 4
-    node1.add(newKey2)
-    val node2 = node1.copy()
+    node1.add(newKey2) {node, pos, parent ->
+        val nodeHex = "%X".format(node.hashCode())
+        val parentHex = "%X".format(parent?.hashCode())
+        posNodeStr = "$nodeHex at $pos under $parentHex" }
+    println("Added $newKey2 : $posNodeStr")
+    println("$node1 " + (if (newKey2 in node1) "contains" else "does not contains") + " $newKey2")
+    println("Traversal of node1:")
+    node1.traverse { println(it) }
+    val node2: SearchBinaryNodeInterface<Int> = node1.copy()
     println("A copy of SearchBinaryNode is generated.")
     val newKey3 = 7
     node2.add(newKey3)

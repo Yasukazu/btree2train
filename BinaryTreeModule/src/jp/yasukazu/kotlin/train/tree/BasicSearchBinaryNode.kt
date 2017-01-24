@@ -1,23 +1,19 @@
 package jp.yasukazu.kotlin.train.tree
 
-class IllegalAssignmentException(msg: String) : Exception(msg)
-open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterface<T> {
-    private data class BinaryNodeData<T : Comparable<T>>(var key: T, var left: BinaryNodeData<T>? = null, var right: BinaryNodeData<T>? = null)
+open class BasicSearchBinaryNode<T: Comparable<T>> (private var _key: T) : SearchBinaryNodeInterface<T> {
+    //private data class BinaryNodeData<T : Comparable<T>>(var key: T, var left: BinaryNodeData<T>? = null, var right: BinaryNodeData<T>? = null)
 
-    private var data = BinaryNodeData(_key)
+    //private var data = BinaryNodeData(_key)
 
-    private constructor(nodeData: BinaryNodeData<T>) : this(nodeData.key) {
-        data = nodeData
-    }
+    //private constructor(nodeData: BinaryNodeData<T>) : this(nodeData.key) { data = nodeData }
 
     override var key: T
         get() {
-            return data.key
+            return _key
         }
         set(newKey) {
             if (newKey in this)
                 throw IllegalAssignmentException("a key already exists in this node tree!")
-            with(data) {
                 if ((left != null && right != null) && (newKey < left!!.key || newKey > right!!.key))
                     throw IllegalAssignmentException("new key is smaller than this key or larger than this key!")
                 else if (right == null && newKey < left!!.key)
@@ -25,7 +21,6 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
                 else if (left == null && newKey > right!!.key)
                     throw IllegalAssignmentException("new key is larger than right key!")
                 key = newKey
-            }
         }
     //override fun isLeaf() = data.left == null && data.right == null
     //override val total: Int get() = count()
@@ -58,74 +53,66 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
         return _getMaxNode(this).key
     }
 
+    private var _left: BasicSearchBinaryNode<T>? = null
     override var left: SearchBinaryNodeInterface<T>?
-        get() {
-            return if (data.left != null) this(data.left!!) else null
-        }
+        get() = _left
         set(newNodeOrNull) {
-            //if (newNodeOrNull != null) throw IllegalAssignmentException("Left assignment is only to null!")
-            with(data) {
-                if (left != null){
-                    with(left) {
-                        if (left != null || right != null)
+                if (_left != null){
+                    with(_left) {
+                        if (_left != null || _right != null)
                             throw IllegalAssignmentException("Left has child(ren)!")
                     }
                 }
                 if (newNodeOrNull != null)
-                    left = (newNodeOrNull as SearchBinaryNode<T>).data
+                    _left = newNodeOrNull as BasicSearchBinaryNode<T>
                 else
-                    left = null
-            }
+                    _left = null
         }
+    private var _right: BasicSearchBinaryNode<T>? = null
     override var right: SearchBinaryNodeInterface<T>?
-        get() {
-            return if (data.right != null) this(data.right!!) else null
-        }
+        get() = _right
         set(newNodeOrNull) {
-            //if (newNodeOrNull != null) throw IllegalAssignmentException("right assignment is only to null!")
-            with(data) {
-                if (right != null) {
-                    with(right) {
-                        if (left != null || right != null)
+                if (_right != null) {
+                    with(_right) {
+                        if (_left != null || _right != null)
                             throw IllegalAssignmentException("Right has child(ren)!")
                     }
                 }
                 if (newNodeOrNull != null)
-                    right = (newNodeOrNull as SearchBinaryNode<T>).data
+                    _right = newNodeOrNull as BasicSearchBinaryNode<T>
                 else
-                    right = null
-            }
+                    _right = null
         }
 
 
 
-    override fun new(key: T) = this(BinaryNodeData(key))
+    override fun new(key: T) = this(key)
 
     override fun toString():String{
-        return "SearchBinaryNode: "+ data.toString()
+        return "BasicSearchBinaryNode: $key(${left?.key}, ${right?.key})"
     }
 
-    private operator fun invoke(data: BinaryNodeData<T>): SearchBinaryNode<T>{
-       val copy = data.copy()
-        val newNode = SearchBinaryNode(copy)
+    private operator fun invoke(item: T): BasicSearchBinaryNode<T>{
+        val newNode = BasicSearchBinaryNode(item)
         return newNode
     }
 
-    operator fun get(i: Int): SearchBinaryNode<T>? {
+    operator fun get(i: Int): BasicSearchBinaryNode<T>? {
         return when(i){
-            0 -> if(data.left != null) this(data.left!!) else null
-            else -> if(data.right != null) this(data.right!!) else null
+            0 -> if(left == null) null else left as BasicSearchBinaryNode<T>
+            else -> if(right == null) null else right as BasicSearchBinaryNode<T>
         }
     }
 
     val size: Int get(){ return (if (this[0] != null) 1 else 0) + (if (this[1] != null) 1 else 0) }
-    //val childrenStatus = (if (data.left != null) 1 else 0) + (if (data.right != null) 2 else 0)
 
 
 
-    override fun copy(): SearchBinaryNode<T>{
-         val copy = data.copy()
-        return this(copy)
+    override fun copy(): SearchBinaryNodeInterface<T>{
+        val newNode = this(key)
+        this.traverse { if (it < key || it > key)
+            newNode.add(it) }
+        return newNode
     }
 
     /*
@@ -135,7 +122,7 @@ open class SearchBinaryNode<T: Comparable<T>> (_key: T) : SearchBinaryNodeInterf
                 callback(node, parent)
             throw _FoundException(false)
         } else { // Otherwise, recur down the tree
-            if (item < (node as SearchBinaryNode).data.key) {
+            if (item < (node as BasicSearchBinaryNode).data.key) {
                 _find(item, node.left, node, callback)
             } else if (item > node.data.key) {
                 _find(item, node.right, node, callback)
