@@ -211,17 +211,39 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         return n
     }
 
-    fun traverse(callback : ((T) -> Unit)?){
+    fun traverse(callback : ((T) -> Unit)){
         _traverse(this, callback)
     }
 
-    fun _traverse(node: SearchBinaryNodeInterface<T>?, callback : ((T) -> Unit)?){
+    fun _traverse(node: SearchBinaryNodeInterface<T>?, callback : ((T) -> Unit)){
         if (node == null)
             return
-        if (callback != null)
-            callback(node.key)
+        callback(node.key)
         _traverse(node.left, callback)
         _traverse(node.right, callback)
     }
-
+    fun inTraverse(callback : (T) -> Unit) = _inTraverse(this, callback)
+    fun _inTraverse(node: SearchBinaryNodeInterface<T>?, callback : ((T) -> Unit)){
+        if (node == null)
+            return
+        _inTraverse(node.left, callback)
+        callback(node.key)
+        _inTraverse(node.right, callback)
+    }
+    fun inTraverseR(callback : (T) -> Unit) = _inTraverseR(this, callback)
+    fun _inTraverseR(node: SearchBinaryNodeInterface<T>?, callback : ((T) -> Unit)){
+        if (node == null)
+            return
+        _inTraverseR(node.right, callback)
+        callback(node.key)
+        _inTraverseR(node.left, callback)
+    }
+    fun postTraverse(callback : (T) -> Unit) = _postTraverse(this, callback)
+    fun _postTraverse(node: SearchBinaryNodeInterface<T>?, callback : ((T) -> Unit)){
+        if (node == null)
+            return
+        _postTraverse(node.left, callback)
+        _postTraverse(node.right, callback)
+        callback(node.key)
+    }
 }
