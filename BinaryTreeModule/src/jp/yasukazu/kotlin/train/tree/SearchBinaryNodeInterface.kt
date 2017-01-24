@@ -11,8 +11,10 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
     var left: SearchBinaryNodeInterface<T>?
     var right: SearchBinaryNodeInterface<T>?
     fun new(key: T): SearchBinaryNodeInterface<T> // psudo constructor
-
-    tailrec fun _delete_node(item: T, self: SearchBinaryNodeInterface<T>?, parent: SearchBinaryNodeInterface<T>?){
+    fun remove(item: T, callback : ((DeleteResult) -> Unit)?=null){
+        _delete_node(item, this, null, callback)
+    }
+    tailrec fun _delete_node(item: T, self: SearchBinaryNodeInterface<T>?, parent: SearchBinaryNodeInterface<T>?, callback: ((DeleteResult)->Unit)?=null){
         // Delete self binaryNode
         fun __delete_self_node(self: SearchBinaryNodeInterface<T>, parent: SearchBinaryNodeInterface<T>?){
             if (parent == null)
@@ -64,9 +66,9 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
             throw DeleteFailException()//return DeleteResult.NO_MATCH
         else {
             if (item < self.key) {
-                return _delete_node(self.left!!.key, self, parent)
+                return _delete_node(item, self.left, self)
             } else if (item > self.key) {
-                return _delete_node(self.right!!.key, self, parent)
+                return _delete_node(item, self.right, self)
             } else { // item == self.item
                 // 3. delete self if no iterCount
                 val bL = if(self.left == null) 0 else 1
@@ -74,19 +76,23 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
                 when(bL or bR){
                     0 -> {
                         __delete_self_node(self, parent)
-                        throw DeleteSuccessException(DeleteResult.SELF_DELETE)
+                        if (callback != null)
+                            callback(DeleteResult.SELF_DELETE)
                     }
                     1 -> {
                         __replace(self, self.left!!, parent)
-                        throw DeleteSuccessException(DeleteResult.LEFT_REPLACE)
+                        if (callback != null)
+                            callback(DeleteResult.LEFT_REPLACE)
                     }
                     2 -> {
                         __replace(self, self.right!!, parent)
-                        throw DeleteSuccessException(DeleteResult.RIGHT_REPLACE)
+                        if (callback != null)
+                            callback(DeleteResult.RIGHT_REPLACE)
                     }
                     else -> {
                         __replace2(self)
-                        throw DeleteSuccessException(DeleteResult.PREDEC_REPLACE)
+                        if (callback != null)
+                            callback(DeleteResult.PREDEC_REPLACE)
                     }
                 }
             }
