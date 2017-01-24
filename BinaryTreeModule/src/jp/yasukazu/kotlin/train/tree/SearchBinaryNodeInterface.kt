@@ -12,8 +12,8 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
     var left: SearchBinaryNodeInterface<T>? // set() must have restriction
     var right: SearchBinaryNodeInterface<T>?
     fun new(key: T): SearchBinaryNodeInterface<T> // psudo constructor
-    fun remove(item: T, callback : ((DeleteResult) -> Unit)?=null){
-        _delete_node(item, this, null, callback)
+    fun remove(item: T){//}, callback : ((DeleteResult) -> Unit)?=null){
+        _delete_node(item, this, null, null)
     }
     tailrec fun _delete_node(item: T, self: SearchBinaryNodeInterface<T>?, parent: SearchBinaryNodeInterface<T>?, callback: ((DeleteResult)->Unit)?=null){
         // Delete self binaryNode
@@ -100,7 +100,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         }
     }
 
-    fun add(item: T, callback: ((SearchBinaryNodeInterface<T>, InsertedPos, SearchBinaryNodeInterface<T>?)->Unit)?=null){
+    fun add(item: T): Triple<SearchBinaryNodeInterface<T>, InsertedPos, SearchBinaryNodeInterface<T>?>{
         var _node: SearchBinaryNodeInterface<T>? = null
         var _parent: SearchBinaryNodeInterface<T>? = null
         var _found = false
@@ -133,14 +133,12 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         if (item < _parent!!.key) {
            val newNode = new(item)
            _parent!!.left = newNode
-           if (callback != null)
-               callback(newNode, InsertedPos.LEFT, _parent)
+           return Triple(newNode, InsertedPos.LEFT, _parent)
         }
         else {
            val newNode = new(item)
            _parent!!.right = newNode
-           if (callback != null)
-               callback(newNode, InsertedPos.RIGHT, _parent)
+           return Triple(newNode, InsertedPos.RIGHT, _parent)
         }
     }
 

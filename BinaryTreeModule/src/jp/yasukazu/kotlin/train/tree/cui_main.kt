@@ -22,11 +22,10 @@ fun main(args: Array<String>){
     val newKey0 = 6
     node1.key = newKey0
     val newKey = 3
-    var posNodeStr = ""
-    node1.add(newKey) {node, pos, parent ->
-        val nodeHex = "%X".format(node.hashCode())
-        val parentHex = "%X".format(parent?.hashCode())
-        posNodeStr = "$nodeHex at $pos under $parentHex" }
+    var node_pos_parent = node1.add(newKey)
+        var nodeHex = "%X".format(node_pos_parent.first.hashCode())
+        var parentHex = "%X".format(node_pos_parent.third?.hashCode())
+        var posNodeStr = "$nodeHex at ${node_pos_parent.second} under $parentHex"
     println("Added $newKey : $posNodeStr")
     println("$node1 " + (if (newKey in node1) "contains" else "does not contains") + " $newKey")
     println("Traversal of node1:")
@@ -34,10 +33,10 @@ fun main(args: Array<String>){
     println("Min of node1=${node1.min}")
     println("Max of node1=${node1.max}")
     val newKey2 = 4
-    node1.add(newKey2) {node, pos, parent ->
-        val nodeHex = "%X".format(node.hashCode())
-        val parentHex = "%X".format(parent?.hashCode())
-        posNodeStr = "$nodeHex at $pos under $parentHex" }
+    node_pos_parent = node1.add(newKey2)
+    nodeHex = "%X".format(node_pos_parent.first.hashCode())
+    parentHex = "%X".format(node_pos_parent.third?.hashCode())
+    posNodeStr = "$nodeHex at ${node_pos_parent.second} under $parentHex"
     println("Added $newKey2 : $posNodeStr")
     println("$node1 " + (if (newKey2 in node1) "contains" else "does not contains") + " $newKey2")
     println("Traversal of node1:")
@@ -45,7 +44,7 @@ fun main(args: Array<String>){
     println("Min of node1=${node1.min}")
     println("Max of node1=${node1.max}")
     println("Remove 3:")
-    node1.remove(3){println(it)}
+    node1.remove(3)
     println("Dare to remove 5:")
     try {
         node1.remove(5)
