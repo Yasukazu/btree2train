@@ -38,6 +38,10 @@ fun main(args: Array<String>){
     println("$node1 " + (if (newKey2 in node1) "contains" else "does not contains") + " $newKey2")
     println("Traversal of node1:")
     node1.traverse { println(it) }
+    println("Remove 3:")
+    node1.remove(3){println(it)}
+    println("Traversal of node1:")
+    node1.traverse { println(it) }
     val node2: SearchBinaryNodeInterface<Int> = node1.copy()
     println("A copy of SearchBinaryNode is generated.")
     val newKey3 = 7
@@ -45,8 +49,8 @@ fun main(args: Array<String>){
     println("New key $newKey3 is added to Node 2")
     println("Node 1(count=${node1.total}): $node1")
     println("Node 2(count=${node2.total}): $node2")
-    println("Node 1 traverse")
-    val node1count = node1.traverse { println(it) }
+    println("Node 2 traverse")
+    val node1count = node2.traverse { println(it) }
     println("Count = $node1count")
     val tree: SearchBinaryTreeInterface<Int> = SearchBinaryTree()
     tree.add(7)
