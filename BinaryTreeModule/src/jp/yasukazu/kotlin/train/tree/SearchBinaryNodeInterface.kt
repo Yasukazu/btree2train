@@ -222,6 +222,14 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         _traverse(node.left, callback)
         _traverse(node.right, callback)
     }
+    fun preTraverseDepth(callback : ((T, Int) -> Unit)) = _preTraverseDepth(this, 0, callback)
+    fun _preTraverseDepth(node: SearchBinaryNodeInterface<T>?, depth: Int, callback : (T, Int) -> Unit){
+        if (node == null)
+            return
+        callback(node.key, depth)
+        _preTraverseDepth(node.left, depth + 1, callback)
+        _preTraverseDepth(node.right, depth + 1, callback)
+    }
     fun inTraverse(callback : (T) -> Unit) = _inTraverse(this, callback)
     fun _inTraverse(node: SearchBinaryNodeInterface<T>?, callback : ((T) -> Unit)){
         if (node == null)
