@@ -12,10 +12,8 @@ interface SearchBinaryNode<T: Comparable<T>>{
     var left: SearchBinaryNode<T>? // set() must have restriction
     var right: SearchBinaryNode<T>?
     fun new(key: T): SearchBinaryNode<T> // psudo constructor
-    fun remove(item: T){//}, callback : ((DeleteResult) -> Unit)?=null){
-        _delete_node(item, this, null, null)
-    }
-    tailrec fun _delete_node(item: T, self: SearchBinaryNode<T>?, parent: SearchBinaryNode<T>?, callback: ((DeleteResult)->Unit)?=null){
+    fun remove(item: T): Triple<SearchBinaryNode<T>, DeleteResult, SearchBinaryNode<T>?> = _delete_node(item, this, null)
+    tailrec fun _delete_node(item: T, self: SearchBinaryNode<T>?, parent: SearchBinaryNode<T>?): Triple<SearchBinaryNode<T>, DeleteResult, SearchBinaryNode<T>?> {
         // Delete self binaryNode
         fun __delete_self_node(self: SearchBinaryNode<T>, parent: SearchBinaryNode<T>?){
             if (parent == null)
@@ -77,23 +75,19 @@ interface SearchBinaryNode<T: Comparable<T>>{
                 when(bL or bR){
                     0 -> {
                         __delete_self_node(self, parent)
-                        if (callback != null)
-                            callback(DeleteResult.SELF_DELETE)
+                        return Triple(self, DeleteResult.SELF_DELETE, parent)
                     }
                     1 -> {
                         __replace(self, self.left!!, parent)
-                        if (callback != null)
-                            callback(DeleteResult.LEFT_REPLACE)
+                        return Triple(self, DeleteResult.LEFT_REPLACE, parent)
                     }
                     2 -> {
                         __replace(self, self.right!!, parent)
-                        if (callback != null)
-                            callback(DeleteResult.RIGHT_REPLACE)
+                        return Triple(self, DeleteResult.RIGHT_REPLACE, parent)
                     }
                     else -> {
                         __replace2(self)
-                        if (callback != null)
-                            callback(DeleteResult.PREDEC_REPLACE)
+                        return Triple(self, DeleteResult.PREDEC_REPLACE, parent)
                     }
                 }
             }
