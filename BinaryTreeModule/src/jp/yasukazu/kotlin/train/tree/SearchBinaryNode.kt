@@ -5,26 +5,39 @@ package jp.yasukazu.kotlin.train.tree
  * Created by Yasukazu on 2017/01/22.
  */
 
-
+enum class LeftOrRight {NONE, LEFT, RIGHT}
 interface SearchBinaryNode<T: Comparable<T>>{
     var key: T
     //fun setKey(newKey: T)
     var left: SearchBinaryNode<T>? // set() must have restriction
     var right: SearchBinaryNode<T>?
     fun new(key: T): SearchBinaryNode<T> // psudo constructor
-    fun remove(item: T): Triple<SearchBinaryNode<T>, DeleteResult, SearchBinaryNode<T>?> = _delete_node(item, this, null)
-    tailrec fun _delete_node(item: T, self: SearchBinaryNode<T>?, parent: SearchBinaryNode<T>?): Triple<SearchBinaryNode<T>, DeleteResult, SearchBinaryNode<T>?> {
+    /**
+     * remove
+     * @return : Pair of delete result and parental node
+     */
+    fun remove(item: T): Pair<DeleteResult, SearchBinaryNode<T>?> {
+        var pair: Pair<DeleteResult, SearchBinaryNode<T>?>? = null
+        try {
+            pair = _delete_node(item, this, null)
+        }
+        catch (ex: DeleteFailException){
+            return Pair(DeleteResult.NO_MATCH, pair?.second)
+        }
+        return pair
+    }
+    tailrec fun _delete_node(item: T, self: SearchBinaryNode<T>?, parent: SearchBinaryNode<T>?): Pair<DeleteResult, SearchBinaryNode<T>?> {
         // Delete self binaryNode
         fun __delete_self_node(self: SearchBinaryNode<T>, parent: SearchBinaryNode<T>?){
             if (parent == null)
                 throw DeleteFailException()
             assert(self.left == null && self.right == null)
-                if (parent.left == self)
-                    parent.left = null
-                else if (parent.right == self)
-                    parent.right = null
-                else
-                    assert(true) {"Unable to delete self: Parent has no self!"}
+            if (parent.left == self)
+                parent.left = null
+            else if (parent.right == self)
+                parent.right = null
+            else
+                assert(true) {"Unable to delete self: Parent has no self!"}
         }
         // replace self with 1 child
         fun __replace(self: SearchBinaryNode<T>, child: SearchBinaryNode<T>, parent: SearchBinaryNode<T>?){
@@ -75,26 +88,26 @@ interface SearchBinaryNode<T: Comparable<T>>{
                 when(bL or bR){
                     0 -> {
                         __delete_self_node(self, parent)
-                        return Triple(self, DeleteResult.SELF_DELETE, parent)
+                        return Pair(DeleteResult.SELF_DELETE, parent)
                     }
                     1 -> {
                         __replace(self, self.left!!, parent)
-                        return Triple(self, DeleteResult.LEFT_REPLACE, parent)
+                        return Pair(DeleteResult.LEFT_REPLACE, parent)
                     }
                     2 -> {
                         __replace(self, self.right!!, parent)
-                        return Triple(self, DeleteResult.RIGHT_REPLACE, parent)
+                        return Pair(DeleteResult.RIGHT_REPLACE, parent)
                     }
                     else -> {
                         __replace2(self)
-                        return Triple(self, DeleteResult.PREDEC_REPLACE, parent)
+                        return Pair(DeleteResult.PREDEC_REPLACE, parent)
                     }
                 }
             }
         }
     }
 
-    fun add(item: T): Triple<SearchBinaryNode<T>, InsertedPos, SearchBinaryNode<T>?>{
+    fun add(item: T): Pair<InsertedPos, SearchBinaryNode<T>?> {
         var _node: SearchBinaryNode<T>? = null
         var _parent: SearchBinaryNode<T>? = null
         var _found = false
@@ -121,18 +134,17 @@ interface SearchBinaryNode<T: Comparable<T>>{
             _found = ex.found
         }
         if (_found)
-            throw InsertFailException()
+            return Pair(InsertedPos.NONE, _parent)
         assert(_node == null) {"Node must be null!"}
         assert(_parent != null) {"Parent must be non-null!"}
+        val newNode = new(item)
         if (item < _parent!!.key) {
-           val newNode = new(item)
            _parent!!.left = newNode
-           return Triple(newNode, InsertedPos.LEFT, _parent)
+           return Pair(InsertedPos.LEFT, _parent)
         }
         else {
-           val newNode = new(item)
            _parent!!.right = newNode
-           return Triple(newNode, InsertedPos.RIGHT, _parent)
+           return Pair(InsertedPos.RIGHT, _parent)
         }
     }
 
@@ -221,6 +233,14 @@ interface SearchBinaryNode<T: Comparable<T>>{
         callback(node.key, depth)
         _preTraverseDepth(node.left, depth + 1, callback)
         _preTraverseDepth(node.right, depth + 1, callback)
+    }
+    fun preTraverseParent(callback : (T, LeftOrRight, T?) -> Unit) = _preTraverseParent(this, LeftOrRight.NONE, null, callback)
+    fun _preTraverseParent(node: SearchBinaryNode<T>?, lOrR: LeftOrRight, parent: SearchBinaryNode<T>?, callback : (T, LeftOrRight, T?) -> Unit){
+        if (node == null)
+            return
+        callback(node.key, lOrR, parent?.key)
+        _preTraverseParent(node.left, LeftOrRight.LEFT, node, callback)
+        _preTraverseParent(node.right, LeftOrRight.RIGHT, node, callback)
     }
     fun inTraverse(callback : (T) -> Unit) = _inTraverse(this, callback)
     fun _inTraverse(node: SearchBinaryNode<T>?, callback : ((T) -> Unit)){

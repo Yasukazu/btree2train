@@ -5,27 +5,18 @@ package jp.yasukazu.kotlin.train.tree
  * Created by Yasukazu on 2017/01/23.
  */
 fun main(args: Array<String>){
-    /*
-    val nodeData1 = BinaryNodeData(3)
-    val nodeData2 = BinaryNodeData(1)
-    nodeData1.left = nodeData2
-    val nodeData3 = nodeData1.copy()
-    println(
-            """$nodeData1:hash=${"%X".format(nodeData1.hashCode())},
-            |$nodeData2,
-            |$nodeData3""")
-            */
     val item1 = 5
-    val node1: SearchBinaryNodeInterface<Int> = BasicSearchBinaryNode(item1)
+    val node1: SearchBinaryNode<Int> = BasicSearchBinaryNode(item1)
     println("As parameter=$item1, SearchBinaryNode is generated: $node1")
     println(if (item1 in node1) "node1 contains $item1." else "node1 does not contains $item1.")
     val newKey0 = 6
     node1.key = newKey0
     val newKey = 3
-    var node_pos_parent = node1.add(newKey)
-        var nodeHex = "%X".format(node_pos_parent.first.hashCode())
-        var parentHex = "%X".format(node_pos_parent.third?.hashCode())
-        var posNodeStr = "$nodeHex at ${node_pos_parent.second} under $parentHex"
+    var pos_parent = node1.add(newKey)
+    var pos = pos_parent.first
+    var parent = pos_parent.second
+    var parentHex = "%X".format(parent?.hashCode())
+    var posNodeStr = "$pos under ${parent?.key}($parentHex)"
     println("Added $newKey : $posNodeStr")
     println("$node1 " + (if (newKey in node1) "contains" else "does not contains") + " $newKey")
     println("Traversal of node1:")
@@ -33,10 +24,9 @@ fun main(args: Array<String>){
     println("Min of node1=${node1.min}")
     println("Max of node1=${node1.max}")
     val newKey2 = 4
-    node_pos_parent = node1.add(newKey2)
-    nodeHex = "%X".format(node_pos_parent.first.hashCode())
-    parentHex = "%X".format(node_pos_parent.third?.hashCode())
-    posNodeStr = "$nodeHex at ${node_pos_parent.second} under $parentHex"
+    pos_parent = node1.add(newKey2)
+    parent = pos_parent.second
+    posNodeStr = "${pos_parent.first} under ${parent?.key}(%X)".format(parent?.hashCode())
     println("Added $newKey2 : $posNodeStr")
     println("$node1 " + (if (newKey2 in node1) "contains" else "does not contains") + " $newKey2")
     println("Traversal of node1:")
@@ -54,7 +44,7 @@ fun main(args: Array<String>){
     }
     println("Traversal of node1:")
     node1.traverse { println(it) }
-    val node2: SearchBinaryNodeInterface<Int> = node1.copy()
+    val node2: SearchBinaryNode<Int> = node1.copy()
     println("A copy of SearchBinaryNode is generated.")
     val newKey3 = 7
     node2.add(newKey3)
@@ -64,13 +54,23 @@ fun main(args: Array<String>){
     println("Node 2 traverse")
     val node1count = node2.traverse { println(it) }
     println("Count = $node1count")
-    val tree: SearchBinaryTreeInterface<Int> = SearchBinaryTree()
+    val tree: SearchBinaryTree<Int> = BasicSearchBinaryTree()
     tree.add(7)
     tree.add(9)
     tree.add(5)
     tree.add(10)
     tree.add(4)
-    val treeRoot = tree.root//NodeInterface()//tree as SearchBinaryTree).rootNode
+    val treeMap = tree.preTraverseDepthMap()
+    treeMap.keys.forEach { k ->
+        print("$k: ")
+        val s = treeMap[k]
+        s?.forEach { v ->
+            print("$v, ")
+        }
+       println()
+    }
+    println("$treeMap")
+    val treeRoot = tree.root//NodeInterface()//tree as BasicSearchBinaryTree).rootNode
     println("Tree root is $treeRoot")
     val min = tree.root?.min
     val max = tree.root?.max
@@ -89,7 +89,7 @@ fun main(args: Array<String>){
     println("Make a copy of tree 1:")
     val tree_root_copy = tree.rootNodeCopy()
     println("Tree root node copy: $tree_root_copy")
-    val tree2: SearchBinaryTreeInterface<Int> = SearchBinaryTree(tree_root_copy)
+    val tree2: SearchBinaryTree<Int> = BasicSearchBinaryTree(tree_root_copy)
     tree2.inTraverse ( ::println )
     println()
     val add = 1
