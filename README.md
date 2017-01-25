@@ -4,39 +4,21 @@ Usage
  - [Wiki](https://github.com/Yasukazu/btree2train/wiki)
 ### Quick Trial ###
 
- + by Jython
+ + by Kotlin REPL
 
-   1. inside jython, Use downloaded "btree2train.jar" : lines start with # are comments
-   ```python
-   import sys
-   sys.path.append('Downloads/btree2train.jar')
-   # new object
-   bst = BinarySearchTree()
-   # know properties/methods
-   dir(bst)
-   # get size
-   bst.size
-   # insert keys
-   bst.insert('b')
-   bst.insert('c')
-   bst.insert('a')
-   bst.size
-   # iterate
-   for n in bst:
-     print(n)
-   # check existence
-   'b' in bst
-   # delete key
-   bst.delete(3)
-   # get node list
-   nodeList = bst.preTraverseNodeList()
-   # import any number class to use number
-   from java.lang import Double
-   # create a new binary search tree
-   bst2 = BinarySearchTree()
-   # insert number into bst2
-   bst2.insert(Double(0.5))
-   ``` 
+   1. inside kotlinc.bat, Use downloaded "btree2train.jar" : lines start with # are comments
+   
+```PowerShell
+  > C:\kotlinc\bin\kotlinc.bat -classpath .\IdeaProjects\btree2train\out\artifacts\btree2train_jar2\btree2train.jar 
+```
+ - inside kotlin REPL: 
+```kotlin
+   import jp.yasukazu.kotlin.train.tree.*
+   val node: SearchBinaryNode<Int> = BasicSearchBinaryNode(5)
+node.add(3)
+// (BasicSearchBinaryNode: 3(null, null), LEFT, BasicSearchBinaryNode: 5(3, null))
+ node.preTraverseDepth {n,d -> println("$d:$n")}
+``` 
      
  - GUI Usage:
 ```kotlin
@@ -51,17 +33,17 @@ import javax.swing.JFrame
 import javax.swing.SwingUtilities
 
 fun main(args:Array<String>){
-    val treeModel = BinarySearchTreeModel<Int>()
+    val floatTreeModel = BinarySearchTreeModel<Int>()
     args.forEach { a ->
-        val i = try { a.toInt() } catch (pos: NumberFormatException){
+        val key = try { a.toInt() } catch (pos: NumberFormatException){
             println("$a caused $pos")
             null }
-        if (i != null){
-            treeModel += i
+        if (key != null){
+            floatTreeModel += key
         }
     }
     SwingUtilities.invokeLater {
-        val intTreeFrame = BinarySearchTreeFrame(treeModel) { it.toInt() }
+        val intTreeFrame = BinarySearchTreeFrame(floatTreeModel) { it.toInt() }
         with(intTreeFrame){
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             pack()
