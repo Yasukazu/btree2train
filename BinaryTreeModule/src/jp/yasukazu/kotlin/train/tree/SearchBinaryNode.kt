@@ -6,18 +6,18 @@ package jp.yasukazu.kotlin.train.tree
  */
 
 
-interface SearchBinaryNodeInterface<T: Comparable<T>>{
+interface SearchBinaryNode<T: Comparable<T>>{
     var key: T
     //fun setKey(newKey: T)
-    var left: SearchBinaryNodeInterface<T>? // set() must have restriction
-    var right: SearchBinaryNodeInterface<T>?
-    fun new(key: T): SearchBinaryNodeInterface<T> // psudo constructor
+    var left: SearchBinaryNode<T>? // set() must have restriction
+    var right: SearchBinaryNode<T>?
+    fun new(key: T): SearchBinaryNode<T> // psudo constructor
     fun remove(item: T){//}, callback : ((DeleteResult) -> Unit)?=null){
         _delete_node(item, this, null, null)
     }
-    tailrec fun _delete_node(item: T, self: SearchBinaryNodeInterface<T>?, parent: SearchBinaryNodeInterface<T>?, callback: ((DeleteResult)->Unit)?=null){
+    tailrec fun _delete_node(item: T, self: SearchBinaryNode<T>?, parent: SearchBinaryNode<T>?, callback: ((DeleteResult)->Unit)?=null){
         // Delete self binaryNode
-        fun __delete_self_node(self: SearchBinaryNodeInterface<T>, parent: SearchBinaryNodeInterface<T>?){
+        fun __delete_self_node(self: SearchBinaryNode<T>, parent: SearchBinaryNode<T>?){
             if (parent == null)
                 throw DeleteFailException()
             assert(self.left == null && self.right == null)
@@ -29,7 +29,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
                     assert(true) {"Unable to delete self: Parent has no self!"}
         }
         // replace self with 1 child
-        fun __replace(self: SearchBinaryNodeInterface<T>, child: SearchBinaryNodeInterface<T>, parent: SearchBinaryNodeInterface<T>?){
+        fun __replace(self: SearchBinaryNode<T>, child: SearchBinaryNode<T>, parent: SearchBinaryNode<T>?){
             if (parent == null)
                 throw DeleteFailException("Parent is null!")
             if (parent.left == self)
@@ -44,9 +44,9 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         2) * Name the binaryNode with the value to be deleted as 'N binaryNode'.  Without deleting N binaryNode, after choosing its
         in-order successor binaryNode (R binaryNode), copy the value of R to N.
          */
-        fun __replace2(self: SearchBinaryNodeInterface<T>){
+        fun __replace2(self: SearchBinaryNode<T>){
             assert(self.left != null && self.right != null)
-            fun getPredecessorNode(_self: SearchBinaryNodeInterface<T>, _parent: SearchBinaryNodeInterface<T>) : Pair<SearchBinaryNodeInterface<T>, SearchBinaryNodeInterface<T>> {
+            fun getPredecessorNode(_self: SearchBinaryNode<T>, _parent: SearchBinaryNode<T>) : Pair<SearchBinaryNode<T>, SearchBinaryNode<T>> {
                 var s = _self
                 var p = _parent
                 while (s.right != null) {
@@ -100,11 +100,11 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         }
     }
 
-    fun add(item: T): Triple<SearchBinaryNodeInterface<T>, InsertedPos, SearchBinaryNodeInterface<T>?>{
-        var _node: SearchBinaryNodeInterface<T>? = null
-        var _parent: SearchBinaryNodeInterface<T>? = null
+    fun add(item: T): Triple<SearchBinaryNode<T>, InsertedPos, SearchBinaryNode<T>?>{
+        var _node: SearchBinaryNode<T>? = null
+        var _parent: SearchBinaryNode<T>? = null
         var _found = false
-        tailrec fun _find(node: SearchBinaryNodeInterface<T>?, parent: SearchBinaryNodeInterface<T>?){
+        tailrec fun _find(node: SearchBinaryNode<T>?, parent: SearchBinaryNode<T>?){
             if (node == null) {
                 _node = node
                 _parent = parent
@@ -142,7 +142,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         }
     }
 
-    tailrec fun _find(item: T, node: SearchBinaryNodeInterface<T>?, parent: SearchBinaryNodeInterface<T>?, callback: ((SearchBinaryNodeInterface<T>?, SearchBinaryNodeInterface<T>?)->Unit)?=null){
+    tailrec fun _find(item: T, node: SearchBinaryNode<T>?, parent: SearchBinaryNode<T>?, callback: ((SearchBinaryNode<T>?, SearchBinaryNode<T>?)->Unit)?=null){
         if (node == null) {
             if (callback != null)
                 callback(node, parent)
@@ -159,9 +159,9 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
             }
         }
     }
-    fun findNode(item: T): Triple<Boolean, SearchBinaryNodeInterface<T>?, SearchBinaryNodeInterface<T>?> {
-        var node: SearchBinaryNodeInterface<T>? = null
-        var parent: SearchBinaryNodeInterface<T>? = null
+    fun findNode(item: T): Triple<Boolean, SearchBinaryNode<T>?, SearchBinaryNode<T>?> {
+        var node: SearchBinaryNode<T>? = null
+        var parent: SearchBinaryNode<T>? = null
         var found = false
         try {
             _find(item, this, null) { n, p -> node = n
@@ -181,7 +181,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
     fun childStatus() = (if (left != null) 1 else 0) or (if(right != null) 2 else 0)
     val childrenStatus: Int get() = (if (left != null) 1 else 0) + (if (right != null) 2 else 0)
 
-    tailrec fun _getMinNode(node: SearchBinaryNodeInterface<T>): SearchBinaryNodeInterface<T> {
+    tailrec fun _getMinNode(node: SearchBinaryNode<T>): SearchBinaryNode<T> {
         if (node.left == null)
             return node
         else
@@ -192,7 +192,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         return _getMinNode(this).key
     }
 
-    tailrec fun _getMaxNode(node: SearchBinaryNodeInterface<T>): SearchBinaryNodeInterface<T> {
+    tailrec fun _getMaxNode(node: SearchBinaryNode<T>): SearchBinaryNode<T> {
         if (node.right == null)
             return node
         else
@@ -202,7 +202,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
     val max: T get() { return _getMaxNode(this).key }
     val total: Int get() { return count()}
 
-    fun copy(): SearchBinaryNodeInterface<T>
+    fun copy(): SearchBinaryNode<T>
     fun count(): Int {
         var n = 0
         traverse { ++n }
@@ -213,7 +213,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         _traverse(this, callback)
     }
 
-    fun _traverse(node: SearchBinaryNodeInterface<T>?, callback : ((T) -> Unit)){
+    fun _traverse(node: SearchBinaryNode<T>?, callback : ((T) -> Unit)){
         if (node == null)
             return
         callback(node.key)
@@ -221,7 +221,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         _traverse(node.right, callback)
     }
     fun preTraverseDepth(callback : ((T, Int) -> Unit)) = _preTraverseDepth(this, 0, callback)
-    fun _preTraverseDepth(node: SearchBinaryNodeInterface<T>?, depth: Int, callback : (T, Int) -> Unit){
+    fun _preTraverseDepth(node: SearchBinaryNode<T>?, depth: Int, callback : (T, Int) -> Unit){
         if (node == null)
             return
         callback(node.key, depth)
@@ -229,7 +229,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         _preTraverseDepth(node.right, depth + 1, callback)
     }
     fun inTraverse(callback : (T) -> Unit) = _inTraverse(this, callback)
-    fun _inTraverse(node: SearchBinaryNodeInterface<T>?, callback : ((T) -> Unit)){
+    fun _inTraverse(node: SearchBinaryNode<T>?, callback : ((T) -> Unit)){
         if (node == null)
             return
         _inTraverse(node.left, callback)
@@ -237,7 +237,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         _inTraverse(node.right, callback)
     }
     fun inTraverseR(callback : (T) -> Unit) = _inTraverseR(this, callback)
-    fun _inTraverseR(node: SearchBinaryNodeInterface<T>?, callback : ((T) -> Unit)){
+    fun _inTraverseR(node: SearchBinaryNode<T>?, callback : ((T) -> Unit)){
         if (node == null)
             return
         _inTraverseR(node.right, callback)
@@ -245,7 +245,7 @@ interface SearchBinaryNodeInterface<T: Comparable<T>>{
         _inTraverseR(node.left, callback)
     }
     fun postTraverse(callback : (T) -> Unit) = _postTraverse(this, callback)
-    fun _postTraverse(node: SearchBinaryNodeInterface<T>?, callback : ((T) -> Unit)){
+    fun _postTraverse(node: SearchBinaryNode<T>?, callback : ((T) -> Unit)){
         if (node == null)
             return
         _postTraverse(node.left, callback)
