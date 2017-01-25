@@ -1,34 +1,41 @@
 package jp.yasukazu.kotlin.train.tree
+
+import java.util.*
+
+/**
+ * isolate interface
+ * Created by Yasukazu on 2017/01/23.
+ */
 /**
  * Created by Yasukazu on 2017/01/20.
  *
  */
-
-class SearchBinaryTree<T: Comparable<T>>(private var rootNode: SearchBinaryNodeInterface<T>?=null) : SearchBinaryTreeInterface<T> {
-    //var rootNode = node
-    ///override val root: BasicSearchBinaryNode<T>? get() { return rootNode }
-    override val size: Int get() {return count()}
-
-    override fun contains(item: T): Boolean {
-        if (rootNode != null)
-            return item in rootNode!!
-        return false
+interface SearchBinaryTree<T: Comparable<T>> {
+    val size: Int
+    operator fun contains(item: T): Boolean
+    var root: SearchBinaryNode<T>?
+    fun add(item: T)
+    fun remove(item: T): DeleteResult {
+        var result = DeleteResult.EMPTY
+        if (root != null) {
+            try {
+                _delete_node(item, root, null)
+            }
+            catch(dE: DeleteException){
+                if (dE is DeleteSuccessException) {
+                    result = dE.result
+                } else
+                    throw dE
+            }
+        }
+        return result
     }
-    private var _root: BasicSearchBinaryNode<T>? = null
-    override val root: SearchBinaryNodeInterface<T>? = _root // rootNodeInterface()
-    //override fun remove(item: T) { throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates. }
-    /**
-     * Delete a binaryNode following the procedure written in Wikipedia
-     * @param key
-     * @return success => true
-     * @throws DeleteFailException
-     */
-    tailrec fun _delete_node(item: T, self: SearchBinaryNodeInterface<T>?, parent: SearchBinaryNodeInterface<T>?){
+    tailrec fun _delete_node(item: T, self: SearchBinaryNode<T>?, parent: SearchBinaryNode<T>?){
         // Delete self binaryNode
-        fun __delete_self_node(self: SearchBinaryNodeInterface<T>, parent: SearchBinaryNodeInterface<T>?){
+        fun __delete_self_node(self: SearchBinaryNode<T>, parent: SearchBinaryNode<T>?){
             assert(self.left == null && self.right == null)
             if (parent == null)
-                rootNode = null
+                root = null
             else {
                 if (parent.left == self)
                     parent.left = null
@@ -39,9 +46,9 @@ class SearchBinaryTree<T: Comparable<T>>(private var rootNode: SearchBinaryNodeI
             }
         }
         // replace self with 1 child
-        fun __replace(self: SearchBinaryNodeInterface<T>, child: SearchBinaryNodeInterface<T>, parent: SearchBinaryNodeInterface<T>?){
+        fun __replace(self: SearchBinaryNode<T>, child: SearchBinaryNode<T>, parent: SearchBinaryNode<T>?){
             if (parent == null) {
-                rootNode = child
+                root = child
             } else {
                 if (parent.left == self)
                     parent.left = child
@@ -56,9 +63,9 @@ class SearchBinaryTree<T: Comparable<T>>(private var rootNode: SearchBinaryNodeI
         2) * Name the binaryNode with the value to be deleted as 'N binaryNode'.  Without deleting N binaryNode, after choosing its
         in-order successor binaryNode (R binaryNode), copy the value of R to N.
          */
-        fun __replace2(self: SearchBinaryNodeInterface<T>){
+        fun __replace2(self: SearchBinaryNode<T>){
             assert(self.left != null && self.right != null)
-            fun getPredecessorNode(_self: SearchBinaryNodeInterface<T>, _parent: SearchBinaryNodeInterface<T>) : Pair<SearchBinaryNodeInterface<T>, SearchBinaryNodeInterface<T>> {
+            fun getPredecessorNode(_self: SearchBinaryNode<T>, _parent: SearchBinaryNode<T>) : Pair<SearchBinaryNode<T>, SearchBinaryNode<T>> {
                 var s = _self
                 var p = _parent
                 while (s.right != null) {
@@ -107,47 +114,8 @@ class SearchBinaryTree<T: Comparable<T>>(private var rootNode: SearchBinaryNodeI
             }
         }
     }
-    override fun remove(item: T, callback : ((DeleteResult) -> Unit)?){
-        var result = DeleteResult.EMPTY
-        if (rootNode != null) {
-            try {
-                _delete_node(item, rootNode, null)
-            }
-            catch(dE: DeleteException){
-                if (dE is DeleteSuccessException) {
-                    result = dE.result
-                } else
-                    throw dE
-            }
-        }
-        if (callback != null)
-            callback(result)
-    }
-
-    override fun add(item: T){
-        if (rootNode != null)
-            rootNode!!.add(item)
-        else
-            rootNode = BasicSearchBinaryNode(item)
-    }
-
-    fun count(): Int{
-        var n = 0
-        fun _traverse(node: SearchBinaryNodeInterface<T>?){
-            if (node == null)
-                return
-            else {
-                ++n
-                _traverse(node.left)
-                _traverse(node.right)
-            }
-        }
-        _traverse(rootNode)
-        return n
-    }
-
-    override fun preTraverse(callback: (T) -> Unit){
-        fun _traverse(node: SearchBinaryNodeInterface<T>?){
+    fun preTraverse(callback: (T)->Unit){
+        fun _traverse(node: SearchBinaryNode<T>?){
             if (node == null)
                 return
             else {
@@ -156,54 +124,28 @@ class SearchBinaryTree<T: Comparable<T>>(private var rootNode: SearchBinaryNodeI
                 _traverse(node.right)
             }
         }
-        _traverse(rootNode)
+        _traverse(root)
     }
-    override fun inTraverse(callback: (T) -> Unit){
-        fun _inTraverse(node: SearchBinaryNodeInterface<T>?){
-            if (node == null)
-                return
-            else {
-                _inTraverse(node.left)
-                callback(node.key)
-                _inTraverse(node.right)
+    fun preTraverseDepth(callback : ((T, Int) -> Unit)) {
+        if(root != null)
+            root!!._preTraverseDepth(root, 0, callback)
+    }
+    fun preTraverseDepthMap(): Map<Int, Set<T>> {
+        val map: MutableMap<Int, MutableSet<T>> = TreeMap()
+        if(root != null)
+            root!!._preTraverseDepth(root, 0){key, depth ->
+               if (depth in map) {
+                   map[depth]!!.add(key)
+               }
+                else {
+                   map.put(depth, mutableSetOf(key))
+               }
             }
-        }
-        _inTraverse(rootNode)
+        return map
     }
-    override fun postTraverse(callback: (T) -> Unit){
-        fun _traverse(node: SearchBinaryNodeInterface<T>?){
-            if (node == null)
-                return
-            else {
-                _traverse(node.left)
-                _traverse(node.right)
-                callback(node.key)
-            }
-        }
-        _traverse(rootNode)
-    }
-
-    fun rootNodeInterface(): SearchBinaryNodeInterface<T>? {
-        return rootNode
-    }
-
-    override fun rootNodeCopy(): SearchBinaryNodeInterface<T>?{
-        if (rootNode != null)
-            return (rootNode as BasicSearchBinaryNode<T>).copy()
-        else
-            return null
-    }
-
-    override fun nodeInterface(item: T): SearchBinaryNodeInterface<T>? = rootNode?.findNode(item)?.second
-
-    override fun nodeCopy(item: T): SearchBinaryNodeInterface<T>? {
-        val result = rootNode?.findNode(item)
-        if (result != null)
-            if (result.first)
-                return (result.second as BasicSearchBinaryNode<T>).copy()
-        return null
-    }
+    fun inTraverse(callback: (T)->Unit)
+    fun postTraverse(callback: (T)->Unit)
+    fun rootNodeCopy(): SearchBinaryNode<T>?
+    fun nodeInterface(item: T): SearchBinaryNode<T>?
+    fun nodeCopy(item: T): SearchBinaryNode<T>?
 }
-
-
-
