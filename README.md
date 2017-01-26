@@ -12,12 +12,16 @@ Usage
   > C:\kotlinc\bin\kotlinc.bat -classpath .\IdeaProjects\btree2train\out\artifacts\btree2train_jar2\btree2train.jar 
 ```
  - inside kotlin REPL: 
+ Welcome to Kotlin version 1.0.5-2 (JRE 1.8.0_111-b14)
+ Type :help for help, :quit for quit
 ```kotlin
-   import jp.yasukazu.kotlin.train.tree.*
-   val node: SearchBinaryNode<Int> = BasicSearchBinaryNode(5)
+import jp.yasukazu.kotlin.train.tree.*
+val node: SearchBinaryNode<Int> = BasicSearchBinaryNode(5)
 node.add(3)
-// (BasicSearchBinaryNode: 3(null, null), LEFT, BasicSearchBinaryNode: 5(3, null))
- node.preTraverseDepth {n,d -> println("$d:$n")}
+//-> (LEFT, BasicSearchBinaryNode: 5(3, null))// (BasicSearchBinaryNode: 3(null, null), LEFT, BasicSearchBinaryNode: 5(3, null))
+node.preTraverseDepth {n,d -> println("$d:$n")}
+//-> 5 at NONE under null
+//-> 3 at LEFT under 5
 ``` 
      
  - GUI Usage:
