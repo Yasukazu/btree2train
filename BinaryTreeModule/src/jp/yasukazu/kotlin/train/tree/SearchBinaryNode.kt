@@ -116,7 +116,7 @@ interface SearchBinaryNode<T: Comparable<T>>{
             } else{
                val funs = arrayOf(::__delete_self_node, ::__replace, ::__replace2)
                 var childCount = 0
-                with(_parent!!) {
+                with(_self!!) {
                     childCount = (if (left != null) 1 else 0) + (if (right != null) 1 else 0)
                 }
                 return funs[childCount](_self!!, _parent)
