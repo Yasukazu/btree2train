@@ -1,6 +1,6 @@
 package jp.yasukazu.kotlin.train.tree
 
-open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNodeInterface<T> {
+open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNode<T> {
     //private data class BinaryNodeData<T : Comparable<T>>(var key: T, var left: BinaryNodeData<T>? = null, var right: BinaryNodeData<T>? = null)
 
     //private var data = BinaryNodeData(_key)
@@ -8,7 +8,8 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNodeI
     //private constructor(nodeData: BinaryNodeData<T>) : this(nodeData.key) { data = nodeData }
 
     private var _key = item
-    override var key: T get() = _key
+    override val key: T get(){return _key}
+    /*
         set(newKey) {
             if (newKey in this)
                 throw IllegalAssignmentException("a key already exists in this node tree!")
@@ -17,11 +18,11 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNodeI
             else if (right != null && newKey > right!!.key)
                 throw IllegalAssignmentException("new key is larger than right key!")
             _key = newKey
-        }
+        }*/
 
     private var _left: BasicSearchBinaryNode<T>? = null
-    override var left: SearchBinaryNodeInterface<T>?
-        get() = _left
+    override val left: SearchBinaryNode<T>? get() = _left
+    /*
         set(newNodeOrNull) {
             if (newNodeOrNull != null) {
                 if (newNodeOrNull.key < key)
@@ -31,11 +32,11 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNodeI
             }
             else
                 _left = null
-        }
+        } */
 
     private var _right: BasicSearchBinaryNode<T>? = null
-    override var right: SearchBinaryNodeInterface<T>?
-        get() = _right
+    override val right: SearchBinaryNode<T>? get() = _right
+    /*
         set(newNodeOrNull) {
             if (newNodeOrNull != null) {
                 if (newNodeOrNull.key > key)
@@ -45,8 +46,137 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNodeI
             }
             else
                 _right = null
+        }*/
+
+    override fun remove(item: T) = _delete_node(item, this, null)
+    fun _delete_node(item: T, _self_: BasicSearchBinaryNode<T>?, _parent_: BasicSearchBinaryNode<T>?): DeleteResult {
+        var _self: BasicSearchBinaryNode<T>? = _self_
+        var _parent: BasicSearchBinaryNode<T>? = _parent_
+        // Delete _self binaryNode
+        fun __delete_self_node(self: BasicSearchBinaryNode<T>, parent: BasicSearchBinaryNode<T>?): DeleteResult {
+            if (parent == null)
+                throw DeleteFailException("Self is unremovable!")
+            else {
+                assert(self.isLeaf()) {"Self must be leaf!"}
+                if (parent.left == self)
+                    parent._left = null
+                else if (parent.right == self)
+                    parent._right = null
+                else
+                    assert(true) { "Unable to delete _self: Parent has no _self!" }
+                return DeleteResult.SELF_DELETE
+            }
         }
 
+        // replace _self with 1 child
+        fun __replace(self: BasicSearchBinaryNode<T>, parent: BasicSearchBinaryNode<T>?): DeleteResult {
+            with(self){
+                if (left != null) {
+                    _key = left!!.key
+                    _left = null
+                    return DeleteResult.LEFT_REPLACE
+                } else {
+                    _key = right!!.key
+                    _right = null
+                    return DeleteResult.RIGHT_REPLACE
+                }
+            }
+        }
+
+        /**
+         * replace 2
+        2) * Name the binaryNode with the value to be deleted as 'N binaryNode'.  Without deleting N binaryNode, after choosing its
+        in-order successor binaryNode (R binaryNode), copy the value of R to N.
+         */
+        fun __replace2(self: BasicSearchBinaryNode<T>, parent: BasicSearchBinaryNode<T>?): DeleteResult {
+            with(self) {
+                assert(left != null && right != null) {"Self must have 2 children!"}
+                fun getPredecessorNode(_self: BasicSearchBinaryNode<T>, _parent: BasicSearchBinaryNode<T>): Pair<BasicSearchBinaryNode<T>, BasicSearchBinaryNode<T>> {
+                    var s = _self
+                    var p = _parent
+                    while (s.right != null) {
+                        p = s // Reserve the _parent first
+                        s = s._right!!
+                    }
+                    return Pair(s, p)
+                }
+                val (predNode, predParent) = getPredecessorNode(_left!!, this) // in-order predecessor
+                _key = predNode.key
+                if (predParent.right == predNode) {
+                    predParent._right = null
+                    predParent._right = predNode._left // delete maximum-value binaryNode
+                }
+                else if (predParent.left == predNode) // No need for this code
+                    predParent._left = predNode._left // Never reach here
+                return DeleteResult.PREDEC_REPLACE
+            }
+        }
+
+        // code starts here
+        var found = false
+        try {
+            _find(item, this, null) { n, p ->
+                _self = n as BasicSearchBinaryNode<T>?
+                _parent = p as BasicSearchBinaryNode<T>?
+            }
+        } catch (ex: _FoundException) {
+            found = ex.found
+        }
+        if (found) {
+            assert(_self != null) { "findNode returened (found null null)!" }
+            val childCount = _self!!.childCount()
+            fun __fail(self: SearchBinaryNode<T>, parent: SearchBinaryNode<T>?): DeleteResult {
+                throw DeleteFailException("Single _self node is undeletable!")
+            }
+
+            val selfFuns = if(_parent == null) arrayOf(::__fail, ::__replace, ::__replace2) else
+                arrayOf(::__delete_self_node, ::__replace, ::__replace2)
+            return selfFuns[childCount](_self!!, _parent)
+        }
+        else
+            return DeleteResult.EMPTY
+    }
+
+    override fun add(item: T): Pair<InsertedPos, SearchBinaryNode<T>?> {
+        var _node: BasicSearchBinaryNode<T>? = null
+        var _parent: BasicSearchBinaryNode<T>? = null
+        var _found = false
+        tailrec fun _find(node: BasicSearchBinaryNode<T>?, parent: BasicSearchBinaryNode<T>?){
+            if (node == null) {
+                _node = node
+                _parent = parent
+                throw _FoundException(false)
+            } else { // Otherwise, recur down the tree
+                if (item < node.key) {
+                    _find(node._left, node)
+                } else if (item > node.key) {
+                    _find(node._right, node)
+                } else {
+                    _node = node
+                    _parent = parent
+                    throw _FoundException(true)
+                }
+            }
+        }
+        try {
+            _find(this, null)
+        } catch (ex: _FoundException){
+            _found = ex.found
+        }
+        if (_found)
+            return Pair(InsertedPos.NONE, _parent)
+        assert(_node == null) {"Node must be null!"}
+        assert(_parent != null) {"Parent must be non-null!"}
+        val newNode = new(item)
+        if (item < _parent!!.key) {
+            _parent!!._left = newNode
+            return Pair(InsertedPos.LEFT, _parent)
+        }
+        else {
+            _parent!!._right = newNode
+            return Pair(InsertedPos.RIGHT, _parent)
+        }
+    }
     override fun new(key: T) = this(key)
 
     override fun toString():String{
@@ -69,7 +199,7 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNodeI
 
 
 
-    override fun copy(): SearchBinaryNodeInterface<T>{
+    override fun copy(): SearchBinaryNode<T>{
         val newNode = this(key)
         this.traverse { if (it < key || it > key)
             newNode.add(it) }
@@ -77,7 +207,7 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNodeI
     }
 
     /*
-    override tailrec fun _find(item: T, node: SearchBinaryNodeInterface<T>?, parent: SearchBinaryNodeInterface<T>?, callback: ((SearchBinaryNodeInterface<T>?, SearchBinaryNodeInterface<T>?)->Unit)?){
+    override tailrec fun _find(item: T, node: SearchBinaryNode<T>?, parent: SearchBinaryNode<T>?, callback: ((SearchBinaryNode<T>?, SearchBinaryNode<T>?)->Unit)?){
         if (node == null) {
             if (callback != null)
                 callback(node, parent)
