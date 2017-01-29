@@ -24,6 +24,32 @@ class BasicSearchBinaryTree<T: Comparable<T>>(_root: SearchBinaryNode<T>?=null) 
      * @throws DeleteFailException
      */
 
+    override fun remove(item: T): DeleteResult {
+        var result = DeleteResult.EMPTY
+        if (root == null)
+            return DeleteResult.EMPTY
+        else {
+            if (root!!.count() == 1){
+                if (root!!.key < item || root!!.key > item)
+                    return DeleteResult.NO_MATCH
+                else {
+                    root = null
+                    return DeleteResult.SELF_DELETE
+                }
+            }
+            else
+            try {
+                result = root!!.remove(item)
+            }
+            catch(dE: DeleteException){
+                if (dE is DeleteSuccessException) {
+                    result = dE.result
+                } else
+                    throw dE
+            }
+        }
+        return result
+    }
 
 
     override fun add(item: T){
