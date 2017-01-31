@@ -1,7 +1,7 @@
 package jp.yasukazu.kotlin.train.tree
 
 /**
- *
+ * Interface and read-only functions
  * Created by Yasukazu on 2017/01/22.
  */
 
