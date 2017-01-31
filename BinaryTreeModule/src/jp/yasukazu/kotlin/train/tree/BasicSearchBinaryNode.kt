@@ -137,7 +137,7 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNode<
             return DeleteResult.EMPTY
     }
 
-    override fun add(item: T): Pair<InsertedPos, SearchBinaryNode<T>?> {
+    override fun add(item: T): InsertedPos {
         var _node: BasicSearchBinaryNode<T>? = null
         var _parent: BasicSearchBinaryNode<T>? = null
         var _found = false
@@ -164,19 +164,20 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNode<
             _found = ex.found
         }
         if (_found)
-            return Pair(InsertedPos.NONE, _parent)
+            return InsertedPos.NONE
         assert(_node == null) {"Node must be null!"}
         assert(_parent != null) {"Parent must be non-null!"}
         val newNode = new(item)
         if (item < _parent!!.key) {
             _parent!!._left = newNode
-            return Pair(InsertedPos.LEFT, _parent)
+            return InsertedPos.LEFT
         }
         else {
             _parent!!._right = newNode
-            return Pair(InsertedPos.RIGHT, _parent)
+            return InsertedPos.RIGHT
         }
     }
+
     override fun new(key: T) = this(key)
 
     override fun toString():String{
