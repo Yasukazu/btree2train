@@ -17,7 +17,7 @@ interface SearchBinaryNode<T: Comparable<T>>{
      */
     fun remove(item: T): DeleteResult
 
-    fun add(item: T): Pair<InsertedPos, SearchBinaryNode<T>?>
+    fun add(item: T): InsertedPos
 
 
     tailrec fun _find(item: T, node: SearchBinaryNode<T>?, parent: SearchBinaryNode<T>?, callback: ((SearchBinaryNode<T>?, SearchBinaryNode<T>?)->Unit)?=null){
@@ -37,17 +37,21 @@ interface SearchBinaryNode<T: Comparable<T>>{
             }
         }
     }
-    fun findNode(item: T): Triple<Boolean, SearchBinaryNode<T>?, SearchBinaryNode<T>?> {
-        var node: SearchBinaryNode<T>? = null
+    fun findNode(item: T): Triple<Boolean, LeftOrRight, SearchBinaryNode<T>?> {
+        var leftOrRight: LeftOrRight = LeftOrRight.NONE
         var parent: SearchBinaryNode<T>? = null
         var found = false
         try {
-            _find(item, this, null) { n, p -> node = n
-                parent = p}
+            _find(item, this, null) { n, p ->
+                parent = p
+                if (p != null) {
+                    leftOrRight = if (p.left == n) LeftOrRight.LEFT else LeftOrRight.RIGHT
+                }
+            }
         } catch (ex: _FoundException){
             found = ex.found
         }
-        return Triple(found, node, parent)
+        return Triple(found, leftOrRight, parent)
     }
     operator fun contains(item: T): Boolean {
         val (found, node, parent) = findNode(item)
@@ -98,6 +102,7 @@ interface SearchBinaryNode<T: Comparable<T>>{
         _traverse(node.left, callback)
         _traverse(node.right, callback)
     }
+    fun preTraverse(callback : (T) -> Unit) = _traverse(this, callback)
     fun preTraverseDepth(callback : ((T, Int) -> Unit)) = _preTraverseDepth(this, 0, callback)
     fun _preTraverseDepth(node: SearchBinaryNode<T>?, depth: Int, callback : (T, Int) -> Unit){
         if (node == null)
