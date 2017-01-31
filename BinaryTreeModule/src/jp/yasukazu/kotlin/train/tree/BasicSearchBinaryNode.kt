@@ -73,12 +73,20 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNode<
             with(self){
                 if (left != null) {
                     _key = left!!.key
-                    _left = null
+                    _left = left!!.left as BasicSearchBinaryNode<T>
+                    _right = left!!.right as BasicSearchBinaryNode<T>
                     return DeleteResult.LEFT_REPLACE
-                } else {
-                    _key = right!!.key
-                    _right = null
-                    return DeleteResult.RIGHT_REPLACE
+                } else if (right != null) {
+                    with(right!!) {
+                        _key = key
+                        _right = right as BasicSearchBinaryNode<T>
+                        _left = left as BasicSearchBinaryNode<T>
+                        return DeleteResult.RIGHT_REPLACE
+                    }
+                }
+                else {
+                    assert(true) { "left or right must be non-null!" }
+                    return DeleteResult.NO_MATCH // never comes here
                 }
             }
         }
@@ -103,7 +111,6 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNode<
                 val (predNode, predParent) = getPredecessorNode(_left!!, this) // in-order predecessor
                 _key = predNode.key
                 if (predParent.right == predNode) {
-                    predParent._right = null
                     predParent._right = predNode._left // delete maximum-value binaryNode
                 }
                 else if (predParent.left == predNode) // No need for this code
