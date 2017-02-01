@@ -7,8 +7,8 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNode<
 
     //private constructor(nodeData: BinaryNodeData<T>) : this(nodeData.key) { data = nodeData }
 
-    private var _key = item
-    override val key: T get(){return _key}
+    //private val _key = item
+    override val key = item//_key//: T get(){return _key}
     /*
         set(newKey) {
             if (newKey in this)
@@ -21,7 +21,7 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNode<
         }*/
 
     private var _left: BasicSearchBinaryNode<T>? = null
-    override val left: SearchBinaryNode<T>? get() = _left
+    override val left: SearchBinaryNode<T>? get(){return _left}
     /*
         set(newNodeOrNull) {
             if (newNodeOrNull != null) {
@@ -35,7 +35,7 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNode<
         } */
 
     private var _right: BasicSearchBinaryNode<T>? = null
-    override val right: SearchBinaryNode<T>? get() = _right
+    override val right: SearchBinaryNode<T>? get(){return _right}
     /*
         set(newNodeOrNull) {
             if (newNodeOrNull != null) {
@@ -47,7 +47,6 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNode<
             else
                 _right = null
         }*/
-
     override fun remove(item: T) = _delete_node(item, this, null)
     fun _delete_node(item: T, _self_: BasicSearchBinaryNode<T>?, _parent_: BasicSearchBinaryNode<T>?): DeleteResult {
         var _self: BasicSearchBinaryNode<T>? = _self_
@@ -70,17 +69,40 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNode<
 
         // replace _self with 1 child
         fun __replace(self: BasicSearchBinaryNode<T>, parent: BasicSearchBinaryNode<T>?): DeleteResult {
-            with(self){
-                if (left != null) {
-                    _key = left!!.key
-                    _left = left!!.left as BasicSearchBinaryNode<T>
-                    _right = left!!.right as BasicSearchBinaryNode<T>
+            if (parent == null)
+                throw DeleteFailException("Unable to remove the root node!")
+            else {
+                if (self.right == null && self.left != null) {
+                    if (parent._left == self)
+                        parent._left = self._left
+                    else
+                        parent._right = self._left
                     return DeleteResult.LEFT_REPLACE
-                } else if (right != null) {
+                }
+                else if (self.right != null && self.left == null) {
+                    if (parent._left == self)
+                        parent._left = self._right
+                    else
+                        parent._right = self._right
+                    return DeleteResult.RIGHT_REPLACE
+                }
+                else {
+                    assert(true) { "left or right must be non-null!" }
+                    return DeleteResult.NO_MATCH // never comes here
+                }
+            }
+            /*
+            with(self){
+                if (right == null && left != null) {
+                    _key = left!!.key
+                    _right = left!!.right as BasicSearchBinaryNode<T>?
+                    _left = left!!.left as BasicSearchBinaryNode<T>?
+                    return DeleteResult.LEFT_REPLACE
+                } else if (left == null && right != null) {
                     with(right!!) {
                         _key = key
-                        _right = right as BasicSearchBinaryNode<T>
-                        _left = left as BasicSearchBinaryNode<T>
+                        _left = left as BasicSearchBinaryNode<T>?
+                        _right = right as BasicSearchBinaryNode<T>?
                         return DeleteResult.RIGHT_REPLACE
                     }
                 }
@@ -88,7 +110,7 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNode<
                     assert(true) { "left or right must be non-null!" }
                     return DeleteResult.NO_MATCH // never comes here
                 }
-            }
+            }*/
         }
 
         /**
@@ -97,6 +119,9 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNode<
         in-order successor binaryNode (R binaryNode), copy the value of R to N.
          */
         fun __replace2(self: BasicSearchBinaryNode<T>, parent: BasicSearchBinaryNode<T>?): DeleteResult {
+            if (parent == null)
+                throw DeleteFailException("Unable to remove self!")
+            else
             with(self) {
                 assert(left != null && right != null) {"Self must have 2 children!"}
                 fun getPredecessorNode(_self: BasicSearchBinaryNode<T>, _parent: BasicSearchBinaryNode<T>): Pair<BasicSearchBinaryNode<T>, BasicSearchBinaryNode<T>> {
@@ -109,12 +134,19 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNode<
                     return Pair(s, p)
                 }
                 val (predNode, predParent) = getPredecessorNode(_left!!, this) // in-order predecessor
-                _key = predNode.key
                 if (predParent.right == predNode) {
                     predParent._right = predNode._left // delete maximum-value binaryNode
                 }
                 else if (predParent.left == predNode) // No need for this code
                     predParent._left = predNode._left // Never reach here
+                val newNode = BasicSearchBinaryNode(predNode.key)
+                newNode._left = _left
+                newNode._right = _right
+                if (parent._left == self)
+                    parent._left = newNode
+                else
+                    parent._right = newNode
+                //_key = predNode.key
                 return DeleteResult.PREDEC_REPLACE
             }
         }
@@ -188,7 +220,7 @@ open class BasicSearchBinaryNode<T: Comparable<T>> (item: T) : SearchBinaryNode<
     override fun new(key: T) = this(key)
 
     override fun toString():String{
-        return "BasicSearchBinaryNode: $key(${left?.key}, ${right?.key})"
+        return "BasicSearchBinaryNode: $key(${_left?.key}, ${_right?.key})"
     }
 
     private operator fun invoke(item: T): BasicSearchBinaryNode<T>{
